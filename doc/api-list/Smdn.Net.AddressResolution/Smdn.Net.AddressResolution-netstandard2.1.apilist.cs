@@ -1,12 +1,12 @@
-// Smdn.Net.AddressResolution.dll (Smdn.Net.AddressResolution-1.0.0-preview1)
+// Smdn.Net.AddressResolution.dll (Smdn.Net.AddressResolution-1.0.0-preview2)
 //   Name: Smdn.Net.AddressResolution
 //   AssemblyVersion: 1.0.0.0
-//   InformationalVersion: 1.0.0-preview1+a1f8ac31e0439c6cf855ca85420a2d7ea9cebc1a
+//   InformationalVersion: 1.0.0-preview2+5edee5ba8620fb382ebb22676635228ad7c81bd2
 //   TargetFramework: .NETStandard,Version=v2.1
 //   Configuration: Release
 //   Referenced assemblies:
-//     Microsoft.Extensions.DependencyInjection.Abstractions, Version=7.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60
-//     Microsoft.Extensions.Logging.Abstractions, Version=7.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60
+//     Microsoft.Extensions.DependencyInjection.Abstractions, Version=6.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60
+//     Microsoft.Extensions.Logging.Abstractions, Version=6.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60
 //     netstandard, Version=2.1.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51
 #nullable enable annotations
 
