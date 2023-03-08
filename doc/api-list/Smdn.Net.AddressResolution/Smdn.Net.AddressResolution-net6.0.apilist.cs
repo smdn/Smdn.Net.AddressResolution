@@ -1,12 +1,12 @@
-// Smdn.Net.AddressResolution.dll (Smdn.Net.AddressResolution-1.0.0-preview1)
+// Smdn.Net.AddressResolution.dll (Smdn.Net.AddressResolution-1.0.0-preview2)
 //   Name: Smdn.Net.AddressResolution
 //   AssemblyVersion: 1.0.0.0
-//   InformationalVersion: 1.0.0-preview1+a1f8ac31e0439c6cf855ca85420a2d7ea9cebc1a
+//   InformationalVersion: 1.0.0-preview2+5edee5ba8620fb382ebb22676635228ad7c81bd2
 //   TargetFramework: .NETCoreApp,Version=v6.0
 //   Configuration: Release
 //   Referenced assemblies:
-//     Microsoft.Extensions.DependencyInjection.Abstractions, Version=7.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60
-//     Microsoft.Extensions.Logging.Abstractions, Version=7.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60
+//     Microsoft.Extensions.DependencyInjection.Abstractions, Version=6.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60
+//     Microsoft.Extensions.Logging.Abstractions, Version=6.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60
 //     System.ComponentModel, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
 //     System.Diagnostics.Process, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
 //     System.Linq, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
