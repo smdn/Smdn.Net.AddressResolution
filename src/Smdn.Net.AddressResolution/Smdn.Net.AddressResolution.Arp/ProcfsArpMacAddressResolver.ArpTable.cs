@@ -99,7 +99,7 @@ partial class ProcfsArpMacAddressResolver {
             entry.HardwareAddress?.ToMacAddressString(),
             entry.HardwareType.ToString("X2", provider: null),
             entry.Device,
-            entry.Flags.ToString("X2")
+            ((byte)entry.Flags).ToString("X2", provider: null)
           );
           yield return entry;
         }
