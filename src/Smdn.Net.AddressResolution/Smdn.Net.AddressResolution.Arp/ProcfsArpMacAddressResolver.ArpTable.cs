@@ -19,7 +19,7 @@ namespace Smdn.Net.AddressResolution.Arp;
 partial class ProcfsArpMacAddressResolver {
 #pragma warning restore IDE0040
   [Flags]
-  private enum ArpTableEntryFlags {
+  private enum ArpTableEntryFlags : byte {
     Incomplete = 0x00,
     Complete = 0x02,
     Permanent = 0x04,
