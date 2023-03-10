@@ -1,7 +1,7 @@
-// Smdn.Net.AddressResolution.dll (Smdn.Net.AddressResolution-1.0.0-preview2)
+// Smdn.Net.AddressResolution.dll (Smdn.Net.AddressResolution-1.0.0-preview3)
 //   Name: Smdn.Net.AddressResolution
 //   AssemblyVersion: 1.0.0.0
-//   InformationalVersion: 1.0.0-preview2+5edee5ba8620fb382ebb22676635228ad7c81bd2
+//   InformationalVersion: 1.0.0-preview3+b0d0efec19a7bb78ed612cabd93d8e805a1a32f8
 //   TargetFramework: .NETCoreApp,Version=v6.0
 //   Configuration: Release
 //   Referenced assemblies:
