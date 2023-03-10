@@ -48,14 +48,11 @@ internal sealed class ProcfsArpNmapScanMacAddressResolver : ProcfsArpMacAddressR
     // -oG <file>: Output scan in Grepable format
     const string nmapOptions = "-sn -n -T4 -oG - ";
 
-    var outputNmapOutputToTraceLog = Logger is not null && Logger.IsEnabled(LogLevel.Trace);
-    var outputNmapErrorToErrorLog = Logger is not null && Logger.IsEnabled(LogLevel.Error);
-
     var nmapProcessStartInfo = new ProcessStartInfo() {
       FileName = lazyPathToNmap.Value,
       Arguments = nmapOptions + nmapTargetSpecification,
-      RedirectStandardOutput = outputNmapOutputToTraceLog,
-      RedirectStandardError = outputNmapErrorToErrorLog,
+      RedirectStandardOutput = true,
+      RedirectStandardError = true,
       UseShellExecute = false,
     };
 
@@ -78,7 +75,7 @@ internal sealed class ProcfsArpNmapScanMacAddressResolver : ProcfsArpMacAddressR
       nmapProcess.WaitForExit(); // TODO: cacellation
 #endif
 
-      if (outputNmapOutputToTraceLog) {
+      if (Logger is not null && Logger.IsEnabled(LogLevel.Trace)) {
         for (
           var line = await nmapProcess.StandardOutput.ReadLineAsync().ConfigureAwait(false);
           line is not null;
@@ -88,7 +85,7 @@ internal sealed class ProcfsArpNmapScanMacAddressResolver : ProcfsArpMacAddressR
         }
       }
 
-      if (outputNmapErrorToErrorLog) {
+      if (Logger is not null && Logger.IsEnabled(LogLevel.Error)) {
         for (
           var line = await nmapProcess.StandardError.ReadLineAsync().ConfigureAwait(false);
           line is not null;
