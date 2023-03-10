@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2022 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -75,23 +76,28 @@ internal sealed class ProcfsArpNmapScanMacAddressResolver : ProcfsArpMacAddressR
       nmapProcess.WaitForExit(); // TODO: cacellation
 #endif
 
-      if (Logger is not null && Logger.IsEnabled(LogLevel.Trace)) {
-        for (
-          var line = await nmapProcess.StandardOutput.ReadLineAsync().ConfigureAwait(false);
-          line is not null;
-          line = await nmapProcess.StandardOutput.ReadLineAsync().ConfigureAwait(false)
-        ) {
-          Logger!.LogTrace("[nmap] {StdOut}", line);
-        }
-      }
+      if (Logger is not null) {
+        const LogLevel logLevelForStandardOutput = LogLevel.Trace;
+        const LogLevel logLevelForStandardError = LogLevel.Error;
 
-      if (Logger is not null && Logger.IsEnabled(LogLevel.Error)) {
-        for (
-          var line = await nmapProcess.StandardError.ReadLineAsync().ConfigureAwait(false);
-          line is not null;
-          line = await nmapProcess.StandardError.ReadLineAsync().ConfigureAwait(false)
-        ) {
-          Logger!.LogError("[nmap] {StdErr}", line);
+        static IEnumerable<(StreamReader, LogLevel)> EnumerateLogTarget(StreamReader stdout, StreamReader stderr)
+        {
+          yield return (stdout, logLevelForStandardOutput);
+          yield return (stderr, logLevelForStandardError);
+        }
+
+        foreach (var (stdio, logLevel) in EnumerateLogTarget(nmapProcess.StandardOutput, nmapProcess.StandardError)) {
+          if (!Logger.IsEnabled(logLevel))
+            continue;
+
+          for (; ;) {
+            var line = await stdio.ReadLineAsync().ConfigureAwait(false);
+
+            if (line is null)
+              break;
+
+            Logger.Log(logLevel, "[nmap] {Line}", line);
+          }
         }
       }
     }
