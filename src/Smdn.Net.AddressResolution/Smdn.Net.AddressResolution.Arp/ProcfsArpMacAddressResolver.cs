@@ -129,7 +129,7 @@ internal partial class ProcfsArpMacAddressResolver : MacAddressResolver {
 
   private async ValueTask ArpScanAsync(CancellationToken cancellationToken)
   {
-    Logger?.LogDebug("[/proc/net/arp] Performing ARP scan");
+    Logger?.LogDebug("Performing ARP scan");
 
     await ArpScanAsyncCore(cancellationToken: cancellationToken).ConfigureAwait(false);
 
@@ -138,7 +138,7 @@ internal partial class ProcfsArpMacAddressResolver : MacAddressResolver {
 
   protected virtual ValueTask ArpScanAsyncCore(CancellationToken cancellationToken)
   {
-    Logger?.LogWarning($"[{nameof(ProcfsArpMacAddressResolver)}] ARP scan is not supported in this class.");
+    Logger?.LogWarning("ARP scan is not supported in this class.");
 
     return default;
   }
