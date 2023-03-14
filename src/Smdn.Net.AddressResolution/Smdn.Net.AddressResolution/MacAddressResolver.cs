@@ -38,6 +38,7 @@ public abstract class MacAddressResolver :
   /*
    * instance members
    */
+  public abstract bool HasInvalidated { get; }
   protected ILogger? Logger { get; }
 
   protected MacAddressResolver(
@@ -81,6 +82,11 @@ public abstract class MacAddressResolver :
       cancellationToken: cancellationToken
     );
 
+  void IAddressResolver<IPAddress, PhysicalAddress>.Invalidate(
+    PhysicalAddress resolvedAddress
+  )
+    => Invalidate(resolvedMacAddress: resolvedAddress);
+
 #pragma warning disable SA1305
   public ValueTask<PhysicalAddress?> ResolveIPAddressToMacAddressAsync(
     IPAddress ipAddress,
@@ -99,8 +105,6 @@ public abstract class MacAddressResolver :
 
     if (ipAddress is null)
       throw new ArgumentNullException(nameof(ipAddress));
-
-    // TODO: validate IP address
 
     return ResolveAsync();
 
@@ -127,6 +131,20 @@ public abstract class MacAddressResolver :
   );
 #pragma warning restore SA1305
 
+  public void Invalidate(PhysicalAddress resolvedMacAddress)
+  {
+    if (resolvedMacAddress is null)
+      throw new ArgumentNullException(nameof(resolvedMacAddress));
+
+    ThrowIfDisposed();
+
+    Logger?.LogDebug("Invalidating {MacAddress}", resolvedMacAddress.ToMacAddressString());
+
+    InvalidateCore(resolvedMacAddress);
+  }
+
+  protected abstract void InvalidateCore(PhysicalAddress resolvedMacAddress);
+
   /*
    * PhysicalAddress -> IPAddress
    */
@@ -138,6 +156,11 @@ public abstract class MacAddressResolver :
       macAddress: address,
       cancellationToken: cancellationToken
     );
+
+  void IAddressResolver<PhysicalAddress, IPAddress>.Invalidate(
+    IPAddress resolvedAddress
+  )
+    => Invalidate(resolvedIPAddress: resolvedAddress);
 
   public ValueTask<IPAddress?> ResolveMacAddressToIPAddressAsync(
     PhysicalAddress macAddress,
@@ -163,8 +186,6 @@ public abstract class MacAddressResolver :
       return ValueTaskShim.FromResult<IPAddress?>(null);
 #endif
 
-    // TODO: validate MAC address
-
     return ResolveAsync();
 
     async ValueTask<IPAddress?> ResolveAsync()
@@ -188,6 +209,20 @@ public abstract class MacAddressResolver :
     CancellationToken cancellationToken
   );
 
+  public void Invalidate(IPAddress resolvedIPAddress)
+  {
+    if (resolvedIPAddress is null)
+      throw new ArgumentNullException(nameof(resolvedIPAddress));
+
+    ThrowIfDisposed();
+
+    Logger?.LogDebug("Invalidating {IPAddress}", resolvedIPAddress);
+
+    InvalidateCore(resolvedIPAddress);
+  }
+
+  protected abstract void InvalidateCore(IPAddress resolvedIPAddress);
+
   /*
    * other virtual/abstract members
    */
@@ -208,6 +243,33 @@ public abstract class MacAddressResolver :
   }
 
   protected virtual ValueTask RefreshCacheAsyncCore(
+    CancellationToken cancellationToken
+  )
+    =>
+      // do nothing in this class
+#if SYSTEM_THREADING_TASKS_VALUETASK_COMPLETEDTASK
+      ValueTask.CompletedTask;
+#else
+      default;
+#endif
+
+  public ValueTask RefreshInvalidatedCacheAsync(
+    CancellationToken cancellationToken = default
+  )
+  {
+    if (cancellationToken.IsCancellationRequested)
+#if SYSTEM_THREADING_TASKS_VALUETASK_FROMCANCELED
+      return ValueTask.FromCanceled(cancellationToken);
+#else
+      return ValueTaskShim.FromCanceled(cancellationToken);
+#endif
+
+    ThrowIfDisposed();
+
+    return RefreshInvalidatedCacheAsyncCore(cancellationToken);
+  }
+
+  protected virtual ValueTask RefreshInvalidatedCacheAsyncCore(
     CancellationToken cancellationToken
   )
     =>

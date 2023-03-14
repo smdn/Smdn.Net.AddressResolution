@@ -8,4 +8,5 @@ namespace Smdn.Net.AddressResolution;
 public interface IAddressResolver<TAddress, TResolvedAddress> {
   /// <returns>An resolved address. <see langword="null"/> if address could not be resolved.</returns>
   public ValueTask<TResolvedAddress?> ResolveAsync(TAddress address, CancellationToken cancellationToken);
+  public void Invalidate(TResolvedAddress resolvedAddress);
 }

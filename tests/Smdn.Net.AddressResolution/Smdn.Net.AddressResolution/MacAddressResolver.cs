@@ -12,6 +12,8 @@ namespace Smdn.Net.AddressResolution;
 [TestFixture]
 public partial class MacAddressResolverTests {
   private class ConcreteMacAddressResolver : MacAddressResolver {
+    public override bool HasInvalidated => throw new NotImplementedException();
+
     protected override ValueTask<IPAddress?> ResolveMacAddressToIPAddressAsyncCore(
       PhysicalAddress macAddress,
       CancellationToken cancellationToken
@@ -21,6 +23,9 @@ public partial class MacAddressResolverTests {
       IPAddress ipAddress,
       CancellationToken cancellationToken
     ) => throw new NotImplementedException();
+
+    protected override void InvalidateCore(IPAddress resolvedIPAddress) => throw new NotImplementedException();
+    protected override void InvalidateCore(PhysicalAddress resolvedMacAddress) => throw new NotImplementedException();
   }
 
   private static readonly IPAddress TestIPAddress = IPAddress.Parse("192.0.2.255");
@@ -46,6 +51,11 @@ public partial class MacAddressResolverTests {
     );
 
     Assert.Throws<ObjectDisposedException>(
+      () => resolver.Invalidate(TestIPAddress),
+      nameof(resolver.Invalidate)
+    );
+
+    Assert.Throws<ObjectDisposedException>(
       () => resolver.ResolveMacAddressToIPAddressAsync(TestMacAddress),
       nameof(resolver.ResolveMacAddressToIPAddressAsync)
     );
@@ -55,12 +65,26 @@ public partial class MacAddressResolverTests {
     );
 
     Assert.Throws<ObjectDisposedException>(
+      () => resolver.Invalidate(TestMacAddress),
+      nameof(resolver.Invalidate)
+    );
+
+    Assert.Throws<ObjectDisposedException>(
       () => resolver.RefreshCacheAsync(),
       nameof(resolver.RefreshCacheAsync)
     );
     Assert.ThrowsAsync<ObjectDisposedException>(
       async () => await resolver.RefreshCacheAsync(),
       nameof(resolver.RefreshCacheAsync)
+    );
+
+    Assert.Throws<ObjectDisposedException>(
+      () => resolver.RefreshInvalidatedCacheAsync(),
+      nameof(resolver.RefreshInvalidatedCacheAsync)
+    );
+    Assert.ThrowsAsync<ObjectDisposedException>(
+      async () => await resolver.RefreshInvalidatedCacheAsync(),
+      nameof(resolver.RefreshInvalidatedCacheAsync)
     );
 #pragma warning restore CA2012
   }
@@ -107,6 +131,23 @@ public partial class MacAddressResolverTests {
     Assert.ThrowsAsync<NotImplementedException>(
       async () => await res.ResolveAsync(address: TestIPAddress, cancellationToken: default)
     );
+  }
+
+  [Test]
+  public void Invalidate_IPAddress_ArgumentNull()
+  {
+    using var resolver = new ConcreteMacAddressResolver();
+
+    Assert.Throws<ArgumentNullException>(() => resolver.Invalidate(resolvedIPAddress: null!));
+  }
+
+  [Test]
+  public void IAddressResolver_Of_IPAddress_PhysicallAddress_Invalidate()
+  {
+    using var resolver = new ConcreteMacAddressResolver();
+    var res = (IAddressResolver<IPAddress, PhysicalAddress>)resolver;
+
+    Assert.Throws<NotImplementedException>(() => res.Invalidate(resolvedAddress: TestMacAddress));
   }
 
   [Test]
@@ -162,6 +203,23 @@ public partial class MacAddressResolverTests {
   }
 
   [Test]
+  public void Invalidate_MacAddress_ArgumentNull()
+  {
+    using var resolver = new ConcreteMacAddressResolver();
+
+    Assert.Throws<ArgumentNullException>(() => resolver.Invalidate(resolvedMacAddress: null!));
+  }
+
+  [Test]
+  public void IAddressResolver_Of_PhysicallAddress_IPAddress_Invalidate()
+  {
+    using var resolver = new ConcreteMacAddressResolver();
+    var res = (IAddressResolver<PhysicalAddress, IPAddress>)resolver;
+
+    Assert.Throws<NotImplementedException>(() => res.Invalidate(resolvedAddress: TestIPAddress));
+  }
+
+  [Test]
   public void RefreshCacheAsync()
   {
     using var resolver = new ConcreteMacAddressResolver();
@@ -181,6 +239,29 @@ public partial class MacAddressResolverTests {
 
     Assert.ThrowsAsync<TaskCanceledException>(
       async () => await resolver.RefreshCacheAsync(cancellationToken: cts.Token)
+    );
+  }
+
+  [Test]
+  public void RefreshInvalidatedCacheAsync()
+  {
+    using var resolver = new ConcreteMacAddressResolver();
+
+    Assert.DoesNotThrowAsync(
+      async () => await resolver.RefreshInvalidatedCacheAsync()
+    );
+  }
+
+  [Test]
+  public void RefreshInvalidatedCacheAsync_CancellationRequested()
+  {
+    using var resolver = new ConcreteMacAddressResolver();
+    using var cts = new CancellationTokenSource();
+
+    cts.Cancel();
+
+    Assert.ThrowsAsync<TaskCanceledException>(
+      async () => await resolver.RefreshInvalidatedCacheAsync(cancellationToken: cts.Token)
     );
   }
 }

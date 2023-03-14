@@ -24,20 +24,44 @@ public partial class NullMacAddressResolverTests {
 
     // object must not be disposed
 
+    Assert.DoesNotThrow(
+      () => Assert.IsFalse(resolver.HasInvalidated),
+      nameof(resolver.HasInvalidated)
+    );
+
     Assert.DoesNotThrowAsync(
       async () => await resolver.ResolveIPAddressToMacAddressAsync(TestIPAddress),
       nameof(resolver.ResolveIPAddressToMacAddressAsync)
+    );
+    Assert.DoesNotThrow(
+      () => resolver.Invalidate(TestIPAddress),
+      nameof(resolver.Invalidate)
     );
 
     Assert.DoesNotThrowAsync(
       async () => await resolver.ResolveMacAddressToIPAddressAsync(TestMacAddress),
       nameof(resolver.ResolveMacAddressToIPAddressAsync)
     );
+    Assert.DoesNotThrow(
+      () => resolver.Invalidate(TestMacAddress),
+      nameof(resolver.Invalidate)
+    );
 
     Assert.DoesNotThrowAsync(
       async () => await resolver.RefreshCacheAsync(),
       nameof(resolver.RefreshCacheAsync)
     );
+    Assert.DoesNotThrowAsync(
+      async () => await resolver.RefreshInvalidatedCacheAsync(),
+      nameof(resolver.RefreshInvalidatedCacheAsync)
+    );
+  }
+
+  [Test]
+  public void HasInvalidated()
+  {
+    Assert.IsFalse(MacAddressResolver.Null.HasInvalidated, nameof(MacAddressResolver.Null.HasInvalidated));
+    Assert.IsFalse(MacAddressResolver.Null.HasInvalidated, nameof(MacAddressResolver.Null.HasInvalidated) + " must always be false");
   }
 
   [Test]
@@ -57,12 +81,38 @@ public partial class NullMacAddressResolverTests {
   }
 
   [Test]
+  public void Invalidate_IPAddress()
+  {
+    using var resolver = MacAddressResolver.Null;
+
+    Assert.DoesNotThrow(() => resolver.Invalidate(TestIPAddress));
+  }
+
+  [Test]
+  public void Invalidate_MacAddress()
+  {
+    using var resolver = MacAddressResolver.Null;
+
+    Assert.DoesNotThrow(() => resolver.Invalidate(TestMacAddress));
+  }
+
+  [Test]
   public void RefreshCacheAsync()
   {
     using var resolver = MacAddressResolver.Null;
 
     Assert.DoesNotThrowAsync(
       async () => await resolver.RefreshCacheAsync()
+    );
+  }
+
+  [Test]
+  public void RefreshInvalidatedCacheAsync()
+  {
+    using var resolver = MacAddressResolver.Null;
+
+    Assert.DoesNotThrowAsync(
+      async () => await resolver.RefreshInvalidatedCacheAsync()
     );
   }
 }

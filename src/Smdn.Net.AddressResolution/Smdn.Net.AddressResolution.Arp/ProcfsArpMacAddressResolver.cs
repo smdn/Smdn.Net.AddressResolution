@@ -1,6 +1,8 @@
 // SPDX-FileCopyrightText: 2022 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.NetworkInformation;
@@ -34,13 +36,31 @@ internal partial class ProcfsArpMacAddressResolver : MacAddressResolver {
     );
   }
 
+  private readonly struct None { }
+
+  private class ConcurrentSet<T> : ConcurrentDictionary<T, None>
+    where T : notnull
+  {
+    public ConcurrentSet()
+    {
+    }
+
+    public void Add(T key)
+      => AddOrUpdate(key: key, addValue: default, updateValueFactory: static (key, old) => default);
+  }
+
   /*
    * instance members
    */
-  private DateTime lastArpScanAt = DateTime.MinValue;
-  private readonly TimeSpan arpScanInterval;
+  private DateTime lastArpFullScanAt = DateTime.MinValue;
+  private readonly TimeSpan arpFullScanInterval;
 
-  private bool HasArpScanIntervalElapsed => lastArpScanAt + arpScanInterval <= DateTime.Now;
+  private bool HasArpFullScanIntervalElapsed => lastArpFullScanAt + arpFullScanInterval <= DateTime.Now;
+
+  private readonly ConcurrentSet<IPAddress> invalidatedIPAddressSet = new();
+  private readonly ConcurrentSet<PhysicalAddress> invalidatedMacAddressSet = new();
+
+  public override bool HasInvalidated => !(invalidatedIPAddressSet.IsEmpty && invalidatedMacAddressSet.IsEmpty);
 
   public ProcfsArpMacAddressResolver(
     MacAddressResolverOptions options,
@@ -48,7 +68,7 @@ internal partial class ProcfsArpMacAddressResolver : MacAddressResolver {
   )
     : base(logger)
   {
-    arpScanInterval = options.ProcfsArpScanInterval;
+    arpFullScanInterval = options.ProcfsArpFullScanInterval;
   }
 
   protected override async ValueTask<PhysicalAddress?> ResolveIPAddressToMacAddressAsyncCore(
@@ -56,8 +76,8 @@ internal partial class ProcfsArpMacAddressResolver : MacAddressResolver {
     CancellationToken cancellationToken
   )
   {
-    if (HasArpScanIntervalElapsed)
-      await ArpScanAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+    if (HasArpFullScanIntervalElapsed)
+      await ArpFullScanAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
 
     ArpTableEntry priorCandidate = default;
     ArpTableEntry candidate = default;
@@ -67,6 +87,9 @@ internal partial class ProcfsArpMacAddressResolver : MacAddressResolver {
       Logger,
       cancellationToken
     ).ConfigureAwait(false)) {
+      if (invalidatedMacAddressSet.ContainsKey(entry.HardwareAddress!))
+        continue; // ignore the entry that is marked as invalidated
+
       if (entry.IsPermanentOrComplete) {
         // prefer permanent or complete entry
         priorCandidate = entry;
@@ -88,8 +111,8 @@ internal partial class ProcfsArpMacAddressResolver : MacAddressResolver {
     CancellationToken cancellationToken
   )
   {
-    if (HasArpScanIntervalElapsed)
-      await ArpScanAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+    if (HasArpFullScanIntervalElapsed)
+      await ArpFullScanAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
 
     ArpTableEntry priorCandidate = default;
     ArpTableEntry candidate = default;
@@ -99,6 +122,9 @@ internal partial class ProcfsArpMacAddressResolver : MacAddressResolver {
       Logger,
       cancellationToken
     ).ConfigureAwait(false)) {
+      if (invalidatedIPAddressSet.ContainsKey(entry.IPAddress!))
+        continue; // ignore the entry that is marked as invalidated
+
       if (entry.IsPermanentOrComplete) {
         // prefer permanent or complete entry
         priorCandidate = entry;
@@ -115,7 +141,44 @@ internal partial class ProcfsArpMacAddressResolver : MacAddressResolver {
       : priorCandidate.IPAddress;
   }
 
+  protected override void InvalidateCore(IPAddress resolvedIPAddress)
+    => invalidatedIPAddressSet.Add(resolvedIPAddress);
+
+  protected override void InvalidateCore(PhysicalAddress resolvedMacAddress)
+    => invalidatedMacAddressSet.Add(resolvedMacAddress);
+
   protected override ValueTask RefreshCacheAsyncCore(
+    CancellationToken cancellationToken = default
+  )
+    => cancellationToken.IsCancellationRequested
+      ?
+#if SYSTEM_THREADING_TASKS_VALUETASK_FROMCANCELED
+        ValueTask.FromCanceled(cancellationToken)
+#else
+        ValueTaskShim.FromCanceled(cancellationToken)
+#endif
+      : ArpFullScanAsync(cancellationToken: cancellationToken);
+
+  private async ValueTask ArpFullScanAsync(CancellationToken cancellationToken)
+  {
+    Logger?.LogDebug("Performing ARP full scan");
+
+    await ArpFullScanAsyncCore(cancellationToken: cancellationToken).ConfigureAwait(false);
+
+    invalidatedIPAddressSet.Clear();
+    invalidatedMacAddressSet.Clear();
+
+    lastArpFullScanAt = DateTime.Now;
+  }
+
+  protected virtual ValueTask ArpFullScanAsyncCore(CancellationToken cancellationToken)
+  {
+    Logger?.LogWarning("ARP scan is not supported in this class.");
+
+    return default;
+  }
+
+  protected override ValueTask RefreshInvalidatedCacheAsyncCore(
     CancellationToken cancellationToken = default
   )
     => cancellationToken.IsCancellationRequested
@@ -129,14 +192,31 @@ internal partial class ProcfsArpMacAddressResolver : MacAddressResolver {
 
   private async ValueTask ArpScanAsync(CancellationToken cancellationToken)
   {
-    Logger?.LogDebug("Performing ARP scan");
+    Logger?.LogDebug("Performing ARP scan for invalidated targets.");
 
-    await ArpScanAsyncCore(cancellationToken: cancellationToken).ConfigureAwait(false);
+    var invalidatedIPAddresses = invalidatedIPAddressSet.Keys;
+    var invalidatedMacAddresses = invalidatedMacAddressSet.Keys;
 
-    lastArpScanAt = DateTime.Now;
+    Logger?.LogTrace("Invalidated IP addresses: {InvalidatedIPAddresses}", string.Join(" ", invalidatedIPAddresses));
+    Logger?.LogTrace("Invalidated MAC addresses: {InvalidatedMACAddresses}", string.Join(" ", invalidatedMacAddresses));
+
+    await ArpScanAsyncCore(
+      invalidatedIPAddresses: invalidatedIPAddresses,
+      invalidatedMacAddresses: invalidatedMacAddresses,
+      cancellationToken: cancellationToken
+    ).ConfigureAwait(false);
+
+    invalidatedIPAddressSet.Clear();
+    invalidatedMacAddressSet.Clear();
+
+    lastArpFullScanAt = DateTime.Now;
   }
 
-  protected virtual ValueTask ArpScanAsyncCore(CancellationToken cancellationToken)
+  protected virtual ValueTask ArpScanAsyncCore(
+    IEnumerable<IPAddress> invalidatedIPAddresses,
+    IEnumerable<PhysicalAddress> invalidatedMacAddresses,
+    CancellationToken cancellationToken
+  )
   {
     Logger?.LogWarning("ARP scan is not supported in this class.");
 

@@ -12,5 +12,5 @@ public sealed class MacAddressResolverOptions {
   /// </summary>
   public string? NmapTargetSpecification { get; init; }
 
-  public TimeSpan ProcfsArpScanInterval { get; init; } = TimeSpan.FromMinutes(15.0);
+  public TimeSpan ProcfsArpFullScanInterval { get; init; } = TimeSpan.FromMinutes(15.0);
 }

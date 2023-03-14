@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.NetworkInformation;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -40,7 +42,45 @@ internal sealed class ProcfsArpNmapScanMacAddressResolver : ProcfsArpMacAddressR
       ?? throw new ArgumentException($"{nameof(options.NmapTargetSpecification)} must be specified with {nameof(MacAddressResolverOptions)}");
   }
 
-  protected override async ValueTask ArpScanAsyncCore(CancellationToken cancellationToken)
+  protected override ValueTask ArpFullScanAsyncCore(CancellationToken cancellationToken)
+    => NmapScanAsync(
+      nmapOptionTargetSpecification: nmapTargetSpecification,
+      logger: Logger,
+      cancellationToken: cancellationToken
+    );
+
+  protected override ValueTask ArpScanAsyncCore(
+    IEnumerable<IPAddress> invalidatedIPAddresses,
+    IEnumerable<PhysicalAddress> invalidatedMacAddresses,
+    CancellationToken cancellationToken
+  )
+  {
+    if (invalidatedMacAddresses.Any()) {
+      // perform full scan
+      return NmapScanAsync(
+        nmapOptionTargetSpecification: nmapTargetSpecification,
+        logger: Logger,
+        cancellationToken: cancellationToken
+      );
+    }
+
+    // perform scan for specific target IPs
+    var nmapOptionTargetSpecification = string.Join(" ", invalidatedIPAddresses);
+
+    return nmapOptionTargetSpecification.Length == 0
+      ? default // do nothing
+      : NmapScanAsync(
+          nmapOptionTargetSpecification: nmapOptionTargetSpecification,
+          logger: Logger,
+          cancellationToken: cancellationToken
+        );
+  }
+
+  private static async ValueTask NmapScanAsync(
+    string nmapOptionTargetSpecification,
+    ILogger? logger,
+    CancellationToken cancellationToken
+  )
   {
     // -sn: Ping Scan - disable port scan
     // -n: Never do DNS resolution
@@ -51,13 +91,13 @@ internal sealed class ProcfsArpNmapScanMacAddressResolver : ProcfsArpMacAddressR
 
     var nmapProcessStartInfo = new ProcessStartInfo() {
       FileName = lazyPathToNmap.Value,
-      Arguments = nmapOptions + nmapTargetSpecification,
+      Arguments = nmapOptions + nmapOptionTargetSpecification,
       RedirectStandardOutput = true,
       RedirectStandardError = true,
       UseShellExecute = false,
     };
 
-    Logger?.LogDebug(
+    logger?.LogDebug(
       "[nmap] {ProcessStartInfoFileName} {ProcessStartInfoArguments}",
       nmapProcessStartInfo.FileName,
       nmapProcessStartInfo.Arguments
@@ -76,7 +116,7 @@ internal sealed class ProcfsArpNmapScanMacAddressResolver : ProcfsArpMacAddressR
       nmapProcess.WaitForExit(); // TODO: cacellation
 #endif
 
-      if (Logger is not null) {
+      if (logger is not null) {
         const LogLevel logLevelForStandardOutput = LogLevel.Trace;
         const LogLevel logLevelForStandardError = LogLevel.Error;
 
@@ -87,7 +127,7 @@ internal sealed class ProcfsArpNmapScanMacAddressResolver : ProcfsArpMacAddressR
         }
 
         foreach (var (stdio, logLevel) in EnumerateLogTarget(nmapProcess.StandardOutput, nmapProcess.StandardError)) {
-          if (!Logger.IsEnabled(logLevel))
+          if (!logger.IsEnabled(logLevel))
             continue;
 
           for (; ;) {
@@ -96,13 +136,13 @@ internal sealed class ProcfsArpNmapScanMacAddressResolver : ProcfsArpMacAddressR
             if (line is null)
               break;
 
-            Logger.Log(logLevel, "[nmap] {Line}", line);
+            logger.Log(logLevel, "[nmap] {Line}", line);
           }
         }
       }
     }
     catch (Exception ex) {
-      Logger?.LogError(ex, "[nmap] failed to perform ARP scanning");
+      logger?.LogError(ex, "[nmap] failed to perform ARP scanning");
     }
   }
 }

@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 namespace Smdn.Net.AddressResolution;
 
 internal sealed class NullMacAddressResolver : MacAddressResolver {
+  public override bool HasInvalidated => false;
+
   internal NullMacAddressResolver()
     : base(logger: null)
   {
@@ -39,4 +41,14 @@ internal sealed class NullMacAddressResolver : MacAddressResolver {
 #else
       ValueTaskShim.FromResult<IPAddress?>(null);
 #endif
+
+  protected override void InvalidateCore(IPAddress ipAddress)
+  {
+    // do nothing
+  }
+
+  protected override void InvalidateCore(PhysicalAddress macAddress)
+  {
+    // do nothing
+  }
 }
