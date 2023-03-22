@@ -25,6 +25,13 @@ internal partial class ProcfsArpMacAddressResolver : MacAddressResolver {
     IServiceProvider? serviceProvider
   )
   {
+    if (ProcfsArpWithArpScanCommandMacAddressResolver.IsSupported) {
+      return new ProcfsArpWithArpScanCommandMacAddressResolver(
+        options: options,
+        logger: serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger<ProcfsArpWithArpScanCommandMacAddressResolver>()
+      );
+    }
+
     if (ProcfsArpNmapScanMacAddressResolver.IsSupported) {
       return new ProcfsArpNmapScanMacAddressResolver(
         options: options,

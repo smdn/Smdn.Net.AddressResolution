@@ -17,5 +17,15 @@ public sealed class MacAddressResolverOptions {
   /// </summary>
   public string? NmapTargetSpecification { get; init; }
 
+  /// <summary>
+  /// Gets the string value passed to the argument '--interface=&lt;s&gg;' of arp-scan command.
+  /// </summary>
+  public string? ArpScanCommandInterfaceSpecification { get; init; }
+
+  /// <summary>
+  /// Gets the string value represents the 'target hosts' pass to the arp-scan command. This value can be IP addresses or hostnames.
+  /// </summary>
+  public string? ArpScanCommandTargetSpecification { get; init; }
+
   public TimeSpan ProcfsArpFullScanInterval { get; init; } = TimeSpan.FromMinutes(15.0);
 }
