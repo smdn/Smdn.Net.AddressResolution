@@ -14,6 +14,14 @@ using Microsoft.Extensions.Logging;
 namespace Smdn.Net.AddressResolution.Arp;
 
 internal sealed class ProcfsArpNmapScanMacAddressResolver : ProcfsArpMacAddressResolver {
+  // ref: https://nmap.org/book/man-briefoptions.html
+  //   -sn: Ping Scan - disable port scan
+  //   -n: Never do DNS resolution
+  //   -T<0-5>: Set timing template (higher is faster)
+  //     4 = aggressive
+  //   -oG <file>: Output scan in Grepable format
+  private const string NmapCommandBaseOptions = "-sn -n -T4 -oG - ";
+
   public static new bool IsSupported => ProcfsArpMacAddressResolver.IsSupported && lazyPathToNmap.Value is not null;
 
   private static readonly Lazy<string?> lazyPathToNmap = new(valueFactory: GetPathToNmap, isThreadSafe: true);
@@ -27,7 +35,8 @@ internal sealed class ProcfsArpNmapScanMacAddressResolver : ProcfsArpMacAddressR
   /*
    * instance members
    */
-  private readonly string nmapTargetSpecification;
+  private readonly string nmapCommandCommonOptions;
+  private readonly string nmapCommandFullScanOptions;
 
   public ProcfsArpNmapScanMacAddressResolver(
     MacAddressResolverOptions options,
@@ -38,13 +47,22 @@ internal sealed class ProcfsArpNmapScanMacAddressResolver : ProcfsArpMacAddressR
       logger
     )
   {
-    nmapTargetSpecification = options.NmapTargetSpecification
-      ?? throw new ArgumentException($"{nameof(options.NmapTargetSpecification)} must be specified with {nameof(MacAddressResolverOptions)}");
+    if (string.IsNullOrEmpty(options.NmapInterfaceSpecification))
+      nmapCommandCommonOptions = NmapCommandBaseOptions;
+    else
+      // -e <iface>: Use specified interface
+      nmapCommandCommonOptions = NmapCommandBaseOptions + $"-e {options.NmapInterfaceSpecification} ";
+
+    nmapCommandFullScanOptions = string.Concat(
+      nmapCommandCommonOptions,
+      options.NmapTargetSpecification
+        ?? throw new ArgumentException($"{nameof(options.NmapTargetSpecification)} must be specified with {nameof(MacAddressResolverOptions)}")
+    );
   }
 
   protected override ValueTask ArpFullScanAsyncCore(CancellationToken cancellationToken)
     => NmapScanAsync(
-      nmapOptionTargetSpecification: nmapTargetSpecification,
+      nmapCommandOptions: nmapCommandFullScanOptions,
       logger: Logger,
       cancellationToken: cancellationToken
     );
@@ -58,40 +76,33 @@ internal sealed class ProcfsArpNmapScanMacAddressResolver : ProcfsArpMacAddressR
     if (invalidatedMacAddresses.Any()) {
       // perform full scan
       return NmapScanAsync(
-        nmapOptionTargetSpecification: nmapTargetSpecification,
+        nmapCommandOptions: nmapCommandFullScanOptions,
         logger: Logger,
         cancellationToken: cancellationToken
       );
     }
 
     // perform scan for specific target IPs
-    var nmapOptionTargetSpecification = string.Join(" ", invalidatedIPAddresses);
+    var nmapCommandOptionTargetSpecification = string.Join(" ", invalidatedIPAddresses);
 
-    return nmapOptionTargetSpecification.Length == 0
+    return nmapCommandOptionTargetSpecification.Length == 0
       ? default // do nothing
       : NmapScanAsync(
-          nmapOptionTargetSpecification: nmapOptionTargetSpecification,
+          nmapCommandOptions: nmapCommandCommonOptions + nmapCommandOptionTargetSpecification,
           logger: Logger,
           cancellationToken: cancellationToken
         );
   }
 
   private static async ValueTask NmapScanAsync(
-    string nmapOptionTargetSpecification,
+    string nmapCommandOptions,
     ILogger? logger,
     CancellationToken cancellationToken
   )
   {
-    // -sn: Ping Scan - disable port scan
-    // -n: Never do DNS resolution
-    // -T<0-5>: Set timing template (higher is faster)
-    //   4 = aggressive
-    // -oG <file>: Output scan in Grepable format
-    const string nmapOptions = "-sn -n -T4 -oG - ";
-
-    var nmapProcessStartInfo = new ProcessStartInfo() {
+    var nmapCommandProcessStartInfo = new ProcessStartInfo() {
       FileName = lazyPathToNmap.Value,
-      Arguments = nmapOptions + nmapOptionTargetSpecification,
+      Arguments = nmapCommandOptions,
       RedirectStandardOutput = true,
       RedirectStandardError = true,
       UseShellExecute = false,
@@ -99,12 +110,12 @@ internal sealed class ProcfsArpNmapScanMacAddressResolver : ProcfsArpMacAddressR
 
     logger?.LogDebug(
       "[nmap] {ProcessStartInfoFileName} {ProcessStartInfoArguments}",
-      nmapProcessStartInfo.FileName,
-      nmapProcessStartInfo.Arguments
+      nmapCommandProcessStartInfo.FileName,
+      nmapCommandProcessStartInfo.Arguments
     );
 
     using var nmapProcess = new Process() {
-      StartInfo = nmapProcessStartInfo,
+      StartInfo = nmapCommandProcessStartInfo,
     };
 
     try {
