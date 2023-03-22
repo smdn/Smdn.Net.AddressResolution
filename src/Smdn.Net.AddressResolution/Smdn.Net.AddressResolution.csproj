@@ -25,6 +25,15 @@ This library provides interfaces for resolving between IP addresses and MAC addr
     <PackageTags>ARP;ip-address;mac-address;hardware-address;address-lookup;address-resolution</PackageTags>
   </PropertyGroup>
 
+  <ItemGroup Label="StyleCop code analysis">
+    <!-- remove the default file includes by the Smdn.MSBuild.ProjectAssets.Library -->
+    <StyleCopJsonFile Include="@(AdditionalFiles->WithMetadataValue('Link', 'stylecop.json'))" />
+    <AdditionalFiles Remove="@(StyleCopJsonFile)" />
+
+    <!-- include custom stylecop.json file -->
+    <AdditionalFiles Include="stylecop.json" Link="stylecop.json" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0" />
   </ItemGroup>
