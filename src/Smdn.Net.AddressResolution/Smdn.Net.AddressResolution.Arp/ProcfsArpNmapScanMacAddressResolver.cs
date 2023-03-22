@@ -6,7 +6,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.NetworkInformation;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -61,6 +60,7 @@ internal sealed class ProcfsArpNmapScanMacAddressResolver : ProcfsArpMacAddressR
   }
 
   protected override ValueTask ArpFullScanAsyncCore(CancellationToken cancellationToken)
+    // perform full scan
     => NmapScanAsync(
       nmapCommandOptions: nmapCommandFullScanOptions,
       logger: Logger,
@@ -69,19 +69,9 @@ internal sealed class ProcfsArpNmapScanMacAddressResolver : ProcfsArpMacAddressR
 
   protected override ValueTask ArpScanAsyncCore(
     IEnumerable<IPAddress> invalidatedIPAddresses,
-    IEnumerable<PhysicalAddress> invalidatedMacAddresses,
     CancellationToken cancellationToken
   )
   {
-    if (invalidatedMacAddresses.Any()) {
-      // perform full scan
-      return NmapScanAsync(
-        nmapCommandOptions: nmapCommandFullScanOptions,
-        logger: Logger,
-        cancellationToken: cancellationToken
-      );
-    }
-
     // perform scan for specific target IPs
     var nmapCommandOptionTargetSpecification = string.Join(" ", invalidatedIPAddresses);
 

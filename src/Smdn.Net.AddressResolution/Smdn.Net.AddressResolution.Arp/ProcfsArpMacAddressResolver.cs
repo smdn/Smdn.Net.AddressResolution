@@ -4,6 +4,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Threading;
@@ -15,6 +16,7 @@ namespace Smdn.Net.AddressResolution.Arp;
 
 internal partial class ProcfsArpMacAddressResolver : MacAddressResolver {
   private const string PathToProcNetArp = "/proc/net/arp";
+  private const int ArpScanParallelMax = 3;
 
   public static bool IsSupported => File.Exists(PathToProcNetArp);
 
@@ -62,6 +64,9 @@ internal partial class ProcfsArpMacAddressResolver : MacAddressResolver {
 
   public override bool HasInvalidated => !(invalidatedIPAddressSet.IsEmpty && invalidatedMacAddressSet.IsEmpty);
 
+  private SemaphoreSlim arpFullScanMutex = new(initialCount: 1, maxCount: 1);
+  private SemaphoreSlim arpPartialScanMutex = new(initialCount: ArpScanParallelMax, maxCount: ArpScanParallelMax);
+
   public ProcfsArpMacAddressResolver(
     MacAddressResolverOptions options,
     ILogger? logger
@@ -69,6 +74,17 @@ internal partial class ProcfsArpMacAddressResolver : MacAddressResolver {
     : base(logger)
   {
     arpFullScanInterval = options.ProcfsArpFullScanInterval;
+  }
+
+  protected override void Dispose(bool disposing)
+  {
+    arpFullScanMutex?.Dispose();
+    arpFullScanMutex = null!;
+
+    arpPartialScanMutex?.Dispose();
+    arpPartialScanMutex = null!;
+
+    base.Dispose(disposing);
   }
 
   protected override async ValueTask<PhysicalAddress?> ResolveIPAddressToMacAddressAsyncCore(
@@ -161,14 +177,24 @@ internal partial class ProcfsArpMacAddressResolver : MacAddressResolver {
 
   private async ValueTask ArpFullScanAsync(CancellationToken cancellationToken)
   {
+    if (!await arpFullScanMutex.WaitAsync(0, cancellationToken: default).ConfigureAwait(false)) {
+      Logger?.LogInformation("ARP full scan is currently being performed.");
+      return;
+    }
+
     Logger?.LogDebug("Performing ARP full scan");
 
-    await ArpFullScanAsyncCore(cancellationToken: cancellationToken).ConfigureAwait(false);
+    try {
+      await ArpFullScanAsyncCore(cancellationToken: cancellationToken).ConfigureAwait(false);
 
-    invalidatedIPAddressSet.Clear();
-    invalidatedMacAddressSet.Clear();
+      invalidatedIPAddressSet.Clear();
+      invalidatedMacAddressSet.Clear();
 
-    lastArpFullScanAt = DateTime.Now;
+      lastArpFullScanAt = DateTime.Now;
+    }
+    finally {
+      arpFullScanMutex.Release();
+    }
   }
 
   protected virtual ValueTask ArpFullScanAsyncCore(CancellationToken cancellationToken)
@@ -192,29 +218,40 @@ internal partial class ProcfsArpMacAddressResolver : MacAddressResolver {
 
   private async ValueTask ArpScanAsync(CancellationToken cancellationToken)
   {
-    Logger?.LogDebug("Performing ARP scan for invalidated targets.");
-
     var invalidatedIPAddresses = invalidatedIPAddressSet.Keys;
     var invalidatedMacAddresses = invalidatedMacAddressSet.Keys;
 
     Logger?.LogTrace("Invalidated IP addresses: {InvalidatedIPAddresses}", string.Join(" ", invalidatedIPAddresses));
     Logger?.LogTrace("Invalidated MAC addresses: {InvalidatedMACAddresses}", string.Join(" ", invalidatedMacAddresses));
 
-    await ArpScanAsyncCore(
-      invalidatedIPAddresses: invalidatedIPAddresses,
-      invalidatedMacAddresses: invalidatedMacAddresses,
-      cancellationToken: cancellationToken
-    ).ConfigureAwait(false);
+    if (invalidatedMacAddresses.Any()) {
+      // perform full scan
+      await ArpFullScanAsync(
+        cancellationToken: cancellationToken
+      ).ConfigureAwait(false);
 
-    invalidatedIPAddressSet.Clear();
-    invalidatedMacAddressSet.Clear();
+      return;
+    }
 
-    lastArpFullScanAt = DateTime.Now;
+    await arpPartialScanMutex.WaitAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+
+    try {
+      Logger?.LogDebug("Performing ARP scan for invalidated targets.");
+
+      await ArpScanAsyncCore(
+        invalidatedIPAddresses: invalidatedIPAddresses,
+        cancellationToken: cancellationToken
+      ).ConfigureAwait(false);
+
+      invalidatedIPAddressSet.Clear();
+    }
+    finally {
+      arpPartialScanMutex.Release();
+    }
   }
 
   protected virtual ValueTask ArpScanAsyncCore(
     IEnumerable<IPAddress> invalidatedIPAddresses,
-    IEnumerable<PhysicalAddress> invalidatedMacAddresses,
     CancellationToken cancellationToken
   )
   {
