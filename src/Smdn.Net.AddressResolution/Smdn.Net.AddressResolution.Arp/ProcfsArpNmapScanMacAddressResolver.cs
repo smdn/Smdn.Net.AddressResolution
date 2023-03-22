@@ -150,7 +150,13 @@ internal sealed class ProcfsArpNmapScanMacAddressResolver : ProcfsArpMacAddressR
             logger.Log(logLevel, "[nmap] {Line}", line);
           }
         }
+
+        if (!logger.IsEnabled(LogLevel.Error))
+          logger.LogDebug("[nmap] process exited with code {ExitCode}", nmapProcess.ExitCode);
       }
+
+      if (nmapProcess.ExitCode != 0)
+        logger?.LogError("[nmap] process exited with code {ExitCode}", nmapProcess.ExitCode);
     }
     catch (Exception ex) {
       logger?.LogError(ex, "[nmap] failed to perform ARP scanning");
