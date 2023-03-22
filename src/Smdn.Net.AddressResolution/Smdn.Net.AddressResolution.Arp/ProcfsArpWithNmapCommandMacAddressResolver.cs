@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Smdn.Net.AddressResolution.Arp;
 
-internal sealed class ProcfsArpNmapScanMacAddressResolver : ProcfsArpMacAddressResolver {
+internal sealed class ProcfsArpWithNmapCommandMacAddressResolver : ProcfsArpMacAddressResolver {
   // ref: https://nmap.org/book/man-briefoptions.html
   //   -sn: Ping Scan - disable port scan
   //   -n: Never do DNS resolution
@@ -21,12 +21,12 @@ internal sealed class ProcfsArpNmapScanMacAddressResolver : ProcfsArpMacAddressR
   //   -oG <file>: Output scan in Grepable format
   private const string NmapCommandBaseOptions = "-sn -n -T4 -oG - ";
 
-  public static new bool IsSupported => ProcfsArpMacAddressResolver.IsSupported && lazyPathToNmap.Value is not null;
+  public static new bool IsSupported => ProcfsArpMacAddressResolver.IsSupported && lazyPathToNmapCommand.Value is not null;
 
-  private static readonly Lazy<string?> lazyPathToNmap = new(valueFactory: GetPathToNmap, isThreadSafe: true);
+  private static readonly Lazy<string?> lazyPathToNmapCommand = new(valueFactory: GetPathToNmapCommand, isThreadSafe: true);
   private static readonly string[] BinDirs = new[] { "/bin/", "/sbin/", "/usr/bin/" };
 
-  private static string? GetPathToNmap()
+  private static string? GetPathToNmapCommand()
     => BinDirs
       .Select(static dir => Path.Combine(dir, "nmap"))
       .FirstOrDefault(static nmap => File.Exists(nmap));
@@ -37,7 +37,7 @@ internal sealed class ProcfsArpNmapScanMacAddressResolver : ProcfsArpMacAddressR
   private readonly string nmapCommandCommonOptions;
   private readonly string nmapCommandFullScanOptions;
 
-  public ProcfsArpNmapScanMacAddressResolver(
+  public ProcfsArpWithNmapCommandMacAddressResolver(
     MacAddressResolverOptions options,
     ILogger? logger
   )
@@ -46,22 +46,22 @@ internal sealed class ProcfsArpNmapScanMacAddressResolver : ProcfsArpMacAddressR
       logger
     )
   {
-    if (string.IsNullOrEmpty(options.NmapInterfaceSpecification))
+    if (string.IsNullOrEmpty(options.NmapCommandInterfaceSpecification))
       nmapCommandCommonOptions = NmapCommandBaseOptions;
     else
       // -e <iface>: Use specified interface
-      nmapCommandCommonOptions = NmapCommandBaseOptions + $"-e {options.NmapInterfaceSpecification} ";
+      nmapCommandCommonOptions = NmapCommandBaseOptions + $"-e {options.NmapCommandInterfaceSpecification} ";
 
     nmapCommandFullScanOptions = string.Concat(
       nmapCommandCommonOptions,
-      options.NmapTargetSpecification
-        ?? throw new ArgumentException($"{nameof(options.NmapTargetSpecification)} must be specified with {nameof(MacAddressResolverOptions)}")
+      options.NmapCommandTargetSpecification
+        ?? throw new ArgumentException($"{nameof(options.NmapCommandTargetSpecification)} must be specified with {nameof(MacAddressResolverOptions)}")
     );
   }
 
   protected override ValueTask ArpFullScanAsyncCore(CancellationToken cancellationToken)
     // perform full scan
-    => NmapScanAsync(
+    => RunNmapCommandAsync(
       nmapCommandOptions: nmapCommandFullScanOptions,
       logger: Logger,
       cancellationToken: cancellationToken
@@ -77,21 +77,21 @@ internal sealed class ProcfsArpNmapScanMacAddressResolver : ProcfsArpMacAddressR
 
     return nmapCommandOptionTargetSpecification.Length == 0
       ? default // do nothing
-      : NmapScanAsync(
+      : RunNmapCommandAsync(
           nmapCommandOptions: nmapCommandCommonOptions + nmapCommandOptionTargetSpecification,
           logger: Logger,
           cancellationToken: cancellationToken
         );
   }
 
-  private static async ValueTask NmapScanAsync(
+  private static async ValueTask RunNmapCommandAsync(
     string nmapCommandOptions,
     ILogger? logger,
     CancellationToken cancellationToken
   )
   {
     var nmapCommandProcessStartInfo = new ProcessStartInfo() {
-      FileName = lazyPathToNmap.Value,
+      FileName = lazyPathToNmapCommand.Value,
       Arguments = nmapCommandOptions,
       RedirectStandardOutput = true,
       RedirectStandardError = true,

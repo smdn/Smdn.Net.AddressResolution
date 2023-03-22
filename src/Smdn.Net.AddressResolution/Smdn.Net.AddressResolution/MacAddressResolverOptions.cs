@@ -10,12 +10,12 @@ public sealed class MacAddressResolverOptions {
   /// <summary>
   /// Gets the string value passed to the argument '-e &lt;iface&gt;' of nmap command.
   /// </summary>
-  public string? NmapInterfaceSpecification { get; init; }
+  public string? NmapCommandInterfaceSpecification { get; init; }
 
   /// <summary>
   /// Gets the string value passed to the argument &lt;target specification&gt; of nmap command.
   /// </summary>
-  public string? NmapTargetSpecification { get; init; }
+  public string? NmapCommandTargetSpecification { get; init; }
 
   /// <summary>
   /// Gets the string value passed to the argument '--interface=&lt;s&gg;' of arp-scan command.

@@ -13,7 +13,7 @@ partial class MacAddressResolverTests {
   {
     if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && File.Exists("/proc/net/arp")) {
       var options = new MacAddressResolverOptions() {
-        NmapTargetSpecification = "127.0.0.1"
+        NmapCommandTargetSpecification = "127.0.0.1"
       };
       var resolver = MacAddressResolver.Create(options);
 
