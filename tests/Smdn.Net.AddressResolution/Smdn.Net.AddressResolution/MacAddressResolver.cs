@@ -138,7 +138,7 @@ public partial class MacAddressResolverTests {
   {
     using var resolver = new ConcreteMacAddressResolver();
 
-    Assert.Throws<ArgumentNullException>(() => resolver.Invalidate(resolvedIPAddress: null!));
+    Assert.Throws<ArgumentNullException>(() => resolver.Invalidate(ipAddress: null!));
   }
 
   [Test]
@@ -147,7 +147,7 @@ public partial class MacAddressResolverTests {
     using var resolver = new ConcreteMacAddressResolver();
     var res = (IAddressResolver<IPAddress, PhysicalAddress>)resolver;
 
-    Assert.Throws<NotImplementedException>(() => res.Invalidate(resolvedAddress: TestMacAddress));
+    Assert.Throws<NotImplementedException>(() => res.Invalidate(address: TestIPAddress));
   }
 
   [Test]
@@ -207,7 +207,7 @@ public partial class MacAddressResolverTests {
   {
     using var resolver = new ConcreteMacAddressResolver();
 
-    Assert.Throws<ArgumentNullException>(() => resolver.Invalidate(resolvedMacAddress: null!));
+    Assert.Throws<ArgumentNullException>(() => resolver.Invalidate(macAddress: null!));
   }
 
   [Test]
@@ -216,7 +216,7 @@ public partial class MacAddressResolverTests {
     using var resolver = new ConcreteMacAddressResolver();
     var res = (IAddressResolver<PhysicalAddress, IPAddress>)resolver;
 
-    Assert.Throws<NotImplementedException>(() => res.Invalidate(resolvedAddress: TestIPAddress));
+    Assert.Throws<NotImplementedException>(() => res.Invalidate(address: TestMacAddress));
   }
 
   [Test]

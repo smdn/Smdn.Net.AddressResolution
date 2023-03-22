@@ -141,11 +141,11 @@ internal partial class ProcfsArpMacAddressResolver : MacAddressResolver {
       : priorCandidate.IPAddress;
   }
 
-  protected override void InvalidateCore(IPAddress resolvedIPAddress)
-    => invalidatedIPAddressSet.Add(resolvedIPAddress);
+  protected override void InvalidateCore(IPAddress ipAddress)
+    => invalidatedIPAddressSet.Add(ipAddress);
 
-  protected override void InvalidateCore(PhysicalAddress resolvedMacAddress)
-    => invalidatedMacAddressSet.Add(resolvedMacAddress);
+  protected override void InvalidateCore(PhysicalAddress macAddress)
+    => invalidatedMacAddressSet.Add(macAddress);
 
   protected override ValueTask RefreshCacheAsyncCore(
     CancellationToken cancellationToken = default

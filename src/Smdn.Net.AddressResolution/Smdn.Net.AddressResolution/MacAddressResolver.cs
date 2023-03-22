@@ -83,9 +83,9 @@ public abstract class MacAddressResolver :
     );
 
   void IAddressResolver<IPAddress, PhysicalAddress>.Invalidate(
-    PhysicalAddress resolvedAddress
+    IPAddress address
   )
-    => Invalidate(resolvedMacAddress: resolvedAddress);
+    => Invalidate(ipAddress: address);
 
 #pragma warning disable SA1305
   public ValueTask<PhysicalAddress?> ResolveIPAddressToMacAddressAsync(
@@ -131,19 +131,19 @@ public abstract class MacAddressResolver :
   );
 #pragma warning restore SA1305
 
-  public void Invalidate(PhysicalAddress resolvedMacAddress)
+  public void Invalidate(IPAddress ipAddress)
   {
-    if (resolvedMacAddress is null)
-      throw new ArgumentNullException(nameof(resolvedMacAddress));
+    if (ipAddress is null)
+      throw new ArgumentNullException(nameof(ipAddress));
 
     ThrowIfDisposed();
 
-    Logger?.LogDebug("Invalidating {MacAddress}", resolvedMacAddress.ToMacAddressString());
+    Logger?.LogDebug("Invalidating {IPAddress}", ipAddress);
 
-    InvalidateCore(resolvedMacAddress);
+    InvalidateCore(ipAddress);
   }
 
-  protected abstract void InvalidateCore(PhysicalAddress resolvedMacAddress);
+  protected abstract void InvalidateCore(IPAddress ipAddress);
 
   /*
    * PhysicalAddress -> IPAddress
@@ -158,9 +158,9 @@ public abstract class MacAddressResolver :
     );
 
   void IAddressResolver<PhysicalAddress, IPAddress>.Invalidate(
-    IPAddress resolvedAddress
+    PhysicalAddress address
   )
-    => Invalidate(resolvedIPAddress: resolvedAddress);
+    => Invalidate(macAddress: address);
 
   public ValueTask<IPAddress?> ResolveMacAddressToIPAddressAsync(
     PhysicalAddress macAddress,
@@ -209,19 +209,19 @@ public abstract class MacAddressResolver :
     CancellationToken cancellationToken
   );
 
-  public void Invalidate(IPAddress resolvedIPAddress)
+  public void Invalidate(PhysicalAddress macAddress)
   {
-    if (resolvedIPAddress is null)
-      throw new ArgumentNullException(nameof(resolvedIPAddress));
+    if (macAddress is null)
+      throw new ArgumentNullException(nameof(macAddress));
 
     ThrowIfDisposed();
 
-    Logger?.LogDebug("Invalidating {IPAddress}", resolvedIPAddress);
+    Logger?.LogDebug("Invalidating {IPAddress}", macAddress.ToMacAddressString());
 
-    InvalidateCore(resolvedIPAddress);
+    InvalidateCore(macAddress);
   }
 
-  protected abstract void InvalidateCore(IPAddress resolvedIPAddress);
+  protected abstract void InvalidateCore(PhysicalAddress macAddress);
 
   /*
    * other virtual/abstract members
