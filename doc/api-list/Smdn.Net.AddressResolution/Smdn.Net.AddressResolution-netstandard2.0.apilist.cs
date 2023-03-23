@@ -1,7 +1,7 @@
-// Smdn.Net.AddressResolution.dll (Smdn.Net.AddressResolution-1.0.0-preview4)
+// Smdn.Net.AddressResolution.dll (Smdn.Net.AddressResolution-1.0.0-preview5)
 //   Name: Smdn.Net.AddressResolution
 //   AssemblyVersion: 1.0.0.0
-//   InformationalVersion: 1.0.0-preview4+f17248a683dc95a5f8a1d3f3ec79fb49b8b2852f
+//   InformationalVersion: 1.0.0-preview5+fe261fa7dd16c43347c28935b3055ec3b8ab0674
 //   TargetFramework: .NETStandard,Version=v2.0
 //   Configuration: Release
 //   Referenced assemblies:
@@ -28,7 +28,7 @@ namespace Smdn.Net {
 
 namespace Smdn.Net.AddressResolution {
   public interface IAddressResolver<TAddress, TResolvedAddress> {
-    void Invalidate(TResolvedAddress resolvedAddress);
+    void Invalidate(TAddress address);
     ValueTask<TResolvedAddress> ResolveAsync(TAddress address, CancellationToken cancellationToken);
   }
 
@@ -50,10 +50,10 @@ namespace Smdn.Net.AddressResolution {
 
     protected virtual void Dispose(bool disposing) {}
     public void Dispose() {}
-    public void Invalidate(IPAddress resolvedIPAddress) {}
-    public void Invalidate(PhysicalAddress resolvedMacAddress) {}
-    protected abstract void InvalidateCore(IPAddress resolvedIPAddress);
-    protected abstract void InvalidateCore(PhysicalAddress resolvedMacAddress);
+    public void Invalidate(IPAddress ipAddress) {}
+    public void Invalidate(PhysicalAddress macAddress) {}
+    protected abstract void InvalidateCore(IPAddress ipAddress);
+    protected abstract void InvalidateCore(PhysicalAddress macAddress);
     public ValueTask RefreshCacheAsync(CancellationToken cancellationToken = default) {}
     protected virtual ValueTask RefreshCacheAsyncCore(CancellationToken cancellationToken) {}
     public ValueTask RefreshInvalidatedCacheAsync(CancellationToken cancellationToken = default) {}
@@ -62,9 +62,9 @@ namespace Smdn.Net.AddressResolution {
     protected abstract ValueTask<PhysicalAddress?> ResolveIPAddressToMacAddressAsyncCore(IPAddress ipAddress, CancellationToken cancellationToken);
     public ValueTask<IPAddress?> ResolveMacAddressToIPAddressAsync(PhysicalAddress macAddress, CancellationToken cancellationToken = default) {}
     protected abstract ValueTask<IPAddress?> ResolveMacAddressToIPAddressAsyncCore(PhysicalAddress macAddress, CancellationToken cancellationToken);
-    void IAddressResolver<IPAddress, PhysicalAddress>.Invalidate(PhysicalAddress resolvedAddress) {}
+    void IAddressResolver<IPAddress, PhysicalAddress>.Invalidate(IPAddress address) {}
     ValueTask<PhysicalAddress?> IAddressResolver<IPAddress, PhysicalAddress>.ResolveAsync(IPAddress address, CancellationToken cancellationToken) {}
-    void IAddressResolver<PhysicalAddress, IPAddress>.Invalidate(IPAddress resolvedAddress) {}
+    void IAddressResolver<PhysicalAddress, IPAddress>.Invalidate(PhysicalAddress address) {}
     ValueTask<IPAddress?> IAddressResolver<PhysicalAddress, IPAddress>.ResolveAsync(PhysicalAddress address, CancellationToken cancellationToken) {}
     protected void ThrowIfDisposed() {}
   }
@@ -74,7 +74,10 @@ namespace Smdn.Net.AddressResolution {
 
     public MacAddressResolverOptions() {}
 
-    public string? NmapTargetSpecification { get; init; }
+    public string? ArpScanCommandInterfaceSpecification { get; init; }
+    public string? ArpScanCommandTargetSpecification { get; init; }
+    public string? NmapCommandInterfaceSpecification { get; init; }
+    public string? NmapCommandTargetSpecification { get; init; }
     public TimeSpan ProcfsArpFullScanInterval { get; init; }
   }
 }
