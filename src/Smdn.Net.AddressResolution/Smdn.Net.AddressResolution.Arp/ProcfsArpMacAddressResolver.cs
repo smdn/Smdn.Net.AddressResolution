@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -189,7 +190,9 @@ internal partial class ProcfsArpMacAddressResolver : MacAddressResolver {
       return;
     }
 
-    Logger?.LogDebug("Performing ARP full scan");
+    Logger?.LogInformation("Performing ARP full scan.");
+
+    var sw = Logger is null ? null : Stopwatch.StartNew();
 
     try {
       await ArpFullScanAsyncCore(cancellationToken: cancellationToken).ConfigureAwait(false);
@@ -200,6 +203,8 @@ internal partial class ProcfsArpMacAddressResolver : MacAddressResolver {
       lastArpFullScanAt = DateTime.Now;
     }
     finally {
+      Logger?.LogInformation("ARP full scan finished in {ElapsedMilliseconds} ms.", sw!.ElapsedMilliseconds);
+
       arpFullScanMutex.Release();
     }
   }
@@ -242,8 +247,10 @@ internal partial class ProcfsArpMacAddressResolver : MacAddressResolver {
 
     await arpPartialScanMutex.WaitAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
 
+    var sw = Logger is null ? null : Stopwatch.StartNew();
+
     try {
-      Logger?.LogDebug("Performing ARP scan for invalidated targets.");
+      Logger?.LogInformation("Performing ARP scan for the invalidated {Count} IP addresses.", invalidatedIPAddresses.Count);
 
       await ArpScanAsyncCore(
         invalidatedIPAddresses: invalidatedIPAddresses,
@@ -253,6 +260,8 @@ internal partial class ProcfsArpMacAddressResolver : MacAddressResolver {
       invalidatedIPAddressSet.Clear();
     }
     finally {
+      Logger?.LogInformation("ARP scan finished in {ElapsedMilliseconds} ms.", sw!.ElapsedMilliseconds);
+
       arpPartialScanMutex.Release();
     }
   }
