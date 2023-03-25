@@ -87,12 +87,10 @@ public abstract class MacAddressResolver :
   )
     => Invalidate(ipAddress: address);
 
-#pragma warning disable SA1305
   public ValueTask<PhysicalAddress?> ResolveIPAddressToMacAddressAsync(
     IPAddress ipAddress,
     CancellationToken cancellationToken = default
   )
-#pragma warning restore SA1305
   {
     if (cancellationToken.IsCancellationRequested)
 #if SYSTEM_THREADING_TASKS_VALUETASK_FROMCANCELED
@@ -124,12 +122,10 @@ public abstract class MacAddressResolver :
     }
   }
 
-#pragma warning disable SA1305
   protected abstract ValueTask<PhysicalAddress?> ResolveIPAddressToMacAddressAsyncCore(
     IPAddress ipAddress,
     CancellationToken cancellationToken
   );
-#pragma warning restore SA1305
 
   public void Invalidate(IPAddress ipAddress)
   {
