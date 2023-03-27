@@ -65,7 +65,9 @@ internal partial class ProcfsArpMacAddressResolver : MacAddressResolver {
   private DateTime lastArpFullScanAt = DateTime.MinValue;
   private readonly TimeSpan arpFullScanInterval;
 
-  private bool HasArpFullScanIntervalElapsed => lastArpFullScanAt + arpFullScanInterval <= DateTime.Now;
+  private bool HasArpFullScanIntervalElapsed =>
+    arpFullScanInterval != Timeout.InfiniteTimeSpan &&
+    lastArpFullScanAt + arpFullScanInterval <= DateTime.Now;
 
   private readonly ConcurrentSet<IPAddress> invalidatedIPAddressSet = new();
   private readonly ConcurrentSet<PhysicalAddress> invalidatedMacAddressSet = new();
@@ -81,6 +83,11 @@ internal partial class ProcfsArpMacAddressResolver : MacAddressResolver {
   )
     : base(logger)
   {
+    if (options.ProcfsArpFullScanInterval <= TimeSpan.Zero) {
+      if (options.ProcfsArpFullScanInterval != Timeout.InfiniteTimeSpan)
+        throw new InvalidOperationException("invalid interval value");
+    }
+
     arpFullScanInterval = options.ProcfsArpFullScanInterval;
   }
 
