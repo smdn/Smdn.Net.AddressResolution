@@ -22,8 +22,14 @@ internal partial class NeighborMacAddressResolver : MacAddressResolver {
 
   private static INeighborTable CreateNeighborTable(IServiceProvider? serviceProvider)
   {
-    if (ProcfsArpNeighborTable.IsSupported)
-      return new ProcfsArpNeighborTable(serviceProvider);
+    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
+      if (IpHlpApiNeighborTable.IsSupported)
+        return new IpHlpApiNeighborTable(serviceProvider);
+    }
+    else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
+      if (ProcfsArpNeighborTable.IsSupported)
+        return new ProcfsArpNeighborTable(serviceProvider);
+    }
 
     throw new PlatformNotSupportedException();
   }

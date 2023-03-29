@@ -17,10 +17,24 @@ public static class PhysicalAddressExtensions {
     this PhysicalAddress hardwareAddress,
     char delimiter = ':'
   )
+  {
+    if (hardwareAddress is null)
+      throw new ArgumentNullException(nameof(hardwareAddress));
+
+    var addressBytes = hardwareAddress.GetAddressBytes();
+
+    return ToMacAddressString(addressBytes, addressBytes.Length, delimiter);
+  }
+
+  internal static string ToMacAddressString(
+    byte[] addressBytes,
+    int lengthOfAddressBytes,
+    char delimiter = ':'
+  )
     => delimiter == '\0'
       ? string.Concat(
-          (hardwareAddress ?? throw new ArgumentNullException(nameof(hardwareAddress)))
-            .GetAddressBytes()
+          addressBytes
+            .Take(lengthOfAddressBytes)
             .Select(static b => b.ToString("X2", provider: null))
         )
       :
@@ -31,8 +45,8 @@ public static class PhysicalAddressExtensions {
 #else
           delimiter.ToString(),
 #endif
-          (hardwareAddress ?? throw new ArgumentNullException(nameof(hardwareAddress)))
-            .GetAddressBytes()
+          addressBytes
+            .Take(lengthOfAddressBytes)
             .Select(static b => b.ToString("X2", provider: null))
         );
 #pragma warning restore SA1114

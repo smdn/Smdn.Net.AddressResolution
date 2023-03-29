@@ -11,6 +11,14 @@ internal static class ValueTaskShim {
     => new(Task.FromCanceled<TResult>(cancellationToken));
 #endif
 
+#if !SYSTEM_THREADING_TASKS_VALUETASK_FROMEXCEPTION
+  public static ValueTask FromException(Exception exception)
+    => new(Task.FromException(exception));
+
+  public static ValueTask<TResult> FromException<TResult>(Exception exception)
+    => new(Task.FromException<TResult>(exception));
+#endif
+
 #if !SYSTEM_THREADING_TASKS_VALUETASK_FROMRESULT
   public static ValueTask<TResult> FromResult<TResult>(TResult result) => new(result);
 #endif
