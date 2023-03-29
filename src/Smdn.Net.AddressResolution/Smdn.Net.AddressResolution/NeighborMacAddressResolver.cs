@@ -20,7 +20,10 @@ namespace Smdn.Net.AddressResolution;
 internal partial class NeighborMacAddressResolver : MacAddressResolver {
   private const int PartialScanParallelMax = 3;
 
-  private static INeighborTable CreateNeighborTable(IServiceProvider? serviceProvider)
+  private static INeighborTable CreateNeighborTable(
+    IPNetworkProfile? networkProfile,
+    IServiceProvider? serviceProvider
+  )
   {
     if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
       if (IpHlpApiNeighborTable.IsSupported)
@@ -35,16 +38,24 @@ internal partial class NeighborMacAddressResolver : MacAddressResolver {
   }
 
   private static INeighborDiscoverer CreateNeighborDiscoverer(
-    MacAddressResolverOptions options,
+    IPNetworkProfile? networkProfile,
     IServiceProvider? serviceProvider
   )
   {
     if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
-      if (NmapCommandNeighborDiscoverer.IsSupported)
-        return new NmapCommandNeighborDiscoverer(options: options /*TODO*/, serviceProvider);
+      if (NmapCommandNeighborDiscoverer.IsSupported) {
+        return new NmapCommandNeighborDiscoverer(
+          networkProfile: networkProfile ?? throw new ArgumentNullException(nameof(networkProfile)),
+          serviceProvider: serviceProvider
+        );
+      }
 
-      if (ArpScanCommandNeighborDiscoverer.IsSupported)
-        return new ArpScanCommandNeighborDiscoverer(options: options /*TODO*/, serviceProvider);
+      if (ArpScanCommandNeighborDiscoverer.IsSupported) {
+        return new ArpScanCommandNeighborDiscoverer(
+          networkProfile: networkProfile, // nullable
+          serviceProvider: serviceProvider
+        );
+      }
     }
 
     throw new PlatformNotSupportedException();
@@ -87,42 +98,71 @@ internal partial class NeighborMacAddressResolver : MacAddressResolver {
   private SemaphoreSlim partialScanSemaphore = new(initialCount: PartialScanParallelMax, maxCount: PartialScanParallelMax);
 
   public NeighborMacAddressResolver(
-    MacAddressResolverOptions options,
+    IPNetworkProfile? networkProfile,
+    TimeSpan neighborDiscoveryInterval,
+    IServiceProvider? serviceProvider = null
+  )
+    : this(
+      neighborTable: CreateNeighborTable(networkProfile, serviceProvider),
+      neighborDiscoverer: CreateNeighborDiscoverer(networkProfile, serviceProvider),
+      neighborDiscoveryInterval: neighborDiscoveryInterval,
+      serviceProvider: serviceProvider
+    )
+  {
+  }
+
+  public NeighborMacAddressResolver(
+    INeighborTable? neighborTable = null,
+    INeighborDiscoverer? neighborDiscoverer = null,
+    int neighborDiscoveryIntervalMilliseconds = Timeout.Infinite,
+    IServiceProvider? serviceProvider = null
+  )
+    : this(
+      neighborTable: neighborTable,
+      neighborDiscoverer: neighborDiscoverer,
+      neighborDiscoveryInterval: TimeSpan.FromMilliseconds(neighborDiscoveryIntervalMilliseconds),
+      serviceProvider: serviceProvider
+    )
+  {
+  }
+
+  public NeighborMacAddressResolver(
+    TimeSpan neighborDiscoveryInterval,
     INeighborTable? neighborTable = null,
     INeighborDiscoverer? neighborDiscoverer = null,
     IServiceProvider? serviceProvider = null
   )
     : this(
-      options: options,
       neighborTable:
-        neighborTable
-        ?? serviceProvider?.GetService<INeighborTable>()
-        ?? CreateNeighborTable(serviceProvider),
+        neighborTable ??
+        serviceProvider?.GetRequiredService<INeighborTable>() ??
+        throw new ArgumentNullException(nameof(neighborTable)),
       neighborDiscoverer:
-        neighborDiscoverer
-        ?? serviceProvider?.GetService<INeighborDiscoverer>()
-        ?? CreateNeighborDiscoverer(options, serviceProvider),
+        neighborDiscoverer ??
+        serviceProvider?.GetRequiredService<INeighborDiscoverer>() ??
+        throw new ArgumentNullException(nameof(neighborDiscoverer)),
+      neighborDiscoveryInterval: neighborDiscoveryInterval,
       logger: serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger<NeighborMacAddressResolver>()
     )
   {
   }
 
   protected NeighborMacAddressResolver(
-    MacAddressResolverOptions options,
     INeighborTable neighborTable,
     INeighborDiscoverer neighborDiscoverer,
+    TimeSpan neighborDiscoveryInterval,
     ILogger? logger
   )
     : base(
       logger: logger
     )
   {
-    if (options.ProcfsArpFullScanInterval <= TimeSpan.Zero) {
-      if (options.ProcfsArpFullScanInterval != Timeout.InfiniteTimeSpan)
+    if (neighborDiscoveryInterval <= TimeSpan.Zero) {
+      if (neighborDiscoveryInterval != Timeout.InfiniteTimeSpan)
         throw new InvalidOperationException("invalid interval value");
     }
 
-    neighborDiscoveryInterval = options.ProcfsArpFullScanInterval;
+    this.neighborDiscoveryInterval = neighborDiscoveryInterval;
 
     this.neighborTable = neighborTable ?? throw new ArgumentNullException(nameof(neighborTable));
     this.neighborDiscoverer = neighborDiscoverer ?? throw new ArgumentNullException(nameof(neighborDiscoverer));

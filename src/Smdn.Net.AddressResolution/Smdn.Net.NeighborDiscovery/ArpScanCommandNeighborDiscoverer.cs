@@ -53,7 +53,7 @@ public class ArpScanCommandNeighborDiscoverer : RunCommandNeighborDiscovererBase
   private readonly string arpScanCommandFullScanOptions;
 
   public ArpScanCommandNeighborDiscoverer(
-    MacAddressResolverOptions options,
+    IPNetworkProfile? networkProfile,
     IServiceProvider? serviceProvider
   )
     : base(
@@ -62,14 +62,19 @@ public class ArpScanCommandNeighborDiscoverer : RunCommandNeighborDiscovererBase
   {
     arpScanCommandCommonOptions = ArpScanCommandBaseOptions;
 
-    if (!string.IsNullOrEmpty(options.ArpScanCommandInterfaceSpecification))
-      arpScanCommandCommonOptions += $"--interface={options.ArpScanCommandInterfaceSpecification} ";
+    if (networkProfile?.NetworkInterface is not null)
+      arpScanCommandCommonOptions += $"--interface={networkProfile.NetworkInterface.Id} ";
+
+    var addressRange = networkProfile?.GetAddressRange();
+    var arpScanCommandTargetSpecification = addressRange is null
+      ? null
+      : string.Join(" ", addressRange);
 
     arpScanCommandFullScanOptions = string.Concat(
       arpScanCommandCommonOptions,
       // ref: https://manpages.ubuntu.com/manpages/jammy/man1/arp-scan.1.html
       //   --localnet: Generate addresses from network interface configuration.
-      options.ArpScanCommandTargetSpecification ?? "--localnet "
+      arpScanCommandTargetSpecification ?? "--localnet "
     );
   }
 

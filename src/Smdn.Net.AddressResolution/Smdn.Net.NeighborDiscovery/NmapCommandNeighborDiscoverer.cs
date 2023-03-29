@@ -37,23 +37,30 @@ public class NmapCommandNeighborDiscoverer : RunCommandNeighborDiscovererBase {
   private readonly string nmapCommandFullScanOptions;
 
   public NmapCommandNeighborDiscoverer(
-    MacAddressResolverOptions options,
+    IPNetworkProfile networkProfile,
     IServiceProvider? serviceProvider
   )
     : base(
       logger: serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger<NmapCommandNeighborDiscoverer>()
     )
   {
-    if (string.IsNullOrEmpty(options.NmapCommandInterfaceSpecification))
+    if (networkProfile.NetworkInterface is null)
       nmapCommandCommonOptions = NmapCommandBaseOptions;
     else
       // -e <iface>: Use specified interface
-      nmapCommandCommonOptions = NmapCommandBaseOptions + $"-e {options.NmapCommandInterfaceSpecification} ";
+      nmapCommandCommonOptions = NmapCommandBaseOptions + $"-e {networkProfile.NetworkInterface.Id} ";
+
+    var addressRange = networkProfile.GetAddressRange();
+    var nmapCommandTargetSpecification = addressRange is null
+      ? null
+      : string.Join(" ", addressRange);
+
+    if (string.IsNullOrEmpty(nmapCommandTargetSpecification))
+      throw new InvalidOperationException($"One or more {nameof(IPAddress)} must be specified in address range.");
 
     nmapCommandFullScanOptions = string.Concat(
       nmapCommandCommonOptions,
-      options.NmapCommandTargetSpecification
-        ?? throw new ArgumentException($"{nameof(options.NmapCommandTargetSpecification)} must be specified with {nameof(MacAddressResolverOptions)}")
+      nmapCommandTargetSpecification
     );
   }
 

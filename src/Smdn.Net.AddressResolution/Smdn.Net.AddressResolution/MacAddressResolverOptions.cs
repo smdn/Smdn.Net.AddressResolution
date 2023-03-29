@@ -8,24 +8,10 @@ public sealed class MacAddressResolverOptions {
   public static readonly MacAddressResolverOptions Default = new() { };
 
   /// <summary>
-  /// Gets the string value passed to the argument '-e &lt;iface&gt;' of nmap command.
+  /// Gets the network profile which specifying the network interface and target addresses.
+  /// This is used as necessary for neighbor search in address resolution.
   /// </summary>
-  public string? NmapCommandInterfaceSpecification { get; init; }
+  public IPNetworkProfile? NetworkProfile { get; init; }
 
-  /// <summary>
-  /// Gets the string value passed to the argument &lt;target specification&gt; of nmap command.
-  /// </summary>
-  public string? NmapCommandTargetSpecification { get; init; }
-
-  /// <summary>
-  /// Gets the string value passed to the argument '--interface=&lt;s&gg;' of arp-scan command.
-  /// </summary>
-  public string? ArpScanCommandInterfaceSpecification { get; init; }
-
-  /// <summary>
-  /// Gets the string value represents the 'target hosts' pass to the arp-scan command. This value can be IP addresses or hostnames.
-  /// </summary>
-  public string? ArpScanCommandTargetSpecification { get; init; }
-
-  public TimeSpan ProcfsArpFullScanInterval { get; init; } = TimeSpan.FromMinutes(15.0);
+  public TimeSpan NeighborDiscoveryInterval { get; init; } = TimeSpan.FromMinutes(15.0);
 }

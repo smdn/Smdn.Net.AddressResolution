@@ -27,7 +27,8 @@ public abstract class MacAddressResolver :
     options ??= MacAddressResolverOptions.Default;
 
     return new NeighborMacAddressResolver(
-      options: options,
+      networkProfile: options.NetworkProfile,
+      neighborDiscoveryInterval: options.NeighborDiscoveryInterval,
       serviceProvider: serviceProvider
     );
   }

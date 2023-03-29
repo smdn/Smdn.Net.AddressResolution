@@ -23,15 +23,15 @@ namespace Smdn.Net.NeighborDiscovery;
 public sealed class IpHlpApiNeighborDiscoverer : INeighborDiscoverer {
   private static readonly Win32Error ERROR_BAD_NET_NAME = new(0x80070043u);
 
-  private readonly Func<IEnumerable<IPAddress>> getDiscoveryTargetAddresses;
+  private readonly Func<IEnumerable<IPAddress>?> getDiscoveryTargetAddresses;
   private readonly ILogger? logger;
 
   public IpHlpApiNeighborDiscoverer(
-    Func<IEnumerable<IPAddress>> getDiscoveryTargetAddresses,
+    IPNetworkProfile networkProfile,
     ILogger? logger = null
   )
   {
-    this.getDiscoveryTargetAddresses = getDiscoveryTargetAddresses ?? throw new ArgumentNullException(nameof(getDiscoveryTargetAddresses));
+    this.getDiscoveryTargetAddresses = (networkProfile ?? throw new ArgumentNullException(nameof(networkProfile))).GetAddressRange;
     this.logger = logger;
   }
 
@@ -39,7 +39,7 @@ public sealed class IpHlpApiNeighborDiscoverer : INeighborDiscoverer {
     CancellationToken cancellationToken = default
   )
     => DiscoverAsync(
-      addresses: getDiscoveryTargetAddresses(),
+      addresses: getDiscoveryTargetAddresses() ?? throw new InvalidOperationException("could not get address range"),
       cancellationToken: cancellationToken
     );
 
