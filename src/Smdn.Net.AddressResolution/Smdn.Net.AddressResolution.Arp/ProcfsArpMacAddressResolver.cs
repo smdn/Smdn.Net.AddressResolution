@@ -12,14 +12,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Smdn.Net.NeighborDiscovery;
 
 namespace Smdn.Net.AddressResolution.Arp;
 
 internal partial class ProcfsArpMacAddressResolver : MacAddressResolver {
-  private const string PathToProcNetArp = "/proc/net/arp";
   private const int ArpScanParallelMax = 3;
 
-  public static bool IsSupported => File.Exists(PathToProcNetArp);
+  public static bool IsSupported => ProcfsArpNeighborTable.IsSupported;
 
   internal static new ProcfsArpMacAddressResolver Create(
     MacAddressResolverOptions options,
@@ -29,26 +29,26 @@ internal partial class ProcfsArpMacAddressResolver : MacAddressResolver {
     if (ProcfsArpWithArpScanCommandMacAddressResolver.IsSupported) {
       return new ProcfsArpWithArpScanCommandMacAddressResolver(
         options: options,
-        logger: serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger<ProcfsArpWithArpScanCommandMacAddressResolver>()
+        serviceProvider: serviceProvider
       );
     }
 
     if (ProcfsArpWithNmapCommandMacAddressResolver.IsSupported) {
       return new ProcfsArpWithNmapCommandMacAddressResolver(
         options: options,
-        logger: serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger<ProcfsArpWithNmapCommandMacAddressResolver>()
+        serviceProvider: serviceProvider
       );
     }
 
     return new ProcfsArpMacAddressResolver(
       options: options,
-      logger: serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger<ProcfsArpMacAddressResolver>()
+      serviceProvider: serviceProvider
     );
   }
 
   private readonly struct None { }
 
-  private class ConcurrentSet<T> : ConcurrentDictionary<T, None>
+  private sealed class ConcurrentSet<T> : ConcurrentDictionary<T, None>
     where T : notnull
   {
     public ConcurrentSet()
@@ -62,6 +62,8 @@ internal partial class ProcfsArpMacAddressResolver : MacAddressResolver {
   /*
    * instance members
    */
+  private readonly INeighborTable neighborTable;
+  private readonly INeighborDiscoverer neighborDiscoverer;
   private DateTime lastArpFullScanAt = DateTime.MinValue;
   private readonly TimeSpan arpFullScanInterval;
 
@@ -79,9 +81,24 @@ internal partial class ProcfsArpMacAddressResolver : MacAddressResolver {
 
   public ProcfsArpMacAddressResolver(
     MacAddressResolverOptions options,
-    ILogger? logger
+    IServiceProvider? serviceProvider
   )
-    : base(logger)
+    : this(
+      options: options,
+      logger: serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger<ProcfsArpMacAddressResolver>(),
+      serviceProvider: serviceProvider
+    )
+  {
+  }
+
+  protected ProcfsArpMacAddressResolver(
+    MacAddressResolverOptions options,
+    ILogger? logger,
+    IServiceProvider? serviceProvider
+  )
+    : base(
+      logger: logger
+    )
   {
     if (options.ProcfsArpFullScanInterval <= TimeSpan.Zero) {
       if (options.ProcfsArpFullScanInterval != Timeout.InfiniteTimeSpan)
@@ -89,6 +106,9 @@ internal partial class ProcfsArpMacAddressResolver : MacAddressResolver {
     }
 
     arpFullScanInterval = options.ProcfsArpFullScanInterval;
+
+    this.neighborDiscoverer = neighborDiscoverer ?? throw new ArgumentNullException(nameof(neighborDiscoverer));
+    neighborTable = new ProcfsArpNeighborTable(serviceProvider);
   }
 
   protected override void Dispose(bool disposing)
@@ -110,19 +130,22 @@ internal partial class ProcfsArpMacAddressResolver : MacAddressResolver {
     if (HasArpFullScanIntervalElapsed)
       await ArpFullScanAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
 
-    ArpTableEntry priorCandidate = default;
-    ArpTableEntry candidate = default;
+    NeighborTableEntry? priorCandidate = default;
+    NeighborTableEntry? candidate = default;
 
-    await foreach (var entry in ArpTableEntry.EnumerateArpTableEntriesAsync(
-      e => e.Equals(ipAddress),
-      Logger,
+    await foreach (var entry in neighborTable.EnumerateEntriesAsync(
       cancellationToken
     ).ConfigureAwait(false)) {
-      if (invalidatedMacAddressSet.ContainsKey(entry.HardwareAddress!))
+      if (!entry.Equals(ipAddress))
+        continue;
+      if (entry.PhysicalAddress is null || entry.Equals(AllZeroMacAddress))
+        continue;
+
+      if (invalidatedMacAddressSet.ContainsKey(entry.PhysicalAddress!))
         continue; // ignore the entry that is marked as invalidated
 
-      if (entry.IsPermanentOrComplete) {
-        // prefer permanent or complete entry
+      if (entry.IsPermanent || entry.State == NeighborTableEntryState.Reachable) {
+        // prefer permanent or reachable entry
         priorCandidate = entry;
         break;
       }
@@ -130,11 +153,7 @@ internal partial class ProcfsArpMacAddressResolver : MacAddressResolver {
       candidate = entry; // select the last entry found
     }
 
-    return priorCandidate.IsEmpty
-      ? candidate.IsEmpty
-        ? null // not found
-        : candidate.HardwareAddress
-      : priorCandidate.HardwareAddress;
+    return priorCandidate?.PhysicalAddress ?? candidate?.PhysicalAddress;
   }
 
   protected override async ValueTask<IPAddress?> ResolveMacAddressToIPAddressAsyncCore(
@@ -145,19 +164,20 @@ internal partial class ProcfsArpMacAddressResolver : MacAddressResolver {
     if (HasArpFullScanIntervalElapsed)
       await ArpFullScanAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
 
-    ArpTableEntry priorCandidate = default;
-    ArpTableEntry candidate = default;
+    NeighborTableEntry? priorCandidate = default;
+    NeighborTableEntry? candidate = default;
 
-    await foreach (var entry in ArpTableEntry.EnumerateArpTableEntriesAsync(
-      e => e.Equals(macAddress),
-      Logger,
+    await foreach (var entry in neighborTable.EnumerateEntriesAsync(
       cancellationToken
     ).ConfigureAwait(false)) {
+      if (!entry.Equals(macAddress))
+        continue;
+
       if (invalidatedIPAddressSet.ContainsKey(entry.IPAddress!))
         continue; // ignore the entry that is marked as invalidated
 
-      if (entry.IsPermanentOrComplete) {
-        // prefer permanent or complete entry
+      if (entry.IsPermanent || entry.State == NeighborTableEntryState.Reachable) {
+        // prefer permanent or reachable entry
         priorCandidate = entry;
         break;
       }
@@ -165,11 +185,7 @@ internal partial class ProcfsArpMacAddressResolver : MacAddressResolver {
       candidate = entry; // select the last entry found
     }
 
-    return priorCandidate.IsEmpty
-      ? candidate.IsEmpty
-        ? null // not found
-        : candidate.IPAddress
-      : priorCandidate.IPAddress;
+    return priorCandidate?.IPAddress ?? candidate?.IPAddress;
   }
 
   protected override void InvalidateCore(IPAddress ipAddress)

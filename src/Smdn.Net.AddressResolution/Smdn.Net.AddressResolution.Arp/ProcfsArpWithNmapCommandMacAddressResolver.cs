@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Smdn.Net.AddressResolution.Arp;
@@ -39,11 +40,12 @@ internal sealed class ProcfsArpWithNmapCommandMacAddressResolver : ProcfsArpMacA
 
   public ProcfsArpWithNmapCommandMacAddressResolver(
     MacAddressResolverOptions options,
-    ILogger? logger
+    IServiceProvider? serviceProvider
   )
     : base(
-      options,
-      logger
+      options: options,
+      logger: serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger<ProcfsArpWithArpScanCommandMacAddressResolver>(),
+      serviceProvider: serviceProvider
     )
   {
     if (string.IsNullOrEmpty(options.NmapCommandInterfaceSpecification))
