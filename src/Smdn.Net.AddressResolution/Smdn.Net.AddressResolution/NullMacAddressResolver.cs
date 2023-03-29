@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Smdn.Net.AddressResolution;
 
-internal sealed class NullMacAddressResolver : MacAddressResolver {
+internal sealed class NullMacAddressResolver : MacAddressResolverBase {
   public override bool HasInvalidated => false;
 
   internal NullMacAddressResolver()
