@@ -7,7 +7,6 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Smdn.Net.AddressResolution.Arp;
 
 namespace Smdn.Net.AddressResolution;
 
@@ -27,12 +26,10 @@ public abstract class MacAddressResolver :
   {
     options ??= MacAddressResolverOptions.Default;
 
-    if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
-      if (ProcfsArpMacAddressResolver.IsSupported)
-        return ProcfsArpMacAddressResolver.Create(options, serviceProvider);
-    }
-
-    throw new PlatformNotSupportedException();
+    return new NeighborMacAddressResolver(
+      options: options,
+      serviceProvider: serviceProvider
+    );
   }
 
   /*
@@ -108,6 +105,8 @@ public abstract class MacAddressResolver :
 
     async ValueTask<PhysicalAddress?> ResolveAsync()
     {
+      Logger?.LogDebug("Resolving {IPAddress}", ipAddress);
+
       var resolvedMacAddress = await ResolveIPAddressToMacAddressAsyncCore(
         ipAddress: ipAddress,
         cancellationToken: cancellationToken
@@ -186,6 +185,8 @@ public abstract class MacAddressResolver :
 
     async ValueTask<IPAddress?> ResolveAsync()
     {
+      Logger?.LogDebug("Resolving {MacAddress}", macAddress.ToMacAddressString());
+
       var resolvedIPAddress = await ResolveMacAddressToIPAddressAsyncCore(
         macAddress: macAddress,
         cancellationToken: cancellationToken

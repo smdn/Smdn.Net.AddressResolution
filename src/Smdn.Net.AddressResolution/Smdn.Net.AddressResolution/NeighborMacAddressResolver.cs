@@ -8,43 +8,40 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Smdn.Net.NeighborDiscovery;
 
-namespace Smdn.Net.AddressResolution.Arp;
+namespace Smdn.Net.AddressResolution;
 
-internal partial class ProcfsArpMacAddressResolver : MacAddressResolver {
-  private const int ArpScanParallelMax = 3;
+internal partial class NeighborMacAddressResolver : MacAddressResolver {
+  private const int PartialScanParallelMax = 3;
 
-  public static bool IsSupported => ProcfsArpNeighborTable.IsSupported;
+  private static INeighborTable CreateNeighborTable(IServiceProvider? serviceProvider)
+  {
+    if (ProcfsArpNeighborTable.IsSupported)
+      return new ProcfsArpNeighborTable(serviceProvider);
 
-  internal static new ProcfsArpMacAddressResolver Create(
+    throw new PlatformNotSupportedException();
+  }
+
+  private static INeighborDiscoverer CreateNeighborDiscoverer(
     MacAddressResolverOptions options,
     IServiceProvider? serviceProvider
   )
   {
-    if (ProcfsArpWithArpScanCommandMacAddressResolver.IsSupported) {
-      return new ProcfsArpWithArpScanCommandMacAddressResolver(
-        options: options,
-        serviceProvider: serviceProvider
-      );
+    if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
+      if (NmapCommandNeighborDiscoverer.IsSupported)
+        return new NmapCommandNeighborDiscoverer(options: options /*TODO*/, serviceProvider);
+
+      if (ArpScanCommandNeighborDiscoverer.IsSupported)
+        return new ArpScanCommandNeighborDiscoverer(options: options /*TODO*/, serviceProvider);
     }
 
-    if (ProcfsArpWithNmapCommandMacAddressResolver.IsSupported) {
-      return new ProcfsArpWithNmapCommandMacAddressResolver(
-        options: options,
-        serviceProvider: serviceProvider
-      );
-    }
-
-    return new ProcfsArpMacAddressResolver(
-      options: options,
-      neighborDiscoverer: NullNeighborDiscoverer.Instance,
-      serviceProvider: serviceProvider
-    );
+    throw new PlatformNotSupportedException();
   }
 
   private readonly struct None { }
@@ -65,40 +62,50 @@ internal partial class ProcfsArpMacAddressResolver : MacAddressResolver {
    */
   private readonly INeighborTable neighborTable;
   private readonly INeighborDiscoverer neighborDiscoverer;
-  private DateTime lastArpFullScanAt = DateTime.MinValue;
-  private readonly TimeSpan arpFullScanInterval;
+  private DateTime lastFullScanPerformedAt = DateTime.MinValue;
+  private readonly TimeSpan neighborDiscoveryInterval;
 
-  private bool HasArpFullScanIntervalElapsed =>
-    arpFullScanInterval != Timeout.InfiniteTimeSpan &&
-    lastArpFullScanAt + arpFullScanInterval <= DateTime.Now;
+  private bool HasFullScanIntervalElapsed =>
+    neighborDiscoveryInterval != Timeout.InfiniteTimeSpan &&
+    lastFullScanPerformedAt + neighborDiscoveryInterval <= DateTime.Now;
 
   private readonly ConcurrentSet<IPAddress> invalidatedIPAddressSet = new();
   private readonly ConcurrentSet<PhysicalAddress> invalidatedMacAddressSet = new();
 
   public override bool HasInvalidated => !(invalidatedIPAddressSet.IsEmpty && invalidatedMacAddressSet.IsEmpty);
 
-  private SemaphoreSlim arpFullScanMutex = new(initialCount: 1, maxCount: 1);
-  private SemaphoreSlim arpPartialScanMutex = new(initialCount: ArpScanParallelMax, maxCount: ArpScanParallelMax);
+  // mutex for neighbor discovery (a.k.a full scan)
+  private SemaphoreSlim fullScanMutex = new(initialCount: 1, maxCount: 1);
 
-  public ProcfsArpMacAddressResolver(
+  // semaphore for address resolition (a.k.a partial scan)
+  private SemaphoreSlim partialScanSemaphore = new(initialCount: PartialScanParallelMax, maxCount: PartialScanParallelMax);
+
+  public NeighborMacAddressResolver(
     MacAddressResolverOptions options,
-    INeighborDiscoverer neighborDiscoverer,
-    IServiceProvider? serviceProvider
+    INeighborTable? neighborTable = null,
+    INeighborDiscoverer? neighborDiscoverer = null,
+    IServiceProvider? serviceProvider = null
   )
     : this(
       options: options,
-      neighborDiscoverer: neighborDiscoverer ?? throw new ArgumentNullException(nameof(neighborDiscoverer)),
-      logger: serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger<ProcfsArpMacAddressResolver>(),
-      serviceProvider: serviceProvider
+      neighborTable:
+        neighborTable
+        ?? serviceProvider?.GetService<INeighborTable>()
+        ?? CreateNeighborTable(serviceProvider),
+      neighborDiscoverer:
+        neighborDiscoverer
+        ?? serviceProvider?.GetService<INeighborDiscoverer>()
+        ?? CreateNeighborDiscoverer(options, serviceProvider),
+      logger: serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger<NeighborMacAddressResolver>()
     )
   {
   }
 
-  protected ProcfsArpMacAddressResolver(
+  protected NeighborMacAddressResolver(
     MacAddressResolverOptions options,
+    INeighborTable neighborTable,
     INeighborDiscoverer neighborDiscoverer,
-    ILogger? logger,
-    IServiceProvider? serviceProvider
+    ILogger? logger
   )
     : base(
       logger: logger
@@ -109,19 +116,19 @@ internal partial class ProcfsArpMacAddressResolver : MacAddressResolver {
         throw new InvalidOperationException("invalid interval value");
     }
 
-    arpFullScanInterval = options.ProcfsArpFullScanInterval;
+    neighborDiscoveryInterval = options.ProcfsArpFullScanInterval;
 
+    this.neighborTable = neighborTable ?? throw new ArgumentNullException(nameof(neighborTable));
     this.neighborDiscoverer = neighborDiscoverer ?? throw new ArgumentNullException(nameof(neighborDiscoverer));
-    neighborTable = new ProcfsArpNeighborTable(serviceProvider);
   }
 
   protected override void Dispose(bool disposing)
   {
-    arpFullScanMutex?.Dispose();
-    arpFullScanMutex = null!;
+    fullScanMutex?.Dispose();
+    fullScanMutex = null!;
 
-    arpPartialScanMutex?.Dispose();
-    arpPartialScanMutex = null!;
+    partialScanSemaphore?.Dispose();
+    partialScanSemaphore = null!;
 
     base.Dispose(disposing);
   }
@@ -131,8 +138,10 @@ internal partial class ProcfsArpMacAddressResolver : MacAddressResolver {
     CancellationToken cancellationToken
   )
   {
-    if (HasArpFullScanIntervalElapsed)
-      await ArpFullScanAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+    Logger?.LogDebug("Resolving {IPAddress}", ipAddress);
+
+    if (HasFullScanIntervalElapsed)
+      await FullScanAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
 
     NeighborTableEntry? priorCandidate = default;
     NeighborTableEntry? candidate = default;
@@ -142,6 +151,15 @@ internal partial class ProcfsArpMacAddressResolver : MacAddressResolver {
     ).ConfigureAwait(false)) {
       if (!entry.Equals(ipAddress))
         continue;
+
+      Logger?.LogDebug(
+        "Entry: IP={IPAddress}, MAC={MacAddress}, IsPermanent={IsPermanent}, State={State}",
+        entry.IPAddress,
+        entry.PhysicalAddress?.ToMacAddressString(),
+        entry.IsPermanent,
+        entry.State
+      );
+
       if (entry.PhysicalAddress is null || entry.Equals(AllZeroMacAddress))
         continue;
 
@@ -165,8 +183,8 @@ internal partial class ProcfsArpMacAddressResolver : MacAddressResolver {
     CancellationToken cancellationToken
   )
   {
-    if (HasArpFullScanIntervalElapsed)
-      await ArpFullScanAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+    if (HasFullScanIntervalElapsed)
+      await FullScanAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
 
     NeighborTableEntry? priorCandidate = default;
     NeighborTableEntry? candidate = default;
@@ -176,6 +194,14 @@ internal partial class ProcfsArpMacAddressResolver : MacAddressResolver {
     ).ConfigureAwait(false)) {
       if (!entry.Equals(macAddress))
         continue;
+
+      Logger?.LogDebug(
+        "Entry: IP={IPAddress}, MAC={MacAddress}, IsPermanent={IsPermanent}, State={State}",
+        entry.IPAddress,
+        entry.PhysicalAddress?.ToMacAddressString(),
+        entry.IsPermanent,
+        entry.State
+      );
 
       if (invalidatedIPAddressSet.ContainsKey(entry.IPAddress!))
         continue; // ignore the entry that is marked as invalidated
@@ -208,16 +234,16 @@ internal partial class ProcfsArpMacAddressResolver : MacAddressResolver {
 #else
         ValueTaskShim.FromCanceled(cancellationToken)
 #endif
-      : ArpFullScanAsync(cancellationToken: cancellationToken);
+      : FullScanAsync(cancellationToken: cancellationToken);
 
-  private async ValueTask ArpFullScanAsync(CancellationToken cancellationToken)
+  private async ValueTask FullScanAsync(CancellationToken cancellationToken)
   {
-    if (!await arpFullScanMutex.WaitAsync(0, cancellationToken: default).ConfigureAwait(false)) {
-      Logger?.LogInformation("ARP full scan is currently being performed.");
+    if (!await fullScanMutex.WaitAsync(0, cancellationToken: default).ConfigureAwait(false)) {
+      Logger?.LogInformation("Neighbor discovery is currently being performed.");
       return;
     }
 
-    Logger?.LogInformation("Performing ARP full scan.");
+    Logger?.LogInformation("Performing neighbor discovery.");
 
     var sw = Logger is null ? null : Stopwatch.StartNew();
 
@@ -229,12 +255,12 @@ internal partial class ProcfsArpMacAddressResolver : MacAddressResolver {
       invalidatedIPAddressSet.Clear();
       invalidatedMacAddressSet.Clear();
 
-      lastArpFullScanAt = DateTime.Now;
+      lastFullScanPerformedAt = DateTime.Now;
     }
     finally {
-      Logger?.LogInformation("ARP full scan finished in {ElapsedMilliseconds} ms.", sw!.ElapsedMilliseconds);
+      Logger?.LogInformation("Neighbor discovery finished in {ElapsedMilliseconds} ms.", sw!.ElapsedMilliseconds);
 
-      arpFullScanMutex.Release();
+      fullScanMutex.Release();
     }
   }
 
@@ -248,9 +274,9 @@ internal partial class ProcfsArpMacAddressResolver : MacAddressResolver {
 #else
         ValueTaskShim.FromCanceled(cancellationToken)
 #endif
-      : ArpScanAsync(cancellationToken: cancellationToken);
+      : PartialScanAsync(cancellationToken: cancellationToken);
 
-  private async ValueTask ArpScanAsync(CancellationToken cancellationToken)
+  private async ValueTask PartialScanAsync(CancellationToken cancellationToken)
   {
     var invalidatedIPAddresses = invalidatedIPAddressSet.Keys;
     var invalidatedMacAddresses = invalidatedMacAddressSet.Keys;
@@ -267,12 +293,12 @@ internal partial class ProcfsArpMacAddressResolver : MacAddressResolver {
       return;
     }
 
-    await arpPartialScanMutex.WaitAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+    await partialScanSemaphore.WaitAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
 
     var sw = Logger is null ? null : Stopwatch.StartNew();
 
     try {
-      Logger?.LogInformation("Performing ARP scan for the invalidated {Count} IP addresses.", invalidatedIPAddresses.Count);
+      Logger?.LogInformation("Performing address resolution for the invalidated {Count} IP addresses.", invalidatedIPAddresses.Count);
 
       await neighborDiscoverer.DiscoverAsync(
         addresses: invalidatedIPAddresses,
@@ -282,9 +308,9 @@ internal partial class ProcfsArpMacAddressResolver : MacAddressResolver {
       invalidatedIPAddressSet.Clear();
     }
     finally {
-      Logger?.LogInformation("ARP scan finished in {ElapsedMilliseconds} ms.", sw!.ElapsedMilliseconds);
+      Logger?.LogInformation("Address resolution finished in {ElapsedMilliseconds} ms.", sw!.ElapsedMilliseconds);
 
-      arpPartialScanMutex.Release();
+      partialScanSemaphore.Release();
     }
   }
 }
