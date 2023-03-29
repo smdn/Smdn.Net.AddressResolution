@@ -42,6 +42,7 @@ internal partial class ProcfsArpMacAddressResolver : MacAddressResolver {
 
     return new ProcfsArpMacAddressResolver(
       options: options,
+      neighborDiscoverer: NullNeighborDiscoverer.Instance,
       serviceProvider: serviceProvider
     );
   }
@@ -81,10 +82,12 @@ internal partial class ProcfsArpMacAddressResolver : MacAddressResolver {
 
   public ProcfsArpMacAddressResolver(
     MacAddressResolverOptions options,
+    INeighborDiscoverer neighborDiscoverer,
     IServiceProvider? serviceProvider
   )
     : this(
       options: options,
+      neighborDiscoverer: neighborDiscoverer ?? throw new ArgumentNullException(nameof(neighborDiscoverer)),
       logger: serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger<ProcfsArpMacAddressResolver>(),
       serviceProvider: serviceProvider
     )
@@ -93,6 +96,7 @@ internal partial class ProcfsArpMacAddressResolver : MacAddressResolver {
 
   protected ProcfsArpMacAddressResolver(
     MacAddressResolverOptions options,
+    INeighborDiscoverer neighborDiscoverer,
     ILogger? logger,
     IServiceProvider? serviceProvider
   )
@@ -218,7 +222,9 @@ internal partial class ProcfsArpMacAddressResolver : MacAddressResolver {
     var sw = Logger is null ? null : Stopwatch.StartNew();
 
     try {
-      await ArpFullScanAsyncCore(cancellationToken: cancellationToken).ConfigureAwait(false);
+      await neighborDiscoverer.DiscoverAsync(
+        cancellationToken: cancellationToken
+      ).ConfigureAwait(false);
 
       invalidatedIPAddressSet.Clear();
       invalidatedMacAddressSet.Clear();
@@ -230,13 +236,6 @@ internal partial class ProcfsArpMacAddressResolver : MacAddressResolver {
 
       arpFullScanMutex.Release();
     }
-  }
-
-  protected virtual ValueTask ArpFullScanAsyncCore(CancellationToken cancellationToken)
-  {
-    Logger?.LogWarning("ARP scan is not supported in this class.");
-
-    return default;
   }
 
   protected override ValueTask RefreshInvalidatedCacheAsyncCore(
@@ -261,7 +260,7 @@ internal partial class ProcfsArpMacAddressResolver : MacAddressResolver {
 
     if (invalidatedMacAddresses.Any()) {
       // perform full scan
-      await ArpFullScanAsync(
+      await neighborDiscoverer.DiscoverAsync(
         cancellationToken: cancellationToken
       ).ConfigureAwait(false);
 
@@ -275,8 +274,8 @@ internal partial class ProcfsArpMacAddressResolver : MacAddressResolver {
     try {
       Logger?.LogInformation("Performing ARP scan for the invalidated {Count} IP addresses.", invalidatedIPAddresses.Count);
 
-      await ArpScanAsyncCore(
-        invalidatedIPAddresses: invalidatedIPAddresses,
+      await neighborDiscoverer.DiscoverAsync(
+        addresses: invalidatedIPAddresses,
         cancellationToken: cancellationToken
       ).ConfigureAwait(false);
 
@@ -287,15 +286,5 @@ internal partial class ProcfsArpMacAddressResolver : MacAddressResolver {
 
       arpPartialScanMutex.Release();
     }
-  }
-
-  protected virtual ValueTask ArpScanAsyncCore(
-    IEnumerable<IPAddress> invalidatedIPAddresses,
-    CancellationToken cancellationToken
-  )
-  {
-    Logger?.LogWarning("ARP scan is not supported in this class.");
-
-    return default;
   }
 }
