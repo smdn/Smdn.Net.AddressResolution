@@ -16,7 +16,7 @@ public abstract class MacAddressResolver :
   IAddressResolver<PhysicalAddress, IPAddress>,
   IAddressResolver<IPAddress, PhysicalAddress>
 {
-  protected static readonly PhysicalAddress AllZeroMacAddress = new(new byte[6]); // 00:00:00:00:00:00
+  protected static PhysicalAddress AllZeroMacAddress => PhysicalAddressExtensions.AllZeroMacAddress;
 
   public static MacAddressResolver Null { get; } = new NullMacAddressResolver();
 

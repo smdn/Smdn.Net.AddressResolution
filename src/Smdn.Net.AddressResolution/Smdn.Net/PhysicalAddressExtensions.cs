@@ -11,6 +11,8 @@ using System.Net.NetworkInformation;
 namespace Smdn.Net;
 
 public static class PhysicalAddressExtensions {
+  internal static readonly PhysicalAddress AllZeroMacAddress = new(new byte[6]); // 00:00:00:00:00:00
+
   public static string ToMacAddressString(
     this PhysicalAddress hardwareAddress,
     char delimiter = ':'
