@@ -12,7 +12,7 @@ using Smdn.Net.AddressResolution;
 
 namespace Smdn.Net.NeighborDiscovery;
 
-public class ArpScanCommandNeighborDiscoverer : RunCommandNeighborDiscovererBase {
+public sealed class ArpScanCommandNeighborDiscoverer : RunCommandNeighborDiscovererBase {
   // ref: https://manpages.ubuntu.com/manpages/jammy/man1/arp-scan.1.html
   //   --numeric: IP addresses only, no hostnames.
   //   --quiet: Only display minimal output. No protocol decoding.

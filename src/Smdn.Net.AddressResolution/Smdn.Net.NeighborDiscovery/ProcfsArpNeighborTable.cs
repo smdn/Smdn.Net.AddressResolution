@@ -20,7 +20,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Smdn.Net.NeighborDiscovery;
 
-public class ProcfsArpNeighborTable : INeighborTable {
+public sealed class ProcfsArpNeighborTable : INeighborTable {
   private const string PathToProcNetArp = "/proc/net/arp";
 
   public static bool IsSupported => File.Exists(PathToProcNetArp);

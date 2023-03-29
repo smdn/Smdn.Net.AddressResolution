@@ -21,7 +21,7 @@ using static Vanara.PInvoke.Ws2_32;
 
 namespace Smdn.Net.NeighborDiscovery;
 
-public class IpHlpApiNeighborTable : INeighborTable {
+public sealed class IpHlpApiNeighborTable : INeighborTable {
   public static bool IsSupported => RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && lazyIsSupported.Value;
 
   private static readonly Lazy<bool> lazyIsSupported = new(

@@ -11,7 +11,7 @@ using Smdn.Net.AddressResolution;
 
 namespace Smdn.Net.NeighborDiscovery;
 
-public class NmapCommandNeighborDiscoverer : RunCommandNeighborDiscovererBase {
+public sealed class NmapCommandNeighborDiscoverer : RunCommandNeighborDiscovererBase {
   // ref: https://nmap.org/book/man-briefoptions.html
   //   -sn: Ping Scan - disable port scan
   //   -n: Never do DNS resolution

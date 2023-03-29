@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Smdn.Net.NeighborDiscovery;
 
-public class NullNeighborDiscoverer : INeighborDiscoverer {
+public sealed class NullNeighborDiscoverer : INeighborDiscoverer {
   public static readonly NullNeighborDiscoverer Instance = new();
 
   public ValueTask DiscoverAsync(CancellationToken cancellationToken) => default;
