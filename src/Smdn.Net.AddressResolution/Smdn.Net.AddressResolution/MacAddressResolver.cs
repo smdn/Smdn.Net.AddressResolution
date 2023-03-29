@@ -20,10 +20,12 @@ namespace Smdn.Net.AddressResolution;
 public class MacAddressResolver : MacAddressResolverBase {
   private const int PartialScanParallelMax = 3;
 
+#pragma warning disable IDE0060
   private static INeighborTable CreateNeighborTable(
     IPNetworkProfile? networkProfile,
     IServiceProvider? serviceProvider
   )
+#pragma warning restore IDE0060
   {
     if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
       if (IpHlpApiNeighborTable.IsSupported)
