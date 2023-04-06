@@ -1,11 +1,24 @@
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
+#if NET7_0_OR_GREATER
+#define SYSTEM_IO_UNIXFILEMODE
+#define SYSTEM_IO_FILE_GETUNIXFILEMODE
+#endif
+#if NET8_0_OR_GREATER
+#define SYSTEM_ENVORINMENT_ISPRIVILEGEDPROCESS
+#endif
+
 using System;
 using System.Collections.Generic;
+#if SYSTEM_IO_UNIXFILEMODE
 using System.IO;
+#endif
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+#if SYSTEM_IO_UNIXFILEMODE || SYSTEM_IO_FILE_GETUNIXFILEMODE
+using System.Runtime.InteropServices;
+#endif
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Smdn.Net.AddressResolution;
@@ -20,20 +33,21 @@ public sealed class ArpScanCommandNeighborDiscoverer : RunCommandNeighborDiscove
 
   public static bool IsSupported =>
     lazyPathToArpScanCommand.Value is not null &&
-#pragma warning disable IDE0047, SA1119
+#pragma warning disable IDE0047, SA1003, SA1119
     (
-#if NET8_0_OR_GREATER
+#if SYSTEM_ENVORINMENT_ISPRIVILEGEDPROCESS
       Environment.IsPrivilegedProcess ||
 #endif
-#if NET7_0_OR_GREATER
+#if SYSTEM_IO_FILE_GETUNIXFILEMODE
+      !RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
       HasSgidOrSuid(File.GetUnixFileMode(lazyPathToArpScanCommand.Value))
 #else
       false // TODO: use Mono.Posix
 #endif
     );
-#pragma warning restore IDE0047, SA1119
+#pragma warning restore IDE0047, SA1003, SA1119
 
-#if NET7_0_OR_GREATER
+#if SYSTEM_IO_UNIXFILEMODE
   private static bool HasSgidOrSuid(UnixFileMode fileMode)
     => fileMode.HasFlag(UnixFileMode.SetGroup) || fileMode.HasFlag(UnixFileMode.SetUser);
 #endif
