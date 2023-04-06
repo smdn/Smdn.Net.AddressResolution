@@ -85,8 +85,12 @@ public class MacAddressResolver : MacAddressResolverBase {
   /*
    * instance members
    */
-  private readonly INeighborTable neighborTable;
-  private readonly INeighborDiscoverer neighborDiscoverer;
+  private INeighborTable neighborTable;
+  private INeighborDiscoverer neighborDiscoverer;
+
+  private readonly bool shouldDisposeNeighborTable;
+  private readonly bool shouldDisposeNeighborDiscoverer;
+
   private DateTime lastFullScanPerformedAt = DateTime.MinValue;
   private readonly TimeSpan neighborDiscoveryInterval;
 
@@ -110,9 +114,7 @@ public class MacAddressResolver : MacAddressResolverBase {
   /// </summary>
   public MacAddressResolver()
     : this(
-      neighborTable: CreateNeighborTable(networkProfile: null, serviceProvider: null),
-      neighborDiscoverer: CreateNeighborDiscoverer(networkProfile: null, serviceProvider: null),
-      neighborDiscoveryInterval: Timeout.InfiniteTimeSpan,
+      networkProfile: null,
       serviceProvider: null
     )
   {
@@ -125,7 +127,9 @@ public class MacAddressResolver : MacAddressResolverBase {
   )
     : this(
       neighborTable: CreateNeighborTable(networkProfile, serviceProvider),
+      shouldDisposeNeighborTable: true,
       neighborDiscoverer: CreateNeighborDiscoverer(networkProfile, serviceProvider),
+      shouldDisposeNeighborDiscoverer: true,
       neighborDiscoveryInterval: Timeout.InfiniteTimeSpan,
       serviceProvider: serviceProvider
     )
@@ -156,7 +160,9 @@ public class MacAddressResolver : MacAddressResolverBase {
   )
     : this(
       neighborTable: CreateNeighborTable(networkProfile, serviceProvider),
+      shouldDisposeNeighborTable: true,
       neighborDiscoverer: CreateNeighborDiscoverer(networkProfile, serviceProvider),
+      shouldDisposeNeighborDiscoverer: true,
       neighborDiscoveryInterval: neighborDiscoveryInterval,
       serviceProvider: serviceProvider
     )
@@ -166,7 +172,9 @@ public class MacAddressResolver : MacAddressResolverBase {
   public MacAddressResolver(
     TimeSpan neighborDiscoveryInterval,
     INeighborTable? neighborTable = null,
+    bool shouldDisposeNeighborTable = false,
     INeighborDiscoverer? neighborDiscoverer = null,
+    bool shouldDisposeNeighborDiscoverer = false,
     IServiceProvider? serviceProvider = null
   )
     : this(
@@ -174,10 +182,12 @@ public class MacAddressResolver : MacAddressResolverBase {
         neighborTable ??
         serviceProvider?.GetRequiredService<INeighborTable>() ??
         throw new ArgumentNullException(nameof(neighborTable)),
+      shouldDisposeNeighborTable: shouldDisposeNeighborTable,
       neighborDiscoverer:
         neighborDiscoverer ??
         serviceProvider?.GetRequiredService<INeighborDiscoverer>() ??
         throw new ArgumentNullException(nameof(neighborDiscoverer)),
+      shouldDisposeNeighborDiscoverer: shouldDisposeNeighborDiscoverer,
       neighborDiscoveryInterval: neighborDiscoveryInterval,
       logger: serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger<MacAddressResolver>()
     )
@@ -186,7 +196,9 @@ public class MacAddressResolver : MacAddressResolverBase {
 
   protected MacAddressResolver(
     INeighborTable neighborTable,
+    bool shouldDisposeNeighborTable,
     INeighborDiscoverer neighborDiscoverer,
+    bool shouldDisposeNeighborDiscoverer,
     TimeSpan neighborDiscoveryInterval,
     ILogger? logger
   )
@@ -204,12 +216,28 @@ public class MacAddressResolver : MacAddressResolverBase {
     this.neighborTable = neighborTable ?? throw new ArgumentNullException(nameof(neighborTable));
     this.neighborDiscoverer = neighborDiscoverer ?? throw new ArgumentNullException(nameof(neighborDiscoverer));
 
+    this.shouldDisposeNeighborTable = shouldDisposeNeighborTable;
+    this.shouldDisposeNeighborDiscoverer = shouldDisposeNeighborDiscoverer;
+
     logger?.LogInformation("INeighborTable: {INeighborTable}", this.neighborTable.GetType().FullName);
     logger?.LogInformation("INeighborDiscoverer: {INeighborDiscoverer}", this.neighborDiscoverer.GetType().FullName);
   }
 
   protected override void Dispose(bool disposing)
   {
+    if (!disposing)
+      return;
+
+    if (shouldDisposeNeighborTable)
+      neighborTable?.Dispose();
+
+    neighborTable = null!;
+
+    if (shouldDisposeNeighborDiscoverer)
+      neighborDiscoverer?.Dispose();
+
+    neighborDiscoverer = null!;
+
     fullScanMutex?.Dispose();
     fullScanMutex = null!;
 

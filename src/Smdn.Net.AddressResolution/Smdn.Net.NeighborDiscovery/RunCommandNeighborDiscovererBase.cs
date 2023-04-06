@@ -41,6 +41,17 @@ public abstract class RunCommandNeighborDiscovererBase : INeighborDiscoverer {
     this.logger = logger;
   }
 
+  public void Dispose()
+  {
+    Dispose(true);
+    GC.SuppressFinalize(this);
+  }
+
+  protected virtual void Dispose(bool disposing)
+  {
+    // nothing to do in this class
+  }
+
   protected abstract bool GetCommandLineArguments(out string executable, out string arguments);
   protected abstract bool GetCommandLineArguments(IEnumerable<IPAddress> addressesToDiscover, out string executable, out string arguments);
 

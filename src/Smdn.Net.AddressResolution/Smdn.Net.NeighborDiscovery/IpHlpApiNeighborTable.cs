@@ -52,6 +52,11 @@ public sealed class IpHlpApiNeighborTable : INeighborTable {
     this.logger = serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger<IpHlpApiNeighborTable>();
   }
 
+  void IDisposable.Dispose()
+  {
+    // nothing to do
+  }
+
   public async IAsyncEnumerable<NeighborTableEntry> EnumerateEntriesAsync(
     [EnumeratorCancellation] CancellationToken cancellationToken = default
   )

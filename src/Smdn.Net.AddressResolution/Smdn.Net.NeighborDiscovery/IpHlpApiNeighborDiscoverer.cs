@@ -38,6 +38,11 @@ public sealed class IpHlpApiNeighborDiscoverer : INeighborDiscoverer {
     this.logger = logger;
   }
 
+  void IDisposable.Dispose()
+  {
+    // nothing to do
+  }
+
   public ValueTask DiscoverAsync(
     CancellationToken cancellationToken = default
   )

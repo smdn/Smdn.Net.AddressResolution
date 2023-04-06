@@ -44,6 +44,11 @@ public sealed class ProcfsArpNeighborTable : INeighborTable {
     this.logger = serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger<ProcfsArpNeighborTable>();
   }
 
+  void IDisposable.Dispose()
+  {
+    // nothing to do
+  }
+
   public async IAsyncEnumerable<NeighborTableEntry> EnumerateEntriesAsync(
     [EnumeratorCancellation] CancellationToken cancellationToken = default
   )
