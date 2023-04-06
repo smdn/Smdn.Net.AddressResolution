@@ -15,7 +15,7 @@ partial class IPNetworkProfile {
     NetworkInterface? networkInterface = null
   )
     => new AddressRangeGeneratorIPNetworkProfile(
-      addressRangeGenerator: addressRangeGenerator,
+      addressRangeGenerator: addressRangeGenerator ?? throw new ArgumentNullException(nameof(addressRangeGenerator)),
       networkInterface: networkInterface
     );
 
