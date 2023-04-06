@@ -45,7 +45,7 @@ public partial class MacAddressResolverTests {
     services.AddSingleton<INeighborDiscoverer>(neighborDiscoverer);
 
     var resolver = new MacAddressResolver(
-      neighborDiscoveryInterval: Timeout.InfiniteTimeSpan,
+      networkProfile: null,
       serviceProvider: services.BuildServiceProvider()
     );
 
@@ -61,7 +61,6 @@ public partial class MacAddressResolverTests {
     var neighborTable = new PseudoNeighborTable();
     var neighborDiscoverer = new PseudoNeighborDiscoverer();
     var resolver = new MacAddressResolver(
-      neighborDiscoveryInterval: Timeout.InfiniteTimeSpan,
       neighborTable: neighborTable,
       neighborDiscoverer: neighborDiscoverer
     );
@@ -84,7 +83,6 @@ public partial class MacAddressResolverTests {
     var neighborTable = new PseudoNeighborTable();
     var neighborDiscoverer = new PseudoNeighborDiscoverer();
     var resolver = new MacAddressResolver(
-      neighborDiscoveryInterval: Timeout.InfiniteTimeSpan,
       neighborTable: neighborTable,
       shouldDisposeNeighborTable: shouldDisposeNeighborTable,
       neighborDiscoverer: neighborDiscoverer,

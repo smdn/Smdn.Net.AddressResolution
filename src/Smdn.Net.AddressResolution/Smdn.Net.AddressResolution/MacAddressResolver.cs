@@ -123,22 +123,6 @@ public class MacAddressResolver : MacAddressResolverBase {
   {
   }
 
-  /// <inheritdoc cref="MacAddressResolver(IPNetworkProfile?, TimeSpan, IServiceProvider?)" />
-  public MacAddressResolver(
-    IPNetworkProfile? networkProfile,
-    IServiceProvider? serviceProvider = null
-  )
-    : this(
-      neighborTable: CreateNeighborTable(networkProfile, serviceProvider),
-      shouldDisposeNeighborTable: true,
-      neighborDiscoverer: CreateNeighborDiscoverer(networkProfile, serviceProvider),
-      shouldDisposeNeighborDiscoverer: true,
-      neighborDiscoveryInterval: Timeout.InfiniteTimeSpan,
-      serviceProvider: serviceProvider
-    )
-  {
-  }
-
   /// <summary>
   /// Initializes a new instance of the <see cref="MacAddressResolver"/> class.
   /// </summary>
@@ -146,37 +130,55 @@ public class MacAddressResolver : MacAddressResolverBase {
   /// The <see cref="IPNetworkProfile"/> which specifying the network interface and neighbor discovery target addresses.
   /// This is used as necessary for neighbor discovery in address resolution.
   /// </param>
-  /// <param name="neighborDiscoveryInterval">
-  /// The <see cref="TimeSpan"/> which represents the interval to perform a neighbor discovery.
-  /// If this period has elapsed since the lastest neighbor discovery,
-  /// the instance performs neighbor discovery automatically when the <see cref="ResolveIPAddressToMacAddressAsync(IPAddress, CancellationToken)" /> or
-  /// <see cref="ResolveMacAddressToIPAddressAsync(PhysicalAddress, CancellationToken)" /> is called.
-  /// If <see cref="Timeout.InfiniteTimeSpan" /> is specified, the instance does not perform neighbor discovery automatically.
-  /// </param>
   /// <param name="serviceProvider">
   /// The <see cref="IServiceProvider"/>.
   /// </param>
   public MacAddressResolver(
     IPNetworkProfile? networkProfile,
-    TimeSpan neighborDiscoveryInterval,
     IServiceProvider? serviceProvider = null
   )
     : this(
-      neighborTable: CreateNeighborTable(networkProfile, serviceProvider),
-      shouldDisposeNeighborTable: true,
-      neighborDiscoverer: CreateNeighborDiscoverer(networkProfile, serviceProvider),
-      shouldDisposeNeighborDiscoverer: true,
-      neighborDiscoveryInterval: neighborDiscoveryInterval,
-      serviceProvider: serviceProvider
+      neighborTable: GetOrCreateNeighborTableImplementation(networkProfile, serviceProvider),
+      neighborDiscoverer: GetOrCreateNeighborDiscovererImplementation(networkProfile, serviceProvider),
+      logger: CreateLogger(serviceProvider)
     )
   {
   }
 
+  private static ILogger? CreateLogger(IServiceProvider? serviceProvider)
+    => serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger<MacAddressResolver>();
+
+  private static (INeighborTable Implementation, bool ShouldDispose) GetOrCreateNeighborTableImplementation(
+    IPNetworkProfile? networkProfile,
+    IServiceProvider? serviceProvider
+  )
+  {
+    var impl = serviceProvider?.GetService<INeighborTable>();
+
+    return impl is null
+      ? (CreateNeighborTable(networkProfile, serviceProvider), true)
+      : (impl, false);
+  }
+
+  private static (INeighborDiscoverer Implementation, bool ShouldDispose) GetOrCreateNeighborDiscovererImplementation(
+    IPNetworkProfile? networkProfile,
+    IServiceProvider? serviceProvider
+  )
+  {
+    var impl = serviceProvider?.GetService<INeighborDiscoverer>();
+
+    return impl is null
+      ? (CreateNeighborDiscoverer(networkProfile, serviceProvider), true)
+      : (impl, false);
+  }
+
+  /// <summary>
+  /// Initializes a new instance of the <see cref="MacAddressResolver"/> class.
+  /// </summary>
   public MacAddressResolver(
-    TimeSpan neighborDiscoveryInterval,
-    INeighborTable? neighborTable = null,
+    INeighborTable? neighborTable,
+    INeighborDiscoverer? neighborDiscoverer,
     bool shouldDisposeNeighborTable = false,
-    INeighborDiscoverer? neighborDiscoverer = null,
     bool shouldDisposeNeighborDiscoverer = false,
     IServiceProvider? serviceProvider = null
   )
@@ -191,8 +193,22 @@ public class MacAddressResolver : MacAddressResolverBase {
         serviceProvider?.GetRequiredService<INeighborDiscoverer>() ??
         throw new ArgumentNullException(nameof(neighborDiscoverer)),
       shouldDisposeNeighborDiscoverer: shouldDisposeNeighborDiscoverer,
-      neighborDiscoveryInterval: neighborDiscoveryInterval,
-      logger: serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger<MacAddressResolver>()
+      logger: CreateLogger(serviceProvider)
+    )
+  {
+  }
+
+  private MacAddressResolver(
+    (INeighborTable Implementation, bool ShouldDispose) neighborTable,
+    (INeighborDiscoverer Implementation, bool ShouldDispose) neighborDiscoverer,
+    ILogger? logger
+  )
+    : this(
+      neighborTable: neighborTable.Implementation,
+      shouldDisposeNeighborTable: neighborTable.ShouldDispose,
+      neighborDiscoverer: neighborDiscoverer.Implementation,
+      shouldDisposeNeighborDiscoverer: neighborDiscoverer.ShouldDispose,
+      logger: logger
     )
   {
   }
@@ -202,20 +218,12 @@ public class MacAddressResolver : MacAddressResolverBase {
     bool shouldDisposeNeighborTable,
     INeighborDiscoverer neighborDiscoverer,
     bool shouldDisposeNeighborDiscoverer,
-    TimeSpan neighborDiscoveryInterval,
     ILogger? logger
   )
     : base(
       logger: logger
     )
   {
-    if (neighborDiscoveryInterval <= TimeSpan.Zero) {
-      if (neighborDiscoveryInterval != Timeout.InfiniteTimeSpan)
-        throw new InvalidOperationException("invalid interval value");
-    }
-
-    this.neighborDiscoveryInterval = neighborDiscoveryInterval;
-
     this.neighborTable = neighborTable ?? throw new ArgumentNullException(nameof(neighborTable));
     this.neighborDiscoverer = neighborDiscoverer ?? throw new ArgumentNullException(nameof(neighborDiscoverer));
 
