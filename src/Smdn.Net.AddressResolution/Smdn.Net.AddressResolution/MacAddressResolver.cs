@@ -60,7 +60,10 @@ public class MacAddressResolver : MacAddressResolverBase {
       }
     }
 
-    throw new PlatformNotSupportedException();
+    return new PingNeighborDiscoverer(
+      networkProfile: networkProfile ?? throw CreateMandatoryArgumentNullException(typeof(PingNeighborDiscoverer), nameof(networkProfile)),
+      serviceProvider: serviceProvider
+    );
   }
 
   private static Exception CreateMandatoryArgumentNullException(Type type, string paramName)
