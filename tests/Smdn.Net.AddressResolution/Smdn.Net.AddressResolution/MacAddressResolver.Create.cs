@@ -11,16 +11,32 @@ partial class MacAddressResolverTests {
   [Test]
   public void Create()
   {
-    if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && File.Exists("/proc/net/arp")) {
-      var options = new MacAddressResolverOptions() {
-        NmapCommandTargetSpecification = "127.0.0.1"
-      };
-      var resolver = MacAddressResolver.Create(options);
-
-      Assert.IsNotNull(resolver);
+    if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
+      Assert.DoesNotThrow(() => {
+        try {
+          new MacAddressResolver();
+        }
+        catch (InvalidOperationException ex) when (IsMandatoryParameterNullException(ex)) {
+          // expected
+        }
+      });
+    }
+    else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
+      Assert.DoesNotThrow(() => {
+        try {
+          new MacAddressResolver();
+        }
+        catch (InvalidOperationException ex) when (IsMandatoryParameterNullException(ex)) {
+          // expected
+        }
+      });
     }
     else {
-      Assert.Throws<PlatformNotSupportedException>(() => MacAddressResolver.Create());
+      Assert.Throws<PlatformNotSupportedException>(() => new MacAddressResolver());
     }
+
+    static bool IsMandatoryParameterNullException(InvalidOperationException ex)
+      => ex.InnerException is ArgumentNullException exInner &&
+        (exInner.ParamName == "networkProfile" || exInner.ParamName == "serviceProvider");
   }
 }

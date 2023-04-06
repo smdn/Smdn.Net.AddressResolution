@@ -47,7 +47,7 @@ public class MacAddressResolver : MacAddressResolverBase {
     if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
       if (NmapCommandNeighborDiscoverer.IsSupported) {
         return new NmapCommandNeighborDiscoverer(
-          networkProfile: networkProfile ?? throw new ArgumentNullException(nameof(networkProfile)),
+          networkProfile: networkProfile ?? throw CreateMandatoryArgumentNullException(typeof(NmapCommandNeighborDiscoverer), nameof(networkProfile)),
           serviceProvider: serviceProvider
         );
       }
@@ -62,6 +62,12 @@ public class MacAddressResolver : MacAddressResolverBase {
 
     throw new PlatformNotSupportedException();
   }
+
+  private static Exception CreateMandatoryArgumentNullException(Type type, string paramName)
+    => new InvalidOperationException(
+      message: $"To construct the instance of the type {type.FullName}, the parameter '{paramName}' cannot be null.",
+      innerException: new ArgumentNullException(paramName: paramName)
+    );
 
   private readonly struct None { }
 
