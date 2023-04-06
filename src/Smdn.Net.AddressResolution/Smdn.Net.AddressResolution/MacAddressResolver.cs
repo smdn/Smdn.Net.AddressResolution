@@ -99,13 +99,27 @@ public class MacAddressResolver : MacAddressResolverBase {
   // semaphore for address resolition (a.k.a partial scan)
   private SemaphoreSlim partialScanSemaphore = new(initialCount: PartialScanParallelMax, maxCount: PartialScanParallelMax);
 
+  /// <summary>
+  /// Initializes a new instance of the <see cref="MacAddressResolver"/> class.
+  /// </summary>
+  public MacAddressResolver()
+    : this(
+      neighborTable: CreateNeighborTable(networkProfile: null, serviceProvider: null),
+      neighborDiscoverer: CreateNeighborDiscoverer(networkProfile: null, serviceProvider: null),
+      neighborDiscoveryInterval: Timeout.InfiniteTimeSpan,
+      serviceProvider: null
+    )
+  {
+  }
+
   /// <inheritdoc cref="MacAddressResolver(IPNetworkProfile?, TimeSpan, IServiceProvider?)" />
   public MacAddressResolver(
     IPNetworkProfile? networkProfile,
     IServiceProvider? serviceProvider = null
   )
     : this(
-      networkProfile: networkProfile,
+      neighborTable: CreateNeighborTable(networkProfile, serviceProvider),
+      neighborDiscoverer: CreateNeighborDiscoverer(networkProfile, serviceProvider),
       neighborDiscoveryInterval: Timeout.InfiniteTimeSpan,
       serviceProvider: serviceProvider
     )
@@ -138,21 +152,6 @@ public class MacAddressResolver : MacAddressResolverBase {
       neighborTable: CreateNeighborTable(networkProfile, serviceProvider),
       neighborDiscoverer: CreateNeighborDiscoverer(networkProfile, serviceProvider),
       neighborDiscoveryInterval: neighborDiscoveryInterval,
-      serviceProvider: serviceProvider
-    )
-  {
-  }
-
-  public MacAddressResolver(
-    INeighborTable? neighborTable = null,
-    INeighborDiscoverer? neighborDiscoverer = null,
-    int neighborDiscoveryIntervalMilliseconds = Timeout.Infinite,
-    IServiceProvider? serviceProvider = null
-  )
-    : this(
-      neighborTable: neighborTable,
-      neighborDiscoverer: neighborDiscoverer,
-      neighborDiscoveryInterval: TimeSpan.FromMilliseconds(neighborDiscoveryIntervalMilliseconds),
       serviceProvider: serviceProvider
     )
   {

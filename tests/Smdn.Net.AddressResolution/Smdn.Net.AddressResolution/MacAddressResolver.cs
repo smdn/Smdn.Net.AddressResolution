@@ -11,8 +11,13 @@ namespace Smdn.Net.AddressResolution;
 
 [TestFixture]
 public partial class MacAddressResolverTests {
-  private class ConcreteMacAddressResolver : MacAddressResolver {
+  private class ConcreteMacAddressResolver : MacAddressResolverBase {
     public override bool HasInvalidated => throw new NotImplementedException();
+
+    public ConcreteMacAddressResolver()
+      : base()
+    {
+    }
 
     protected override ValueTask<IPAddress?> ResolveMacAddressToIPAddressAsyncCore(
       PhysicalAddress macAddress,
