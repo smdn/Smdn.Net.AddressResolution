@@ -203,6 +203,9 @@ public class MacAddressResolver : MacAddressResolverBase {
 
     this.neighborTable = neighborTable ?? throw new ArgumentNullException(nameof(neighborTable));
     this.neighborDiscoverer = neighborDiscoverer ?? throw new ArgumentNullException(nameof(neighborDiscoverer));
+
+    logger?.LogInformation("INeighborTable: {INeighborTable}", this.neighborTable.GetType().FullName);
+    logger?.LogInformation("INeighborDiscoverer: {INeighborDiscoverer}", this.neighborDiscoverer.GetType().FullName);
   }
 
   protected override void Dispose(bool disposing)
