@@ -14,6 +14,7 @@ using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 using Vanara.PInvoke;
@@ -31,11 +32,12 @@ public sealed class IpHlpApiNeighborDiscoverer : INeighborDiscoverer {
 
   public IpHlpApiNeighborDiscoverer(
     IPNetworkProfile networkProfile,
-    ILogger? logger = null
+    IServiceProvider? serviceProvider = null
   )
   {
-    this.getDiscoveryTargetAddresses = (networkProfile ?? throw new ArgumentNullException(nameof(networkProfile))).GetAddressRange;
-    this.logger = logger;
+    getDiscoveryTargetAddresses = (networkProfile ?? throw new ArgumentNullException(nameof(networkProfile))).GetAddressRange;
+
+    logger = serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger<IpHlpApiNeighborDiscoverer>();
   }
 
   void IDisposable.Dispose()
