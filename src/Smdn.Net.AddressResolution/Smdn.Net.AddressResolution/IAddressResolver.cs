@@ -5,7 +5,10 @@ using System.Threading.Tasks;
 
 namespace Smdn.Net.AddressResolution;
 
-public interface IAddressResolver<TAddress, TResolvedAddress> {
+public interface IAddressResolver<TAddress, TResolvedAddress>
+  where TAddress : notnull
+  where TResolvedAddress : notnull
+{
   /// <returns>An resolved address. <see langword="null"/> if address could not be resolved.</returns>
   ValueTask<TResolvedAddress?> ResolveAsync(TAddress address, CancellationToken cancellationToken);
   void Invalidate(TAddress address);
