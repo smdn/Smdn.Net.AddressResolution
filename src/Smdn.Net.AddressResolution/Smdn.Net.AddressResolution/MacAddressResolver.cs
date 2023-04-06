@@ -113,7 +113,7 @@ public class MacAddressResolver : MacAddressResolverBase {
   }
 
   /// <summary>
-  /// Initializes a new instance of the <see cref="KasaDevice"/> class with specifying the device endpoint by IP address.
+  /// Initializes a new instance of the <see cref="MacAddressResolver"/> class.
   /// </summary>
   /// <param name="networkProfile">
   /// The <see cref="IPNetworkProfile"/> which specifying the network interface and neighbor discovery target addresses.
@@ -123,7 +123,7 @@ public class MacAddressResolver : MacAddressResolverBase {
   /// The <see cref="TimeSpan"/> which represents the interval to perform a neighbor discovery.
   /// If this period has elapsed since the lastest neighbor discovery,
   /// the instance performs neighbor discovery automatically when the <see cref="ResolveIPAddressToMacAddressAsync(IPAddress, CancellationToken)" /> or
-  /// <see cref="ResolveMacAddressToIPAddressAsync(PhysicalAddress, CancellationToken)"> is called.
+  /// <see cref="ResolveMacAddressToIPAddressAsync(PhysicalAddress, CancellationToken)" /> is called.
   /// If <see cref="Timeout.InfiniteTimeSpan" /> is specified, the instance does not perform neighbor discovery automatically.
   /// </param>
   /// <param name="serviceProvider">
