@@ -36,7 +36,7 @@ public class MacAddressResolver : MacAddressResolverBase {
         return new ProcfsArpNeighborTable(serviceProvider);
     }
 
-    throw new PlatformNotSupportedException();
+    throw new PlatformNotSupportedException($"There is no {nameof(INeighborTable)} implementation available to perform neighbor table lookups for this platform currently. Please implement and supply {nameof(INeighborTable)} for this platform.");
   }
 
   private static INeighborDiscoverer CreateNeighborDiscoverer(
