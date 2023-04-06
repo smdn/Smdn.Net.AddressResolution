@@ -34,6 +34,42 @@ public partial class MacAddressResolverTests {
       => default;
   }
 
+  private static System.Collections.IEnumerable YieldTestCases_NeighborDiscoveryInterval()
+  {
+    yield return new object?[] { TimeSpan.Zero, typeof(ArgumentOutOfRangeException) };
+    yield return new object?[] { TimeSpan.MinValue, typeof(ArgumentOutOfRangeException) };
+    yield return new object?[] { TimeSpan.FromTicks(-1), typeof(ArgumentOutOfRangeException) };
+
+    yield return new object?[] { TimeSpan.FromMilliseconds(1), null };
+    yield return new object?[] { TimeSpan.FromTicks(1), null };
+    yield return new object?[] { TimeSpan.MaxValue, null };
+    yield return new object?[] { TimeSpan.FromMilliseconds(-1), null }; // == Timeout.InfiniteTimeSpan
+    yield return new object?[] { Timeout.InfiniteTimeSpan, null };
+  }
+
+  [TestCaseSource(nameof(YieldTestCases_NeighborDiscoveryInterval))]
+  public void NeighborDiscoveryInterval(
+    TimeSpan neighborDiscoveryInterval,
+    Type? typeOfExpectedException
+  )
+  {
+    var resolver = new MacAddressResolver(
+      neighborTable: new PseudoNeighborTable(),
+      neighborDiscoverer: new PseudoNeighborDiscoverer()
+    );
+
+    if (typeOfExpectedException is null) {
+      Assert.DoesNotThrow(() => resolver.NeighborDiscoveryInterval = neighborDiscoveryInterval);
+      Assert.AreEqual(neighborDiscoveryInterval, resolver.NeighborDiscoveryInterval, nameof(resolver.NeighborDiscoveryInterval));
+    }
+    else {
+      var initialNeighborDiscoveryInterval = resolver.NeighborDiscoveryInterval;
+
+      Assert.Throws(typeOfExpectedException, () => resolver.NeighborDiscoveryInterval = neighborDiscoveryInterval);
+      Assert.AreEqual(initialNeighborDiscoveryInterval, resolver.NeighborDiscoveryInterval, nameof(resolver.NeighborDiscoveryInterval));
+    }
+  }
+
   [Test]
   public void Dispose_NeighborTableAndNeighborDiscovererAreSuppliedViaServiceProvider()
   {

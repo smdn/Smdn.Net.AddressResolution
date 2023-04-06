@@ -95,7 +95,28 @@ public class MacAddressResolver : MacAddressResolverBase {
   private readonly bool shouldDisposeNeighborDiscoverer;
 
   private DateTime lastFullScanPerformedAt = DateTime.MinValue;
-  private readonly TimeSpan neighborDiscoveryInterval;
+  private TimeSpan neighborDiscoveryInterval = Timeout.InfiniteTimeSpan;
+
+  /// <summary>
+  /// Gets or sets the <see cref="TimeSpan"/> which represents the interval to perform a neighbor discovery.
+  /// </summary>
+  /// <remarks>
+  /// If the period represented by this property has elapsed since the lastest neighbor discovery,
+  /// the instance performs neighbor discovery automatically when the <see cref="ResolveIPAddressToMacAddressAsync(IPAddress, CancellationToken)" /> or
+  /// <see cref="ResolveMacAddressToIPAddressAsync(PhysicalAddress, CancellationToken)" /> is called.
+  /// If <see cref="Timeout.InfiniteTimeSpan" /> is specified, the instance does not perform neighbor discovery automatically.
+  /// </remarks>
+  public TimeSpan NeighborDiscoveryInterval {
+    get => neighborDiscoveryInterval;
+    set {
+      if (value <= TimeSpan.Zero) {
+        if (value != Timeout.InfiniteTimeSpan)
+          throw new ArgumentOutOfRangeException(message: $"The value must be non-zero positive {nameof(TimeSpan)} or {nameof(Timeout)}.{nameof(Timeout.InfiniteTimeSpan)}.", paramName: nameof(NeighborDiscoveryInterval));
+      }
+
+      neighborDiscoveryInterval = value;
+    }
+  }
 
   private bool HasFullScanIntervalElapsed =>
     neighborDiscoveryInterval != Timeout.InfiniteTimeSpan &&
