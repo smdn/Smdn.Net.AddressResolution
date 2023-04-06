@@ -11,12 +11,18 @@ namespace Smdn.Net.NeighborDiscovery;
 public sealed class NullNeighborDiscoverer : INeighborDiscoverer {
   public static readonly NullNeighborDiscoverer Instance = new();
 
-  public ValueTask DiscoverAsync(CancellationToken cancellationToken) => default;
-  public ValueTask DiscoverAsync(IEnumerable<IPAddress> addresses, CancellationToken cancellationToken) => default;
-
   private NullNeighborDiscoverer()
   {
   }
+
+  public ValueTask DiscoverAsync(
+    CancellationToken cancellationToken = default
+  ) => default;
+
+  public ValueTask DiscoverAsync(
+    IEnumerable<IPAddress> addresses,
+    CancellationToken cancellationToken = default
+  ) => default;
 
   void IDisposable.Dispose()
   {

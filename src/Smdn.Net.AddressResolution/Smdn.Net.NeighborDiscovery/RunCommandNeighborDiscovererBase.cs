@@ -55,7 +55,9 @@ public abstract class RunCommandNeighborDiscovererBase : INeighborDiscoverer {
   protected abstract bool GetCommandLineArguments(out string executable, out string arguments);
   protected abstract bool GetCommandLineArguments(IEnumerable<IPAddress> addressesToDiscover, out string executable, out string arguments);
 
-  public virtual ValueTask DiscoverAsync(CancellationToken cancellationToken)
+  public virtual ValueTask DiscoverAsync(
+    CancellationToken cancellationToken = default
+  )
   {
     if (GetCommandLineArguments(out var executable, out var args)) {
       return RunCommandAsync(
@@ -71,7 +73,7 @@ public abstract class RunCommandNeighborDiscovererBase : INeighborDiscoverer {
 
   public virtual ValueTask DiscoverAsync(
     IEnumerable<IPAddress> addresses,
-    CancellationToken cancellationToken
+    CancellationToken cancellationToken = default
   )
   {
     if (GetCommandLineArguments(addresses, out var executable, out var args)) {
