@@ -12,6 +12,7 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+
 using Microsoft.Extensions.Logging;
 
 namespace Smdn.Net.NeighborDiscovery;
@@ -122,7 +123,7 @@ public abstract class RunCommandNeighborDiscovererBase : INeighborDiscoverer {
           if (!logger.IsEnabled(logLevel))
             continue;
 
-          for (; ;) {
+          for (; ; ) {
             var line =
 #if SYSTEM_IO_STREAMREADER_READLINEASYNC_CANCELLATIONTOKEN
               await stdio.ReadLineAsync(cancellationToken).ConfigureAwait(false);

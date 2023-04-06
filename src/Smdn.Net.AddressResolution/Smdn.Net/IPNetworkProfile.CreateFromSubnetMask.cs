@@ -101,7 +101,8 @@ partial class IPNetworkProfile {
     private readonly uint networkAddress;
     private readonly uint broadcastAddress;
 
-    public IPv4AddressRange(uint address, uint addressMask) {
+    public IPv4AddressRange(uint address, uint addressMask)
+    {
       this.networkAddress = address & addressMask;
       this.broadcastAddress = networkAddress + ~addressMask;
     }

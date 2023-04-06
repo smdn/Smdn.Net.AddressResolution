@@ -14,14 +14,11 @@ using System.Collections.Generic;
 using System.IO;
 #endif
 using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
 #if SYSTEM_IO_UNIXFILEMODE || SYSTEM_IO_FILE_GETUNIXFILEMODE
 using System.Runtime.InteropServices;
 #endif
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Smdn.Net.AddressResolution;
 
 namespace Smdn.Net.NeighborDiscovery;
 
