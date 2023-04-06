@@ -224,8 +224,6 @@ public class MacAddressResolver : MacAddressResolverBase {
     CancellationToken cancellationToken
   )
   {
-    Logger?.LogDebug("Resolving {IPAddress}", ipAddress);
-
     if (HasFullScanIntervalElapsed)
       await FullScanAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
 
