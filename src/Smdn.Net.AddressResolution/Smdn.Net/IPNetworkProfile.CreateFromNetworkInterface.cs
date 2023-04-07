@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
 using System;
+using System.Linq;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 
@@ -40,20 +41,25 @@ partial class IPNetworkProfile {
 
     var ipProperties = networkInterface.GetIPProperties();
 
-    foreach (var unicastAddress in ipProperties.UnicastAddresses) {
-      switch (unicastAddress.Address.AddressFamily) {
-        case AddressFamily.InterNetwork:
-          return new IPv4AddressRangeNetworkProfile(
-            networkInterface: networkInterface,
-            addressRange: IPv4AddressRange.Create(unicastAddress.Address, unicastAddress.IPv4Mask)
-          );
+    // prefer IPv4 address
+    foreach (
+      var ipv4unicastAddress in ipProperties
+        .UnicastAddresses
+        .Where(static addr => addr.Address.AddressFamily == AddressFamily.InterNetwork)
+    ) {
+      return new IPv4AddressRangeNetworkProfile(
+        networkInterface: networkInterface,
+        addressRange: IPv4AddressRange.Create(ipv4unicastAddress.Address, ipv4unicastAddress.IPv4Mask)
+      );
+    }
 
-        case AddressFamily.InterNetworkV6:
-          throw CreateIPv6FeatureNotImplemented();
-
-        default:
-          continue;
-      }
+    foreach (
+      var ipv6unicastAddress in ipProperties
+        .UnicastAddresses
+        .Where(static addr => addr.Address.AddressFamily == AddressFamily.InterNetworkV6)
+    ) {
+      // TODO: IPv6
+      throw CreateIPv6FeatureNotImplemented();
     }
 
     throw CreateNonIPAddressFamilyNotSupported();
