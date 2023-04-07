@@ -49,13 +49,13 @@ partial class IPNetworkProfile {
           );
 
         case AddressFamily.InterNetworkV6:
-          throw new NotImplementedException();
+          throw CreateIPv6FeatureNotImplemented();
 
         default:
           continue;
       }
     }
 
-    throw new NotSupportedException();
+    throw CreateNonIPAddressFamilyNotSupported();
   }
 }

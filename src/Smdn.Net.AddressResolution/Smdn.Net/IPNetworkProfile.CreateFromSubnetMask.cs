@@ -55,10 +55,11 @@ partial class IPNetworkProfile {
       }
 
       case AddressFamily.InterNetworkV6:
-        throw new NotImplementedException();
+        // TODO: IPv6
+        throw CreateIPv6FeatureNotImplemented();
 
       default:
-        throw new NotSupportedException();
+        throw CreateNonIPAddressFamilyNotSupported();
     }
   }
 
@@ -80,8 +81,11 @@ partial class IPNetworkProfile {
         networkInterface: networkInterface,
         addressRange: IPv4AddressRange.Create(baseAddress, subnetMask)
       ),
-      AddressFamily.InterNetworkV6 => throw new NotImplementedException(),
-      _ => throw new NotSupportedException(),
+
+      // TODO: IPv6
+      AddressFamily.InterNetworkV6 => throw CreateIPv6FeatureNotImplemented(),
+
+      _ => throw CreateNonIPAddressFamilyNotSupported(),
     };
   }
 
