@@ -23,7 +23,7 @@ public sealed class NmapCommandNeighborDiscoverer : RunCommandNeighborDiscoverer
   private static readonly Lazy<string> lazyPathToNmapCommand = new(
     valueFactory: static () => FindPathToCommand(
       command: "nmap",
-      paths: new[] { "/bin/", "/sbin/", "/usr/bin/" }
+      paths: DefaultCommandPaths
     ),
     isThreadSafe: true
   );

@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -18,6 +19,41 @@ using Microsoft.Extensions.Logging;
 namespace Smdn.Net.NeighborDiscovery;
 
 public abstract class RunCommandNeighborDiscovererBase : INeighborDiscoverer {
+  private static readonly Lazy<IReadOnlyCollection<string>> lazyDefaultCommandPaths = new(
+    valueFactory: GetDefaultCommandCommandPaths,
+    isThreadSafe: true
+  );
+
+  protected static IReadOnlyCollection<string> DefaultCommandPaths => lazyDefaultCommandPaths.Value;
+
+  private static IReadOnlyCollection<string> GetDefaultCommandCommandPaths()
+  {
+    var paths = new HashSet<string>(
+      comparer: RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+        ? StringComparer.OrdinalIgnoreCase
+        : StringComparer.Ordinal
+    );
+
+    var envVarPath = (Environment.GetEnvironmentVariable("PATH") ?? string.Empty)
+#if SYSTEM_STRINGSPLITOPTIONS_TRIMENTRIES
+      .Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+#elif SYSTEM_STRING_SPLIT_CHAR
+      .Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries);
+#else
+      .Split(new[] { Path.PathSeparator }, StringSplitOptions.RemoveEmptyEntries);
+#endif
+
+    foreach (var path in envVarPath) {
+#if SYSTEM_STRINGSPLITOPTIONS_TRIMENTRIES
+      paths.Add(path);
+#else
+      paths.Add(path.Trim());
+#endif
+    }
+
+    return paths;
+  }
+
   protected static string FindPathToCommand(string command, IEnumerable<string> paths)
   {
     if (command is null)
@@ -25,10 +61,27 @@ public abstract class RunCommandNeighborDiscovererBase : INeighborDiscoverer {
     if (paths is null)
       throw new ArgumentNullException(nameof(paths));
 
+    string? commandWithExeExtension = null;
+
+    if (
+      RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
+      string.IsNullOrEmpty(Path.GetExtension(command))
+    ) {
+      commandWithExeExtension = command + ".exe";
+    }
+
     return paths
-      .Select(path => Path.Combine(path, command))
+      .SelectMany(path => CombineCommandPath(path, command, commandWithExeExtension))
       .FirstOrDefault(static pathToCommand => File.Exists(pathToCommand))
-      ?? throw new NotSupportedException($"'{command}' is not available.");
+      ?? throw new NotSupportedException($"'{command}' is not available. Make sure that the PATH environment variable is set properly.");
+
+    static IEnumerable<string> CombineCommandPath(string path, string command, string? commandWithExeExtension)
+    {
+      yield return Path.Combine(path, command);
+
+      if (commandWithExeExtension is not null)
+        yield return Path.Combine(path, commandWithExeExtension);
+    }
   }
 
   /*

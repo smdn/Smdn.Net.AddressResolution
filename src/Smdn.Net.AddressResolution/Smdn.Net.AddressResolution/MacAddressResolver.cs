@@ -44,20 +44,18 @@ public class MacAddressResolver : MacAddressResolverBase {
     IServiceProvider? serviceProvider
   )
   {
-    if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
-      if (NmapCommandNeighborDiscoverer.IsSupported) {
-        return new NmapCommandNeighborDiscoverer(
-          networkProfile: networkProfile ?? throw CreateMandatoryArgumentNullException(typeof(NmapCommandNeighborDiscoverer), nameof(networkProfile)),
-          serviceProvider: serviceProvider
-        );
-      }
+    if (NmapCommandNeighborDiscoverer.IsSupported) {
+      return new NmapCommandNeighborDiscoverer(
+        networkProfile: networkProfile ?? throw CreateMandatoryArgumentNullException(typeof(NmapCommandNeighborDiscoverer), nameof(networkProfile)),
+        serviceProvider: serviceProvider
+      );
+    }
 
-      if (ArpScanCommandNeighborDiscoverer.IsSupported) {
-        return new ArpScanCommandNeighborDiscoverer(
-          networkProfile: networkProfile, // nullable
-          serviceProvider: serviceProvider
-        );
-      }
+    if (ArpScanCommandNeighborDiscoverer.IsSupported) {
+      return new ArpScanCommandNeighborDiscoverer(
+        networkProfile: networkProfile, // nullable
+        serviceProvider: serviceProvider
+      );
     }
 
     return new PingNeighborDiscoverer(

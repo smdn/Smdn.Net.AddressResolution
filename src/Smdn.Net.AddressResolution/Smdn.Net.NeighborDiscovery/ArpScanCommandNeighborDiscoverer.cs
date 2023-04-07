@@ -52,7 +52,7 @@ public sealed class ArpScanCommandNeighborDiscoverer : RunCommandNeighborDiscove
   private static readonly Lazy<string> lazyPathToArpScanCommand = new(
     valueFactory: static () => FindPathToCommand(
       command: "arp-scan",
-      paths: new[] { "/sbin/", "/usr/sbin/", "/bin/", "/usr/bin/" }
+      paths: DefaultCommandPaths
     ),
     isThreadSafe: true
   );
