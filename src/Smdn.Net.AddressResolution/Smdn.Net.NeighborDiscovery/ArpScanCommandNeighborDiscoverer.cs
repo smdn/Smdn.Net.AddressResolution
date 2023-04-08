@@ -37,7 +37,7 @@ public sealed class ArpScanCommandNeighborDiscoverer : RunCommandNeighborDiscove
 #endif
 #if SYSTEM_IO_FILE_GETUNIXFILEMODE
       !RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
-      HasSgidOrSuid(File.GetUnixFileMode(lazyPathToArpScanCommand.Value))
+      HasSgidOrSuid(File.GetUnixFileMode(lazyArpScanCommand.Value.GetExecutablePathOrThrow()))
 #else
       false // TODO: use Mono.Posix
 #endif
