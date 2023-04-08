@@ -29,7 +29,7 @@ public sealed class ArpScanCommandNeighborDiscoverer : RunCommandNeighborDiscove
   private const string ArpScanCommandBaseOptions = "--numeric --quiet ";
 
   public static bool IsSupported =>
-    lazyPathToArpScanCommand.Value is not null &&
+    lazyArpScanCommand.Value.IsAvailable &&
 #pragma warning disable IDE0047, SA1003, SA1119
     (
 #if SYSTEM_ENVORINMENT_ISPRIVILEGEDPROCESS
@@ -49,8 +49,8 @@ public sealed class ArpScanCommandNeighborDiscoverer : RunCommandNeighborDiscove
     => fileMode.HasFlag(UnixFileMode.SetGroup) || fileMode.HasFlag(UnixFileMode.SetUser);
 #endif
 
-  private static readonly Lazy<string> lazyPathToArpScanCommand = new(
-    valueFactory: static () => FindPathToCommand(
+  private static readonly Lazy<Command> lazyArpScanCommand = new(
+    valueFactory: static () => FindCommand(
       command: "arp-scan",
       paths: DefaultCommandPaths
     ),
@@ -94,7 +94,7 @@ public sealed class ArpScanCommandNeighborDiscoverer : RunCommandNeighborDiscove
     out string arguments
   )
   {
-    executable = lazyPathToArpScanCommand.Value;
+    executable = lazyArpScanCommand.Value.GetExecutablePathOrThrow();
 
     // perform full scan
     arguments = arpScanCommandFullScanOptions;
@@ -108,7 +108,7 @@ public sealed class ArpScanCommandNeighborDiscoverer : RunCommandNeighborDiscove
     out string arguments
   )
   {
-    executable = lazyPathToArpScanCommand.Value;
+    executable = lazyArpScanCommand.Value.GetExecutablePathOrThrow();
 
     var arpScanCommandTargetSpecification = string.Join(" ", addressesToDiscover);
 

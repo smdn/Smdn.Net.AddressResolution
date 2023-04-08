@@ -18,10 +18,10 @@ public sealed class NmapCommandNeighborDiscoverer : RunCommandNeighborDiscoverer
   //   -oG <file>: Output scan in Grepable format
   private const string NmapCommandBaseOptions = "-sn -n -T4 -oG - ";
 
-  public static bool IsSupported => lazyPathToNmapCommand.Value is not null;
+  public static bool IsSupported => lazyNmapCommand.Value.IsAvailable;
 
-  private static readonly Lazy<string> lazyPathToNmapCommand = new(
-    valueFactory: static () => FindPathToCommand(
+  private static readonly Lazy<Command> lazyNmapCommand = new(
+    valueFactory: static () => FindCommand(
       command: "nmap",
       paths: DefaultCommandPaths
     ),
@@ -67,7 +67,7 @@ public sealed class NmapCommandNeighborDiscoverer : RunCommandNeighborDiscoverer
     out string arguments
   )
   {
-    executable = lazyPathToNmapCommand.Value;
+    executable = lazyNmapCommand.Value.GetExecutablePathOrThrow();
 
     // perform full scan
     arguments = nmapCommandFullScanOptions;
@@ -81,7 +81,7 @@ public sealed class NmapCommandNeighborDiscoverer : RunCommandNeighborDiscoverer
     out string arguments
   )
   {
-    executable = lazyPathToNmapCommand.Value;
+    executable = lazyNmapCommand.Value.GetExecutablePathOrThrow();
 
     var nmapCommandOptionTargetSpecification = string.Join(" ", addressesToDiscover);
 

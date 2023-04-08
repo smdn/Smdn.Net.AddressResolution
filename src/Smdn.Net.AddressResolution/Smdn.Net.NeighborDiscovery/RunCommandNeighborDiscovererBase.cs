@@ -54,7 +54,29 @@ public abstract class RunCommandNeighborDiscovererBase : INeighborDiscoverer {
     return paths;
   }
 
-  protected static string FindPathToCommand(string command, IEnumerable<string> paths)
+  protected readonly struct Command {
+    public string Name { get; }
+    public bool IsAvailable => executablePath is not null;
+    private readonly string? executablePath;
+
+    public Command(string name, string? executablePath)
+    {
+      Name = name;
+      this.executablePath = executablePath;
+    }
+
+    public string GetExecutablePathOrThrow()
+      => executablePath is null
+        ? throw new NotSupportedException(
+            $"'{Name}' is not available. Make sure that the PATH environment variable is set properly."
+          )
+        : executablePath;
+  }
+
+  protected static Command FindCommand(
+    string command,
+    IEnumerable<string> paths
+  )
   {
     if (command is null)
       throw new ArgumentNullException(nameof(command));
@@ -70,10 +92,12 @@ public abstract class RunCommandNeighborDiscovererBase : INeighborDiscoverer {
       commandWithExeExtension = command + ".exe";
     }
 
-    return paths
-      .SelectMany(path => CombineCommandPath(path, command, commandWithExeExtension))
-      .FirstOrDefault(static pathToCommand => File.Exists(pathToCommand))
-      ?? throw new NotSupportedException($"'{command}' is not available. Make sure that the PATH environment variable is set properly.");
+    return new(
+      name: command,
+      executablePath: paths
+        .SelectMany(path => CombineCommandPath(path, command, commandWithExeExtension))
+        .FirstOrDefault(static pathToCommand => File.Exists(pathToCommand))
+    );
 
     static IEnumerable<string> CombineCommandPath(string path, string command, string? commandWithExeExtension)
     {
