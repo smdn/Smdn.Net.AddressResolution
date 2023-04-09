@@ -46,4 +46,7 @@ public readonly struct NeighborTableEntry : IEquatable<IPAddress?>, IEquatable<P
 
     return PhysicalAddress is not null && PhysicalAddress.Equals(other);
   }
+
+  public override string ToString()
+    => $"{{IP={IPAddress}, MAC={PhysicalAddress?.ToMacAddressString() ?? "(null)"}, IsPermanent={IsPermanent}, State={State}, Iface={InterfaceName} ({InterfaceIndex})}}";
 }

@@ -294,13 +294,7 @@ public class MacAddressResolver : MacAddressResolverBase {
       if (!entry.Equals(ipAddress))
         continue;
 
-      Logger?.LogDebug(
-        "Entry: IP={IPAddress}, MAC={MacAddress}, IsPermanent={IsPermanent}, State={State}",
-        entry.IPAddress,
-        entry.PhysicalAddress?.ToMacAddressString(),
-        entry.IsPermanent,
-        entry.State
-      );
+      Logger?.LogDebug("Entry: {Entry}", entry);
 
       if (entry.PhysicalAddress is null || entry.Equals(AllZeroMacAddress))
         continue;
@@ -337,13 +331,7 @@ public class MacAddressResolver : MacAddressResolverBase {
       if (!entry.Equals(macAddress))
         continue;
 
-      Logger?.LogDebug(
-        "Entry: IP={IPAddress}, MAC={MacAddress}, IsPermanent={IsPermanent}, State={State}",
-        entry.IPAddress,
-        entry.PhysicalAddress?.ToMacAddressString(),
-        entry.IsPermanent,
-        entry.State
-      );
+      Logger?.LogDebug("Entry: {Entry}", entry);
 
       if (invalidatedIPAddressSet.ContainsKey(entry.IPAddress!))
         continue; // ignore the entry that is marked as invalidated
