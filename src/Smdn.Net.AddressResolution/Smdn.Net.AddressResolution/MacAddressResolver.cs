@@ -306,6 +306,14 @@ public class MacAddressResolver : MacAddressResolverBase {
     }
   }
 
+  // On Windows, NetworkInterface.Id is set to a string representing
+  // the GUID of the network interface, but its casing conventions is
+  // not specified explicitly, so perform the case-insensitive comparison.
+  private static readonly StringComparison networkInterfaceIdComparison =
+    RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+      ? StringComparison.OrdinalIgnoreCase
+      : StringComparison.Ordinal;
+
   private bool FilterNeighborTableEntryForAddressResolution(NeighborTableEntry entry)
   {
     var include = true;
@@ -320,7 +328,7 @@ public class MacAddressResolver : MacAddressResolverBase {
       // exclude entries that are irrelevant to the network interface
       if (
         entry.InterfaceName is not null &&
-        !string.Equals(networkInterface.Id, entry.InterfaceName, StringComparison.Ordinal)
+        !string.Equals(networkInterface.Id, entry.InterfaceName, networkInterfaceIdComparison)
       ) {
         include = false;
         goto RESULT_DETERMINED;

@@ -119,6 +119,22 @@ public sealed class IpHlpApiNeighborTable : INeighborTable {
     if (ipnetRow2.Address.si_family is not ADDRESS_FAMILY.AF_INET or ADDRESS_FAMILY.AF_INET6)
       return false;
 
+    string? interfaceId = null;
+    var ret = ConvertInterfaceLuidToGuid(ipnetRow2.InterfaceLuid, out var interfaceGuid);
+
+    if (ret.Succeeded) {
+      // NetworkInterface.Id is set to a string that represents a network interface
+      // GUID in 'B' format, so convert the retrieved GUID to a string in 'B' format
+      // to be able to compare with this value.
+      interfaceId = interfaceGuid.ToString(format: "B");
+    }
+    else {
+      logger?.LogWarning("ConvertInterfaceLuidToGuid {Result}", ret.ToString());
+
+      interfaceId = null;
+    }
+
+#if false
     const int NDIS_IF_MAX_STRING_SIZE = 256;
 
     var interfaceNameBuffer = new StringBuilder(capacity: NDIS_IF_MAX_STRING_SIZE + 1);
@@ -127,9 +143,12 @@ public sealed class IpHlpApiNeighborTable : INeighborTable {
     if (ret.Failed) {
       logger?.LogWarning("ConvertInterfaceLuidToName {Result}", ret.ToString());
 
-      interfaceNameBuffer.Clear();
-      interfaceNameBuffer.Append(ipnetRow2.InterfaceLuid.ToString());
+      interfaceId = ipnetRow2.InterfaceLuid.ToString();
     }
+    else {
+      interfaceId = interfaceNameBuffer.ToString();
+    }
+#endif
 
     entry = new(
       ipAddress: ipnetRow2.Address.si_family switch {
@@ -152,7 +171,7 @@ public sealed class IpHlpApiNeighborTable : INeighborTable {
         _ => NeighborTableEntryState.None,
       },
       interfaceIndex: (int)ipnetRow2.InterfaceIndex,
-      interfaceName: interfaceNameBuffer.ToString()
+      interfaceName: interfaceId
     );
 
     return true;
