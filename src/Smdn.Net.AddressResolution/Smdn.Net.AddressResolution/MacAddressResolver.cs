@@ -293,7 +293,31 @@ public class MacAddressResolver : MacAddressResolverBase {
     base.Dispose(disposing);
   }
 
-  private async IAsyncEnumerable<NeighborTableEntry> EnumerateNeighborEntriesAsyncCore(
+  public IAsyncEnumerable<NeighborTableEntry> EnumerateNeighborTableEntriesAsync(
+    CancellationToken cancellationToken = default
+  )
+    => EnumerateNeighborTableEntriesAsync(
+      predicate: static _ => true,
+      cancellationToken: cancellationToken
+    );
+
+  public IAsyncEnumerable<NeighborTableEntry> EnumerateNeighborTableEntriesAsync(
+    Predicate<NeighborTableEntry> predicate,
+    CancellationToken cancellationToken = default
+  )
+  {
+    if (predicate is null)
+      throw new ArgumentNullException(nameof(predicate));
+
+    ThrowIfDisposed();
+
+    return EnumerateNeighborTableEntriesAsyncCore(
+      predicate: predicate,
+      cancellationToken: cancellationToken
+    );
+  }
+
+  private async IAsyncEnumerable<NeighborTableEntry> EnumerateNeighborTableEntriesAsyncCore(
     Predicate<NeighborTableEntry> predicate,
     [EnumeratorCancellation] CancellationToken cancellationToken
   )
@@ -373,7 +397,7 @@ public class MacAddressResolver : MacAddressResolverBase {
     NeighborTableEntry? priorCandidate = default;
     NeighborTableEntry? candidate = default;
 
-    await foreach (var entry in EnumerateNeighborEntriesAsyncCore(
+    await foreach (var entry in EnumerateNeighborTableEntriesAsyncCore(
       predicate: FilterNeighborTableEntryForAddressResolution,
       cancellationToken: cancellationToken
     ).ConfigureAwait(false)) {
@@ -413,7 +437,7 @@ public class MacAddressResolver : MacAddressResolverBase {
     NeighborTableEntry? priorCandidate = default;
     NeighborTableEntry? candidate = default;
 
-    await foreach (var entry in EnumerateNeighborEntriesAsyncCore(
+    await foreach (var entry in EnumerateNeighborTableEntriesAsyncCore(
       predicate: FilterNeighborTableEntryForAddressResolution,
       cancellationToken: cancellationToken
     ).ConfigureAwait(false)) {
