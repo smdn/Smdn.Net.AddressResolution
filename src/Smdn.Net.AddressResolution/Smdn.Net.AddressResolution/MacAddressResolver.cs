@@ -2,10 +2,12 @@
 // SPDX-License-Identifier: MIT
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -277,6 +279,28 @@ public class MacAddressResolver : MacAddressResolverBase {
     base.Dispose(disposing);
   }
 
+  private async IAsyncEnumerable<NeighborTableEntry> EnumerateNeighborEntriesAsyncCore(
+    Predicate<NeighborTableEntry> predicate,
+    [EnumeratorCancellation] CancellationToken cancellationToken
+  )
+  {
+    await foreach (var entry in neighborTable.EnumerateEntriesAsync(
+      cancellationToken
+    ).ConfigureAwait(false)) {
+      if (predicate(entry))
+        yield return entry;
+    }
+  }
+
+  private bool FilterNeighborTableEntryForAddressResolution(NeighborTableEntry entry)
+  {
+    // exclude unresolvable entries
+    if (entry.PhysicalAddress is null || entry.Equals(AllZeroMacAddress))
+      return false;
+
+    return true;
+  }
+
   protected override async ValueTask<PhysicalAddress?> ResolveIPAddressToMacAddressAsyncCore(
     IPAddress ipAddress,
     CancellationToken cancellationToken
@@ -288,12 +312,11 @@ public class MacAddressResolver : MacAddressResolverBase {
     NeighborTableEntry? priorCandidate = default;
     NeighborTableEntry? candidate = default;
 
-    await foreach (var entry in neighborTable.EnumerateEntriesAsync(
-      cancellationToken
+    await foreach (var entry in EnumerateNeighborEntriesAsyncCore(
+      predicate: FilterNeighborTableEntryForAddressResolution,
+      cancellationToken: cancellationToken
     ).ConfigureAwait(false)) {
       if (!entry.Equals(ipAddress))
-        continue;
-      if (entry.PhysicalAddress is null || entry.Equals(AllZeroMacAddress))
         continue;
 
       // ignore the entry that is marked as invalidated
@@ -315,7 +338,7 @@ public class MacAddressResolver : MacAddressResolverBase {
 
     Logger?.LogDebug("Resolved: {Entry}", (priorCandidate ?? candidate)?.ToString() ?? "(null)");
 
-    return priorCandidate?.PhysicalAddress ?? candidate?.PhysicalAddress;
+    return (priorCandidate ?? candidate)?.PhysicalAddress;
   }
 
   protected override async ValueTask<IPAddress?> ResolveMacAddressToIPAddressAsyncCore(
@@ -329,8 +352,9 @@ public class MacAddressResolver : MacAddressResolverBase {
     NeighborTableEntry? priorCandidate = default;
     NeighborTableEntry? candidate = default;
 
-    await foreach (var entry in neighborTable.EnumerateEntriesAsync(
-      cancellationToken
+    await foreach (var entry in EnumerateNeighborEntriesAsyncCore(
+      predicate: FilterNeighborTableEntryForAddressResolution,
+      cancellationToken: cancellationToken
     ).ConfigureAwait(false)) {
       if (!entry.Equals(macAddress))
         continue;
@@ -354,7 +378,7 @@ public class MacAddressResolver : MacAddressResolverBase {
 
     Logger?.LogDebug("Resolved: {Entry}", (priorCandidate ?? candidate)?.ToString() ?? "(null)");
 
-    return priorCandidate?.IPAddress ?? candidate?.IPAddress;
+    return (priorCandidate ?? candidate)?.IPAddress;
   }
 
   protected override void InvalidateCore(IPAddress ipAddress)
