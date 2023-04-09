@@ -293,14 +293,14 @@ public class MacAddressResolver : MacAddressResolverBase {
     ).ConfigureAwait(false)) {
       if (!entry.Equals(ipAddress))
         continue;
-
-      Logger?.LogDebug("Entry: {Entry}", entry);
-
       if (entry.PhysicalAddress is null || entry.Equals(AllZeroMacAddress))
         continue;
 
-      if (invalidatedMacAddressSet.ContainsKey(entry.PhysicalAddress!))
-        continue; // ignore the entry that is marked as invalidated
+      // ignore the entry that is marked as invalidated
+      if (invalidatedMacAddressSet.ContainsKey(entry.PhysicalAddress!)) {
+        Logger?.LogDebug("Invalidated: {Entry}", entry);
+        continue;
+      }
 
       if (entry.IsPermanent || entry.State == NeighborTableEntryState.Reachable) {
         // prefer permanent or reachable entry
@@ -309,7 +309,11 @@ public class MacAddressResolver : MacAddressResolverBase {
       }
 
       candidate = entry; // select the last entry found
+
+      Logger?.LogTrace("Candidate: {Entry}", candidate);
     }
+
+    Logger?.LogDebug("Resolved: {Entry}", (priorCandidate ?? candidate)?.ToString() ?? "(null)");
 
     return priorCandidate?.PhysicalAddress ?? candidate?.PhysicalAddress;
   }
@@ -331,10 +335,11 @@ public class MacAddressResolver : MacAddressResolverBase {
       if (!entry.Equals(macAddress))
         continue;
 
-      Logger?.LogDebug("Entry: {Entry}", entry);
-
-      if (invalidatedIPAddressSet.ContainsKey(entry.IPAddress!))
-        continue; // ignore the entry that is marked as invalidated
+      // ignore the entry that is marked as invalidated
+      if (invalidatedIPAddressSet.ContainsKey(entry.IPAddress!)) {
+        Logger?.LogDebug("Invalidated: {Entry}", entry);
+        continue;
+      }
 
       if (entry.IsPermanent || entry.State == NeighborTableEntryState.Reachable) {
         // prefer permanent or reachable entry
@@ -343,7 +348,11 @@ public class MacAddressResolver : MacAddressResolverBase {
       }
 
       candidate = entry; // select the last entry found
+
+      Logger?.LogTrace("Candidate: {Entry}", candidate);
     }
+
+    Logger?.LogDebug("Resolved: {Entry}", (priorCandidate ?? candidate)?.ToString() ?? "(null)");
 
     return priorCandidate?.IPAddress ?? candidate?.IPAddress;
   }
