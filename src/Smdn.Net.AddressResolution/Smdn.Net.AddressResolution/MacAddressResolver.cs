@@ -4,9 +4,9 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
+using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -90,6 +90,7 @@ public class MacAddressResolver : MacAddressResolverBase {
    */
   private INeighborTable neighborTable;
   private INeighborDiscoverer neighborDiscoverer;
+  private readonly NetworkInterface? networkInterface;
 
   private readonly bool shouldDisposeNeighborTable;
   private readonly bool shouldDisposeNeighborDiscoverer;
@@ -161,6 +162,7 @@ public class MacAddressResolver : MacAddressResolverBase {
     : this(
       neighborTable: GetOrCreateNeighborTableImplementation(networkProfile, serviceProvider),
       neighborDiscoverer: GetOrCreateNeighborDiscovererImplementation(networkProfile, serviceProvider),
+      networkInterface: networkProfile?.NetworkInterface,
       logger: CreateLogger(serviceProvider)
     )
   {
@@ -201,6 +203,7 @@ public class MacAddressResolver : MacAddressResolverBase {
     INeighborDiscoverer? neighborDiscoverer,
     bool shouldDisposeNeighborTable = false,
     bool shouldDisposeNeighborDiscoverer = false,
+    NetworkInterface? networkInterface = null,
     IServiceProvider? serviceProvider = null
   )
     : this(
@@ -214,6 +217,7 @@ public class MacAddressResolver : MacAddressResolverBase {
         serviceProvider?.GetRequiredService<INeighborDiscoverer>() ??
         throw new ArgumentNullException(nameof(neighborDiscoverer)),
       shouldDisposeNeighborDiscoverer: shouldDisposeNeighborDiscoverer,
+      networkInterface: networkInterface,
       logger: CreateLogger(serviceProvider)
     )
   {
@@ -222,6 +226,7 @@ public class MacAddressResolver : MacAddressResolverBase {
   private MacAddressResolver(
     (INeighborTable Implementation, bool ShouldDispose) neighborTable,
     (INeighborDiscoverer Implementation, bool ShouldDispose) neighborDiscoverer,
+    NetworkInterface? networkInterface,
     ILogger? logger
   )
     : this(
@@ -229,6 +234,7 @@ public class MacAddressResolver : MacAddressResolverBase {
       shouldDisposeNeighborTable: neighborTable.ShouldDispose,
       neighborDiscoverer: neighborDiscoverer.Implementation,
       shouldDisposeNeighborDiscoverer: neighborDiscoverer.ShouldDispose,
+      networkInterface: networkInterface,
       logger: logger
     )
   {
@@ -239,6 +245,7 @@ public class MacAddressResolver : MacAddressResolverBase {
     bool shouldDisposeNeighborTable,
     INeighborDiscoverer neighborDiscoverer,
     bool shouldDisposeNeighborDiscoverer,
+    NetworkInterface? networkInterface,
     ILogger? logger
   )
     : base(
@@ -247,12 +254,19 @@ public class MacAddressResolver : MacAddressResolverBase {
   {
     this.neighborTable = neighborTable ?? throw new ArgumentNullException(nameof(neighborTable));
     this.neighborDiscoverer = neighborDiscoverer ?? throw new ArgumentNullException(nameof(neighborDiscoverer));
+    this.networkInterface = networkInterface;
 
     this.shouldDisposeNeighborTable = shouldDisposeNeighborTable;
     this.shouldDisposeNeighborDiscoverer = shouldDisposeNeighborDiscoverer;
 
     logger?.LogInformation("INeighborTable: {INeighborTable}", this.neighborTable.GetType().FullName);
     logger?.LogInformation("INeighborDiscoverer: {INeighborDiscoverer}", this.neighborDiscoverer.GetType().FullName);
+    logger?.LogInformation(
+      "NetworkInterface: {NetworkInterfaceId}, IPv4={IPv4}, IPv6={IPv6}",
+      networkInterface?.Id ?? "(null)",
+      (networkInterface?.Supports(NetworkInterfaceComponent.IPv4) ?? false) ? "yes" : "no",
+      (networkInterface?.Supports(NetworkInterfaceComponent.IPv6) ?? false) ? "yes" : "no"
+    );
   }
 
   protected override void Dispose(bool disposing)
@@ -294,11 +308,50 @@ public class MacAddressResolver : MacAddressResolverBase {
 
   private bool FilterNeighborTableEntryForAddressResolution(NeighborTableEntry entry)
   {
-    // exclude unresolvable entries
-    if (entry.PhysicalAddress is null || entry.Equals(AllZeroMacAddress))
-      return false;
+    var include = true;
 
-    return true;
+    // exclude unresolvable entries
+    if (entry.PhysicalAddress is null || entry.Equals(AllZeroMacAddress)) {
+      include = false;
+      goto RESULT_DETERMINED;
+    }
+
+    if (networkInterface is not null) {
+      // exclude entries that are irrelevant to the network interface
+      if (
+        entry.InterfaceName is not null &&
+        !string.Equals(networkInterface.Id, entry.InterfaceName, StringComparison.Ordinal)
+      ) {
+        include = false;
+        goto RESULT_DETERMINED;
+      }
+
+      // exclude addresses of address families not supported by the network interface
+      if (
+        entry.IPAddress.AddressFamily == AddressFamily.InterNetwork &&
+        !networkInterface.Supports(NetworkInterfaceComponent.IPv4)
+      ) {
+        include = false;
+        goto RESULT_DETERMINED;
+      }
+
+      if (
+        entry.IPAddress.AddressFamily == AddressFamily.InterNetworkV6 &&
+        !networkInterface.Supports(NetworkInterfaceComponent.IPv6)
+      ) {
+        include = false;
+        goto RESULT_DETERMINED;
+      }
+    }
+
+  RESULT_DETERMINED:
+    Logger?.LogTrace(
+      "{FilterResult}: {Entry}",
+      include ? "Include" : "Exclude",
+      entry
+    );
+
+    return include;
   }
 
   protected override async ValueTask<PhysicalAddress?> ResolveIPAddressToMacAddressAsyncCore(
