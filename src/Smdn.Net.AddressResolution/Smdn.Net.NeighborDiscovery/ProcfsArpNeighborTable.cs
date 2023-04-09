@@ -102,7 +102,7 @@ public sealed class ProcfsArpNeighborTable : INeighborTable {
         physicalAddress: hardwareAddress,
         isPermanent: isPermanent,
         state: state,
-        interfaceName: device
+        interfaceId: device
       );
     }
   }

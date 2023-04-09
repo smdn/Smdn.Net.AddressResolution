@@ -11,24 +11,21 @@ public readonly struct NeighborTableEntry : IEquatable<IPAddress?>, IEquatable<P
   public PhysicalAddress? PhysicalAddress { get; }
   public bool IsPermanent { get; }
   public NeighborTableEntryState State { get; } = default;
-  public int? InterfaceIndex { get; }
-  public string? InterfaceName { get; }
+  public string? InterfaceId { get; }
 
   public NeighborTableEntry(
     IPAddress ipAddress,
     PhysicalAddress? physicalAddress,
     bool isPermanent,
     NeighborTableEntryState state,
-    int? interfaceIndex = null,
-    string? interfaceName = null
+    string? interfaceId
   )
   {
     IPAddress = ipAddress ?? throw new ArgumentNullException(nameof(ipAddress));
     PhysicalAddress = physicalAddress;
     State = state;
     IsPermanent = isPermanent;
-    InterfaceIndex = interfaceIndex;
-    InterfaceName = interfaceName;
+    InterfaceId = interfaceId;
   }
 
   public bool Equals(IPAddress? other)
@@ -48,5 +45,5 @@ public readonly struct NeighborTableEntry : IEquatable<IPAddress?>, IEquatable<P
   }
 
   public override string ToString()
-    => $"{{IP={IPAddress}, MAC={PhysicalAddress?.ToMacAddressString() ?? "(null)"}, IsPermanent={IsPermanent}, State={State}, Iface={InterfaceName} ({InterfaceIndex})}}";
+    => $"{{IP={IPAddress}, MAC={PhysicalAddress?.ToMacAddressString() ?? "(null)"}, IsPermanent={IsPermanent}, State={State}, Iface={InterfaceId}}}";
 }

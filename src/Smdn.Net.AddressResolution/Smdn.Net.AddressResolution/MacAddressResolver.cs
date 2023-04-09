@@ -327,8 +327,8 @@ public class MacAddressResolver : MacAddressResolverBase {
     if (networkInterface is not null) {
       // exclude entries that are irrelevant to the network interface
       if (
-        entry.InterfaceName is not null &&
-        !string.Equals(networkInterface.Id, entry.InterfaceName, networkInterfaceIdComparison)
+        entry.InterfaceId is not null &&
+        !string.Equals(networkInterface.Id, entry.InterfaceId, networkInterfaceIdComparison)
       ) {
         include = false;
         goto RESULT_DETERMINED;

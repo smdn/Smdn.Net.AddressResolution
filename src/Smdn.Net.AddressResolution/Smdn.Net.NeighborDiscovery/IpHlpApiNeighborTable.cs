@@ -170,8 +170,7 @@ public sealed class IpHlpApiNeighborTable : INeighborTable {
         NL_NEIGHBOR_STATE.NlnsPermanent or
         _ => NeighborTableEntryState.None,
       },
-      interfaceIndex: (int)ipnetRow2.InterfaceIndex,
-      interfaceName: interfaceId
+      interfaceId: interfaceId
     );
 
     return true;
