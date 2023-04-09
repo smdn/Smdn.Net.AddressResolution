@@ -73,6 +73,8 @@ public sealed class PingNeighborDiscoverer : INeighborDiscoverer {
       const int timeoutMilliseconds = 100;
 
       foreach (var address in addresses) {
+        cancellationToken.ThrowIfCancellationRequested();
+
         var reply = await ping!.SendPingAsync(
           address: address,
           timeout: timeoutMilliseconds,

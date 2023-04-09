@@ -61,9 +61,13 @@ public sealed class IpHlpApiNeighborTable : INeighborTable {
     [EnumeratorCancellation] CancellationToken cancellationToken = default
   )
   {
+    cancellationToken.ThrowIfCancellationRequested();
+
     using var table = await GetIpNetTable2Async().ConfigureAwait(false);
 
     foreach (var ipnetRow2 in table.Table) {
+      cancellationToken.ThrowIfCancellationRequested();
+
       logger?.LogTrace(
         "MIB_IPNET_ROW2 Address={Address} PhysicalAddress={PhysicalAddress} Flags={Flags} State={State} InterfaceIndex={InterfaceIndex} InterfaceLuid={InterfaceLuid} ReachabilityTime={ReachabilityTime}",
         ipnetRow2.Address,

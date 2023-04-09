@@ -62,6 +62,8 @@ public sealed class IpHlpApiNeighborDiscoverer : INeighborDiscoverer {
       throw new ArgumentNullException(nameof(addresses));
 
     foreach (var address in addresses) {
+      cancellationToken.ThrowIfCancellationRequested();
+
       var (succeeded, ipnetRow2) = await TryResolveIpNetEntry2Async(address).ConfigureAwait(false);
 
       if (succeeded) {

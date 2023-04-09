@@ -190,6 +190,8 @@ public abstract class RunCommandNeighborDiscovererBase : INeighborDiscoverer {
       StartInfo = commandProcessStartInfo,
     };
 
+    cancellationToken.ThrowIfCancellationRequested();
+
     try {
       commandProcess.Start();
 
