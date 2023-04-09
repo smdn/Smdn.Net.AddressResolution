@@ -75,19 +75,28 @@ public sealed class PingNeighborDiscoverer : INeighborDiscoverer {
       foreach (var address in addresses) {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var reply = await ping!.SendPingAsync(
-          address: address,
-          timeout: timeoutMilliseconds,
-          buffer: Array.Empty<byte>(),
-          options: pingOptions
-        ).ConfigureAwait(false);
+        try {
+          var reply = await ping!.SendPingAsync(
+            address: address,
+            timeout: timeoutMilliseconds,
+            buffer: Array.Empty<byte>(),
+            options: pingOptions
+          ).ConfigureAwait(false);
 
-        logger?.LogDebug(
-          "{Address}: {Status} ({RoundtripTime} ms)",
-          address,
-          reply.Status,
-          reply.RoundtripTime
-        );
+          logger?.LogDebug(
+            "{Address}: {Status} ({RoundtripTime} ms)",
+            address,
+            reply.Status,
+            reply.RoundtripTime
+          );
+        }
+        catch (Exception ex) {
+          logger?.LogWarning(
+            exception: ex,
+            "Ping failed: {Address}",
+            address
+          );
+        }
       }
     }
   }
