@@ -532,7 +532,7 @@ public class MacAddressResolver : MacAddressResolverBase {
     Logger?.LogTrace("Invalidated IP addresses: {InvalidatedIPAddresses}", string.Join(" ", invalidatedIPAddresses));
     Logger?.LogTrace("Invalidated MAC addresses: {InvalidatedMACAddresses}", string.Join(" ", invalidatedMacAddresses));
 
-    if (invalidatedMacAddresses.Any()) {
+    if (!invalidatedMacAddressSet.IsEmpty) {
       // perform full scan
       await neighborDiscoverer.DiscoverAsync(
         cancellationToken: cancellationToken
