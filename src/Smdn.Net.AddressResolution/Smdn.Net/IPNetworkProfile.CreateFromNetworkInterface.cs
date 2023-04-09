@@ -12,12 +12,12 @@ partial class IPNetworkProfile {
 #pragma warning restore IDE0040
 
   public static IPNetworkProfile Create()
-    => Create(predicate: static _ => true /* select first one */);
+    => Create(predicateForNetworkInterface: static _ => true /* select first one */);
 
-  public static IPNetworkProfile Create(Predicate<NetworkInterface> predicate)
+  public static IPNetworkProfile Create(Predicate<NetworkInterface> predicateForNetworkInterface)
   {
-    if (predicate is null)
-      throw new ArgumentNullException(nameof(predicate));
+    if (predicateForNetworkInterface is null)
+      throw new ArgumentNullException(nameof(predicateForNetworkInterface));
 
     foreach (var iface in NetworkInterface.GetAllNetworkInterfaces()) {
       if (!(iface.Supports(NetworkInterfaceComponent.IPv4) || iface.Supports(NetworkInterfaceComponent.IPv6)))
@@ -27,7 +27,7 @@ partial class IPNetworkProfile {
       if (iface.OperationalStatus != OperationalStatus.Up)
         continue; // except inoperational interfaces
 
-      if (predicate(iface))
+      if (predicateForNetworkInterface(iface))
         return Create(iface);
     }
 
