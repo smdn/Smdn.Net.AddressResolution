@@ -39,7 +39,8 @@ public sealed class NmapCommandNeighborDiscoverer : RunCommandNeighborDiscoverer
     IServiceProvider? serviceProvider
   )
     : base(
-      logger: serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger<NmapCommandNeighborDiscoverer>()
+      logger: serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger<NmapCommandNeighborDiscoverer>(),
+      serviceProvider: serviceProvider
     )
   {
     if (networkProfile.NetworkInterface is null)

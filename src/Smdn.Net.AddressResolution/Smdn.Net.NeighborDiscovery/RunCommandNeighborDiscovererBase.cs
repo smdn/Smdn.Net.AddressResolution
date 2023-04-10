@@ -14,11 +14,23 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Smdn.Net.NeighborDiscovery;
 
 public abstract class RunCommandNeighborDiscovererBase : INeighborDiscoverer {
+  public interface IProcessFactory {
+    Process CreateProcess(ProcessStartInfo processStartInfo);
+  }
+
+  private sealed class DefaultProcessFactory : IProcessFactory {
+    public static readonly DefaultProcessFactory Instance = new();
+
+    public Process CreateProcess(ProcessStartInfo processStartInfo)
+      => new() { StartInfo = processStartInfo };
+  }
+
   private static readonly Lazy<IReadOnlyCollection<string>> lazyDefaultCommandPaths = new(
     valueFactory: GetDefaultCommandCommandPaths,
     isThreadSafe: true
@@ -112,10 +124,15 @@ public abstract class RunCommandNeighborDiscovererBase : INeighborDiscoverer {
    * instance members
    */
   private readonly ILogger? logger;
+  private readonly IProcessFactory processFactory;
 
-  protected RunCommandNeighborDiscovererBase(ILogger? logger)
+  protected RunCommandNeighborDiscovererBase(
+    ILogger? logger,
+    IServiceProvider? serviceProvider
+  )
   {
     this.logger = logger;
+    processFactory = serviceProvider?.GetService<IProcessFactory>() ?? DefaultProcessFactory.Instance;
   }
 
   public void Dispose()
@@ -129,8 +146,33 @@ public abstract class RunCommandNeighborDiscovererBase : INeighborDiscoverer {
     // nothing to do in this class
   }
 
-  protected abstract bool GetCommandLineArguments(out string executable, out string arguments);
-  protected abstract bool GetCommandLineArguments(IEnumerable<IPAddress> addressesToDiscover, out string executable, out string arguments);
+  /// <inheritdoc cref="GetCommandLineArguments(IEnumerable{IPAddress}, out string, out string)" />
+  protected abstract bool GetCommandLineArguments(
+    out string executable,
+    out string? arguments
+  );
+
+  /// <summary>
+  /// Gets the path of the executable file and the arguments pass to the command for performing the neighbor discovery.
+  /// </summary>
+  /// <param name="addressesToDiscover">
+  /// The target list of <see cref="IPAddress" /> for performing the neighbor discovery.
+  /// </param>
+  /// <param name="executable">
+  /// The path to the executable file of the command.
+  /// </param>
+  /// <param name="arguments">
+  /// The arguments pass to the command.
+  /// </param>
+  /// <return>
+  /// If <see langword="true" />, performs the neighbor discovery by invoking the command with specified <paramref name="executable"/> and <paramref name="arguments"/>.
+  /// If <see langword="false" />, the neighbor discovery is not performed.
+  /// </return>
+  protected abstract bool GetCommandLineArguments(
+    IEnumerable<IPAddress> addressesToDiscover,
+    out string executable,
+    out string? arguments
+  );
 
   public virtual ValueTask DiscoverAsync(
     CancellationToken cancellationToken = default
@@ -140,6 +182,7 @@ public abstract class RunCommandNeighborDiscovererBase : INeighborDiscoverer {
       return RunCommandAsync(
         commandFileName: executable,
         commandArguments: args,
+        processFactory: processFactory,
         logger: logger,
         cancellationToken: cancellationToken
       );
@@ -157,6 +200,7 @@ public abstract class RunCommandNeighborDiscovererBase : INeighborDiscoverer {
       return RunCommandAsync(
         commandFileName: executable,
         commandArguments: args,
+        processFactory: processFactory,
         logger: logger,
         cancellationToken: cancellationToken
       );
@@ -167,14 +211,15 @@ public abstract class RunCommandNeighborDiscovererBase : INeighborDiscoverer {
 
   private static async ValueTask RunCommandAsync(
     string commandFileName,
-    string commandArguments,
+    string? commandArguments,
+    IProcessFactory processFactory,
     ILogger? logger,
     CancellationToken cancellationToken
   )
   {
     var commandProcessStartInfo = new ProcessStartInfo() {
       FileName = commandFileName,
-      Arguments = commandArguments,
+      Arguments = commandArguments ?? string.Empty,
       RedirectStandardOutput = true,
       RedirectStandardError = true,
       UseShellExecute = false,
@@ -186,9 +231,7 @@ public abstract class RunCommandNeighborDiscovererBase : INeighborDiscoverer {
       commandProcessStartInfo.Arguments
     );
 
-    using var commandProcess = new Process() {
-      StartInfo = commandProcessStartInfo,
-    };
+    using var commandProcess = processFactory.CreateProcess(commandProcessStartInfo);
 
     cancellationToken.ThrowIfCancellationRequested();
 

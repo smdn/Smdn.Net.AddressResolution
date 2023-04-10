@@ -68,7 +68,8 @@ public sealed class ArpScanCommandNeighborDiscoverer : RunCommandNeighborDiscove
     IServiceProvider? serviceProvider
   )
     : base(
-      logger: serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger<ArpScanCommandNeighborDiscoverer>()
+      logger: serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger<ArpScanCommandNeighborDiscoverer>(),
+      serviceProvider: serviceProvider
     )
   {
     arpScanCommandCommonOptions = ArpScanCommandBaseOptions;
