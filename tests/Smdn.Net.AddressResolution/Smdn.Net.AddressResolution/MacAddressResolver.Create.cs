@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 using System;
 using System.Runtime.InteropServices;
+
 using NUnit.Framework;
 
 namespace Smdn.Net.AddressResolution;

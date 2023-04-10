@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 using System;
 using System.Net.NetworkInformation;
+
 using NUnit.Framework;
 
 namespace Smdn.Net;

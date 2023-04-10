@@ -6,8 +6,11 @@ using System.Net;
 using System.Net.NetworkInformation;
 using System.Threading;
 using System.Threading.Tasks;
+
 using Microsoft.Extensions.DependencyInjection;
+
 using NUnit.Framework;
+
 using Smdn.Net.NeighborDiscovery;
 
 namespace Smdn.Net.AddressResolution;
