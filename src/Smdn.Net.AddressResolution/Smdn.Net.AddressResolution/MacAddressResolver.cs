@@ -97,6 +97,7 @@ public class MacAddressResolver : MacAddressResolverBase {
 
   private DateTime lastFullScanPerformedAt = DateTime.MinValue;
   private TimeSpan neighborDiscoveryInterval = Timeout.InfiniteTimeSpan;
+  private TimeSpan neighborDiscoveryMinInterval = TimeSpan.FromSeconds(20.0);
 
   /// <summary>
   /// Gets or sets the <see cref="TimeSpan"/> which represents the interval to perform a neighbor discovery.
@@ -107,6 +108,9 @@ public class MacAddressResolver : MacAddressResolverBase {
   /// <see cref="ResolveMacAddressToIPAddressAsync(PhysicalAddress, CancellationToken)" /> is called.
   /// If <see cref="Timeout.InfiniteTimeSpan" /> is specified, the instance does not perform neighbor discovery automatically.
   /// </remarks>
+  /// <seealso cref="NeighborDiscoveryMinInterval"/>
+  /// <seealso cref="ResolveIPAddressToMacAddressAsync(IPAddress, CancellationToken)" />
+  /// <seealso cref="ResolveMacAddressToIPAddressAsync(PhysicalAddress, CancellationToken)" />
   public TimeSpan NeighborDiscoveryInterval {
     get => neighborDiscoveryInterval;
     set {
@@ -119,7 +123,42 @@ public class MacAddressResolver : MacAddressResolverBase {
     }
   }
 
-  private bool HasFullScanIntervalElapsed =>
+  /// <summary>
+  /// Gets or sets the <see cref="TimeSpan"/> which represents the minimum interval to perform a neighbor discovery.
+  /// </summary>
+  /// <remarks>
+  /// If the period represented by this property has not elapsed since the lastest neighbor discovery,
+  /// the instance will not performs neighbor discovery.
+  /// The neighbor discovery will be performed automatically when the <see cref="ResolveIPAddressToMacAddressAsync(IPAddress, CancellationToken)" /> or
+  /// <see cref="ResolveMacAddressToIPAddressAsync(PhysicalAddress, CancellationToken)" /> is called, or explicitly performed by calling the
+  /// <see cref="RefreshCacheAsync(CancellationToken)" />.
+  /// If <see cref="Timeout.InfiniteTimeSpan" /> is specified, the instance does not perform the neighbor discovery.
+  /// If <see cref="TimeSpan.Zero" /> is specified, the instance always performs the neighbor discovery as requested.
+  /// </remarks>
+  /// <seealso cref="NeighborDiscoveryInterval"/>
+  /// <seealso cref="RefreshCacheAsync(CancellationToken)" />
+  /// <seealso cref="ResolveIPAddressToMacAddressAsync(IPAddress, CancellationToken)" />
+  /// <seealso cref="ResolveMacAddressToIPAddressAsync(PhysicalAddress, CancellationToken)" />
+  public TimeSpan NeighborDiscoveryMinInterval {
+    get => neighborDiscoveryMinInterval;
+    set {
+      if (value < TimeSpan.Zero) {
+        if (value != Timeout.InfiniteTimeSpan)
+          throw new ArgumentOutOfRangeException(message: $"The value must be non-zero positive {nameof(TimeSpan)} or {nameof(Timeout)}.{nameof(Timeout.InfiniteTimeSpan)}.", paramName: nameof(NeighborDiscoveryMinInterval));
+      }
+
+      neighborDiscoveryMinInterval = value;
+    }
+  }
+
+  private bool HasFullScanMinIntervalElapsed =>
+    neighborDiscoveryMinInterval == TimeSpan.Zero ||
+    (
+      neighborDiscoveryMinInterval != Timeout.InfiniteTimeSpan &&
+      lastFullScanPerformedAt + neighborDiscoveryMinInterval <= DateTime.Now
+    );
+
+  private bool ShouldPerformFullScanBeforeResolution =>
     neighborDiscoveryInterval != Timeout.InfiniteTimeSpan &&
     lastFullScanPerformedAt + neighborDiscoveryInterval <= DateTime.Now;
 
@@ -391,7 +430,7 @@ public class MacAddressResolver : MacAddressResolverBase {
     CancellationToken cancellationToken
   )
   {
-    if (HasFullScanIntervalElapsed)
+    if (ShouldPerformFullScanBeforeResolution)
       await FullScanAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
 
     NeighborTableEntry? priorCandidate = default;
@@ -431,7 +470,7 @@ public class MacAddressResolver : MacAddressResolverBase {
     CancellationToken cancellationToken
   )
   {
-    if (HasFullScanIntervalElapsed)
+    if (ShouldPerformFullScanBeforeResolution)
       await FullScanAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
 
     NeighborTableEntry? priorCandidate = default;
@@ -486,8 +525,13 @@ public class MacAddressResolver : MacAddressResolverBase {
 
   private async ValueTask FullScanAsync(CancellationToken cancellationToken)
   {
+    if (!HasFullScanMinIntervalElapsed) {
+      Logger?.LogInformation("Neighbor discovery was not performed since the minimum perform interval had not elapsed.");
+      return;
+    }
+
     if (!await fullScanMutex.WaitAsync(0, cancellationToken: default).ConfigureAwait(false)) {
-      Logger?.LogInformation("Neighbor discovery is currently being performed.");
+      Logger?.LogInformation("Neighbor discovery was not performed since the another discovery is currently being proceeding.");
       return;
     }
 
@@ -536,8 +580,8 @@ public class MacAddressResolver : MacAddressResolverBase {
     Logger?.LogTrace("Invalidated MAC addresses: {InvalidatedMACAddresses}", string.Join(" ", invalidatedMacAddresses));
 
     if (!invalidatedMacAddressSet.IsEmpty) {
-      // perform full scan
-      await neighborDiscoverer.DiscoverAsync(
+      // perform full scan since MAC addresses must be refreshed
+      await FullScanAsync(
         cancellationToken: cancellationToken
       ).ConfigureAwait(false);
 
