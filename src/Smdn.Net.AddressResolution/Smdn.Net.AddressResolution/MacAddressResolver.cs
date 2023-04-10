@@ -349,7 +349,7 @@ public class MacAddressResolver : MacAddressResolverBase {
     CancellationToken cancellationToken = default
   )
     => EnumerateNeighborTableEntriesAsync(
-      predicate: static _ => true,
+      predicate: entry => networkInterface is null || FilterNeighborTableEntryForNetworkInterface(entry),
       cancellationToken: cancellationToken
     );
 
@@ -390,6 +390,39 @@ public class MacAddressResolver : MacAddressResolverBase {
       ? StringComparison.OrdinalIgnoreCase
       : StringComparison.Ordinal;
 
+  private bool FilterNeighborTableEntryForNetworkInterface(NeighborTableEntry entry)
+  {
+#if DEBUG
+    if (networkInterface is null)
+      throw new InvalidOperationException($"{nameof(networkInterface)} is null.");
+#endif
+
+    // exclude entries that are irrelevant to the network interface
+    if (
+      entry.InterfaceId is not null &&
+      !string.Equals(networkInterface.Id, entry.InterfaceId, networkInterfaceIdComparison)
+    ) {
+      return false;
+    }
+
+    // exclude addresses of address families not supported by the network interface
+    if (
+      entry.IPAddress.AddressFamily == AddressFamily.InterNetwork &&
+      !networkInterface.Supports(NetworkInterfaceComponent.IPv4)
+    ) {
+      return false;
+    }
+
+    if (
+      entry.IPAddress.AddressFamily == AddressFamily.InterNetworkV6 &&
+      !networkInterface.Supports(NetworkInterfaceComponent.IPv6)
+    ) {
+      return false;
+    }
+
+    return true;
+  }
+
   private bool FilterNeighborTableEntryForAddressResolution(NeighborTableEntry entry)
   {
     var include = true;
@@ -400,32 +433,10 @@ public class MacAddressResolver : MacAddressResolverBase {
       goto RESULT_DETERMINED;
     }
 
-    if (networkInterface is not null) {
-      // exclude entries that are irrelevant to the network interface
-      if (
-        entry.InterfaceId is not null &&
-        !string.Equals(networkInterface.Id, entry.InterfaceId, networkInterfaceIdComparison)
-      ) {
-        include = false;
-        goto RESULT_DETERMINED;
-      }
-
-      // exclude addresses of address families not supported by the network interface
-      if (
-        entry.IPAddress.AddressFamily == AddressFamily.InterNetwork &&
-        !networkInterface.Supports(NetworkInterfaceComponent.IPv4)
-      ) {
-        include = false;
-        goto RESULT_DETERMINED;
-      }
-
-      if (
-        entry.IPAddress.AddressFamily == AddressFamily.InterNetworkV6 &&
-        !networkInterface.Supports(NetworkInterfaceComponent.IPv6)
-      ) {
-        include = false;
-        goto RESULT_DETERMINED;
-      }
+    // exclude entries that are irrelevant to or not supported by the network interface
+    if (networkInterface is not null && !FilterNeighborTableEntryForNetworkInterface(entry)) {
+      include = false;
+      goto RESULT_DETERMINED;
     }
 
   RESULT_DETERMINED:
