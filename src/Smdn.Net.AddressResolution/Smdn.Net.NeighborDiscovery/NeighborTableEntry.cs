@@ -10,7 +10,7 @@ public readonly struct NeighborTableEntry : IEquatable<IPAddress?>, IEquatable<P
   public IPAddress IPAddress { get; }
   public PhysicalAddress? PhysicalAddress { get; }
   public bool IsPermanent { get; }
-  public NeighborTableEntryState State { get; } = default;
+  public NeighborTableEntryState State { get; }
   public string? InterfaceId { get; }
 
   public NeighborTableEntry(
@@ -29,12 +29,7 @@ public readonly struct NeighborTableEntry : IEquatable<IPAddress?>, IEquatable<P
   }
 
   public bool Equals(IPAddress? other)
-  {
-    if (IPAddress is null && other is null)
-      return true;
-
-    return IPAddress is not null && IPAddress.Equals(other);
-  }
+    => IPAddress.Equals(other);
 
   public bool Equals(PhysicalAddress? other)
   {
