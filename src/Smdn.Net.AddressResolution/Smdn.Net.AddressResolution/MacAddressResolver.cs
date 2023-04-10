@@ -526,6 +526,9 @@ public class MacAddressResolver : MacAddressResolverBase {
 
   private async ValueTask PartialScanAsync(CancellationToken cancellationToken)
   {
+    if (invalidatedIPAddressSet.IsEmpty && invalidatedMacAddressSet.IsEmpty)
+      return; // nothing to do
+
     var invalidatedIPAddresses = invalidatedIPAddressSet.Keys;
     var invalidatedMacAddresses = invalidatedMacAddressSet.Keys;
 
