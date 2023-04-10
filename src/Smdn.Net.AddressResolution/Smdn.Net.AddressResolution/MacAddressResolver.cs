@@ -20,8 +20,6 @@ using Smdn.Net.NeighborDiscovery;
 namespace Smdn.Net.AddressResolution;
 
 public class MacAddressResolver : MacAddressResolverBase {
-  private const int PartialScanParallelMax = 3;
-
 #pragma warning disable IDE0060
   private static INeighborTable CreateNeighborTable(
     IPNetworkProfile? networkProfile,
@@ -170,8 +168,9 @@ public class MacAddressResolver : MacAddressResolverBase {
   // mutex for neighbor discovery (a.k.a full scan)
   private SemaphoreSlim fullScanMutex = new(initialCount: 1, maxCount: 1);
 
-  // semaphore for address resolition (a.k.a partial scan)
-  private SemaphoreSlim partialScanSemaphore = new(initialCount: PartialScanParallelMax, maxCount: PartialScanParallelMax);
+  // semaphore for address resolution (a.k.a partial scan)
+  private const int DefaultParallelCountForRefreshInvalidatedCache = 3;
+  private SemaphoreSlim partialScanSemaphore;
 
   /// <summary>
   /// Initializes a new instance of the <see cref="MacAddressResolver"/> class.
@@ -202,6 +201,7 @@ public class MacAddressResolver : MacAddressResolverBase {
       neighborTable: GetOrCreateNeighborTableImplementation(networkProfile, serviceProvider),
       neighborDiscoverer: GetOrCreateNeighborDiscovererImplementation(networkProfile, serviceProvider),
       networkInterface: networkProfile?.NetworkInterface,
+      maxParallelCountForRefreshInvalidatedCache: DefaultParallelCountForRefreshInvalidatedCache,
       logger: CreateLogger(serviceProvider)
     )
   {
@@ -243,6 +243,7 @@ public class MacAddressResolver : MacAddressResolverBase {
     bool shouldDisposeNeighborTable = false,
     bool shouldDisposeNeighborDiscoverer = false,
     NetworkInterface? networkInterface = null,
+    int maxParallelCountForRefreshInvalidatedCache = DefaultParallelCountForRefreshInvalidatedCache,
     IServiceProvider? serviceProvider = null
   )
     : this(
@@ -257,6 +258,7 @@ public class MacAddressResolver : MacAddressResolverBase {
         throw new ArgumentNullException(nameof(neighborDiscoverer)),
       shouldDisposeNeighborDiscoverer: shouldDisposeNeighborDiscoverer,
       networkInterface: networkInterface,
+      maxParallelCountForRefreshInvalidatedCache: maxParallelCountForRefreshInvalidatedCache,
       logger: CreateLogger(serviceProvider)
     )
   {
@@ -266,6 +268,7 @@ public class MacAddressResolver : MacAddressResolverBase {
     (INeighborTable Implementation, bool ShouldDispose) neighborTable,
     (INeighborDiscoverer Implementation, bool ShouldDispose) neighborDiscoverer,
     NetworkInterface? networkInterface,
+    int maxParallelCountForRefreshInvalidatedCache,
     ILogger? logger
   )
     : this(
@@ -274,6 +277,7 @@ public class MacAddressResolver : MacAddressResolverBase {
       neighborDiscoverer: neighborDiscoverer.Implementation,
       shouldDisposeNeighborDiscoverer: neighborDiscoverer.ShouldDispose,
       networkInterface: networkInterface,
+      maxParallelCountForRefreshInvalidatedCache: maxParallelCountForRefreshInvalidatedCache,
       logger: logger
     )
   {
@@ -285,12 +289,16 @@ public class MacAddressResolver : MacAddressResolverBase {
     INeighborDiscoverer neighborDiscoverer,
     bool shouldDisposeNeighborDiscoverer,
     NetworkInterface? networkInterface,
+    int maxParallelCountForRefreshInvalidatedCache,
     ILogger? logger
   )
     : base(
       logger: logger
     )
   {
+    if (maxParallelCountForRefreshInvalidatedCache <= 0)
+      throw new ArgumentOutOfRangeException(message: "must be non-zero positive number", paramName: nameof(maxParallelCountForRefreshInvalidatedCache));
+
     this.neighborTable = neighborTable ?? throw new ArgumentNullException(nameof(neighborTable));
     this.neighborDiscoverer = neighborDiscoverer ?? throw new ArgumentNullException(nameof(neighborDiscoverer));
     this.networkInterface = networkInterface;
@@ -305,6 +313,11 @@ public class MacAddressResolver : MacAddressResolverBase {
       networkInterface?.Id ?? "(null)",
       (networkInterface?.Supports(NetworkInterfaceComponent.IPv4) ?? false) ? "yes" : "no",
       (networkInterface?.Supports(NetworkInterfaceComponent.IPv6) ?? false) ? "yes" : "no"
+    );
+
+    partialScanSemaphore = new(
+      initialCount: maxParallelCountForRefreshInvalidatedCache,
+      maxCount: maxParallelCountForRefreshInvalidatedCache
     );
   }
 
