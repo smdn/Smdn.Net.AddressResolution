@@ -394,6 +394,8 @@ public class MacAddressResolver : MacAddressResolverBase {
     if (networkInterface is null)
       throw new InvalidOperationException($"{nameof(networkInterface)} is null.");
 #endif
+    if (entry.IsEmpty)
+      return false;
 
     // exclude entries that are irrelevant to the network interface
     if (
@@ -456,39 +458,33 @@ public class MacAddressResolver : MacAddressResolverBase {
     CancellationToken cancellationToken
   )
   {
+    cancellationToken.ThrowIfCancellationRequested();
+
     if (ShouldPerformFullScanBeforeResolution)
-      await FullScanAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+      await RefreshCacheAsyncCore(cancellationToken: cancellationToken).ConfigureAwait(false);
 
-    NeighborTableEntry? priorCandidate = default;
-    NeighborTableEntry? candidate = default;
+    cancellationToken.ThrowIfCancellationRequested();
 
-    await foreach (var entry in EnumerateNeighborTableEntriesAsyncCore(
-      predicate: FilterNeighborTableEntryForAddressResolution,
-      cancellationToken: cancellationToken
-    ).ConfigureAwait(false)) {
-      if (!entry.Equals(ipAddress))
-        continue;
+    var selectedEntry = await SelectNeighborTableEntryAsync(
+      predicate: entry => {
+        if (!FilterNeighborTableEntryForAddressResolution(entry))
+          return false;
 
-      // ignore the entry that is marked as invalidated
-      if (invalidatedMacAddressSet.ContainsKey(entry.PhysicalAddress!)) {
-        Logger?.LogDebug("Invalidated: {Entry}", entry);
-        continue;
-      }
+        if (!entry.Equals(ipAddress))
+          return false;
 
-      if (entry.IsPermanent || entry.State == NeighborTableEntryState.Reachable) {
-        // prefer permanent or reachable entry
-        priorCandidate = entry;
-        break;
-      }
+        // ignore the entry that is marked as invalidated
+        if (invalidatedMacAddressSet.ContainsKey(entry.PhysicalAddress!)) {
+          Logger?.LogDebug("Invalidated: {Entry}", entry);
+          return false;
+        }
 
-      candidate = entry; // select the last entry found
+        return true;
+      },
+      cancellationToken
+    ).ConfigureAwait(false);
 
-      Logger?.LogTrace("Candidate: {Entry}", candidate);
-    }
-
-    Logger?.LogDebug("Resolved: {Entry}", (priorCandidate ?? candidate)?.ToString() ?? "(null)");
-
-    return (priorCandidate ?? candidate)?.PhysicalAddress;
+    return selectedEntry.PhysicalAddress;
   }
 
   protected override async ValueTask<IPAddress?> ResolveMacAddressToIPAddressAsyncCore(
@@ -496,25 +492,47 @@ public class MacAddressResolver : MacAddressResolverBase {
     CancellationToken cancellationToken
   )
   {
-    if (ShouldPerformFullScanBeforeResolution)
-      await FullScanAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+    cancellationToken.ThrowIfCancellationRequested();
 
-    NeighborTableEntry? priorCandidate = default;
-    NeighborTableEntry? candidate = default;
+    if (ShouldPerformFullScanBeforeResolution)
+      await RefreshCacheAsyncCore(cancellationToken: cancellationToken).ConfigureAwait(false);
+
+    cancellationToken.ThrowIfCancellationRequested();
+
+    var selectedEntry = await SelectNeighborTableEntryAsync(
+      predicate: entry => {
+        if (!FilterNeighborTableEntryForAddressResolution(entry))
+          return false;
+
+        if (!entry.Equals(macAddress))
+          return false;
+
+        // ignore the entry that is marked as invalidated
+        if (invalidatedIPAddressSet.ContainsKey(entry.IPAddress!)) {
+          Logger?.LogDebug("Invalidated: {Entry}", entry);
+          return false;
+        }
+
+        return true;
+      },
+      cancellationToken
+    ).ConfigureAwait(false);
+
+    return selectedEntry.IPAddress;
+  }
+
+  protected virtual async ValueTask<NeighborTableEntry> SelectNeighborTableEntryAsync(
+    Predicate<NeighborTableEntry> predicate,
+    CancellationToken cancellationToken
+  )
+  {
+    NeighborTableEntry priorCandidate = default;
+    NeighborTableEntry candidate = default;
 
     await foreach (var entry in EnumerateNeighborTableEntriesAsyncCore(
-      predicate: FilterNeighborTableEntryForAddressResolution,
+      predicate: predicate,
       cancellationToken: cancellationToken
     ).ConfigureAwait(false)) {
-      if (!entry.Equals(macAddress))
-        continue;
-
-      // ignore the entry that is marked as invalidated
-      if (invalidatedIPAddressSet.ContainsKey(entry.IPAddress!)) {
-        Logger?.LogDebug("Invalidated: {Entry}", entry);
-        continue;
-      }
-
       if (entry.IsPermanent || entry.State == NeighborTableEntryState.Reachable) {
         // prefer permanent or reachable entry
         priorCandidate = entry;
@@ -526,9 +544,12 @@ public class MacAddressResolver : MacAddressResolverBase {
       Logger?.LogTrace("Candidate: {Entry}", candidate);
     }
 
-    Logger?.LogDebug("Resolved: {Entry}", (priorCandidate ?? candidate)?.ToString() ?? "(null)");
+    if (!priorCandidate.IsEmpty)
+      candidate = priorCandidate;
 
-    return (priorCandidate ?? candidate)?.IPAddress;
+    Logger?.LogDebug("Resolved: {Entry}", candidate.IsEmpty ? "(none)" : candidate.ToString());
+
+    return candidate;
   }
 
   protected override void InvalidateCore(IPAddress ipAddress)

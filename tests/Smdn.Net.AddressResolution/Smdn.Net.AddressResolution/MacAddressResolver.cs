@@ -17,46 +17,6 @@ namespace Smdn.Net.AddressResolution;
 
 [TestFixture]
 public partial class MacAddressResolverTests {
-  private sealed class PseudoNeighborTable : INeighborTable {
-    public bool IsDisposed { get; private set; }
-
-    public void Dispose() => IsDisposed = true;
-
-    public IAsyncEnumerable<NeighborTableEntry> EnumerateEntriesAsync(CancellationToken cancellationToken)
-      => throw new NotImplementedException();
-  }
-
-  private sealed class PseudoNeighborDiscoverer : INeighborDiscoverer {
-    public bool IsDisposed { get; private set; }
-    public bool FullDiscoveryRequested { get; private set; }
-    public bool PartialDiscoveryRequested { get; private set; }
-    public List<IPAddress> DiscoveryRequestedAddresses { get; } = new();
-
-    public void Dispose() => IsDisposed = true;
-
-    public void Reset()
-    {
-      FullDiscoveryRequested = false;
-      PartialDiscoveryRequested = false;
-      DiscoveryRequestedAddresses.Clear();
-    }
-
-    public ValueTask DiscoverAsync(CancellationToken cancellationToken)
-    {
-      FullDiscoveryRequested = true;
-
-      return default;
-    }
-
-    public ValueTask DiscoverAsync(IEnumerable<IPAddress> addresses, CancellationToken cancellationToken)
-    {
-      PartialDiscoveryRequested = true;
-      DiscoveryRequestedAddresses.AddRange(addresses);
-
-      return default;
-    }
-  }
-
   private sealed class PerformDelayNeighborDiscoverer : INeighborDiscoverer {
     private readonly TimeSpan delayOnNeighborDiscovery;
     private readonly object lockObject = new();
