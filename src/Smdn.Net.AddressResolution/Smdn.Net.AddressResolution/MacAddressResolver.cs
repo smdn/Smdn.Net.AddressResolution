@@ -383,6 +383,8 @@ public class MacAddressResolver : MacAddressResolverBase {
     await foreach (var entry in neighborTable.EnumerateEntriesAsync(
       cancellationToken
     ).ConfigureAwait(false)) {
+      cancellationToken.ThrowIfCancellationRequested();
+
       if (predicate(entry))
         yield return entry;
     }
