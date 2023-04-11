@@ -93,7 +93,7 @@ public class MacAddressResolver : MacAddressResolverBase {
   private readonly bool shouldDisposeNeighborTable;
   private readonly bool shouldDisposeNeighborDiscoverer;
 
-  private DateTime lastFullScanPerformedAt = DateTime.MinValue;
+  private Stopwatch? timeStampForFullScan;
   private TimeSpan neighborDiscoveryInterval = Timeout.InfiniteTimeSpan;
   private TimeSpan neighborDiscoveryMinInterval = TimeSpan.FromSeconds(20.0);
 
@@ -153,12 +153,18 @@ public class MacAddressResolver : MacAddressResolverBase {
     neighborDiscoveryMinInterval == TimeSpan.Zero ||
     (
       neighborDiscoveryMinInterval != Timeout.InfiniteTimeSpan &&
-      lastFullScanPerformedAt + neighborDiscoveryMinInterval <= DateTime.Now
+      (
+        timeStampForFullScan is null || // not performed yet
+        neighborDiscoveryMinInterval <= timeStampForFullScan.Elapsed // interval elapsed
+      )
     );
 
   private bool ShouldPerformFullScanBeforeResolution =>
     neighborDiscoveryInterval != Timeout.InfiniteTimeSpan &&
-    lastFullScanPerformedAt + neighborDiscoveryInterval <= DateTime.Now;
+    (
+      timeStampForFullScan is null || // not performed yet
+      neighborDiscoveryInterval <= timeStampForFullScan.Elapsed // interval elapsed
+    );
 
   private readonly ConcurrentSet<IPAddress> invalidatedIPAddressSet = new();
   private readonly ConcurrentSet<PhysicalAddress> invalidatedMacAddressSet = new();
@@ -567,7 +573,8 @@ public class MacAddressResolver : MacAddressResolverBase {
       invalidatedIPAddressSet.Clear();
       invalidatedMacAddressSet.Clear();
 
-      lastFullScanPerformedAt = DateTime.Now;
+      timeStampForFullScan ??= new Stopwatch();
+      timeStampForFullScan.Restart();
     }
     finally {
       Logger?.LogInformation("Neighbor discovery finished in {ElapsedMilliseconds} ms.", sw!.ElapsedMilliseconds);
