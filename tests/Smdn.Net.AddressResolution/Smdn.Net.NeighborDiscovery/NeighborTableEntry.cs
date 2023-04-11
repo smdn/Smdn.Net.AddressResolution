@@ -3,6 +3,7 @@
 using System;
 using System.Net;
 using System.Net.NetworkInformation;
+using System.Runtime.InteropServices;
 
 using NUnit.Framework;
 
@@ -12,6 +13,43 @@ namespace Smdn.Net.NeighborDiscovery;
 public class NeighborTableEntryTests {
   private static readonly IPAddress TestIPAddress = IPAddress.Parse("192.0.2.255");
   private static readonly PhysicalAddress TestMacAddress = PhysicalAddress.Parse("00:00:5E:00:53:00");
+
+  [Test]
+  public void Default()
+  {
+    var entry = default(NeighborTableEntry);
+
+    Assert.IsTrue(entry.IsEmpty, nameof(entry.IsEmpty));
+    Assert.IsNull(entry.IPAddress, nameof(entry.IPAddress));
+    Assert.IsNull(entry.PhysicalAddress, nameof(entry.PhysicalAddress));
+    Assert.IsFalse(entry.IsPermanent, nameof(entry.IsPermanent));
+    Assert.AreEqual(default(NeighborTableEntryState), entry.State, nameof(entry.State));
+    Assert.IsNull(entry.InterfaceId, nameof(entry.InterfaceId));
+
+    Assert.IsTrue(entry.Equals(NeighborTableEntry.Empty), "equals to NeighborTableEntry.Empty");
+    Assert.IsTrue(entry.Equals((IPAddress?)null), "equals to (IPAddress)null");
+    Assert.IsTrue(entry.Equals((PhysicalAddress?)null), "equals to (PhysicalAddress)null");
+
+    Assert.DoesNotThrow(() => entry.ToString());
+    Assert.DoesNotThrow(() => entry.GetHashCode());
+  }
+
+  [Test]
+  public void IsEmpty()
+  {
+    Assert.IsTrue(default(NeighborTableEntry).IsEmpty);
+    Assert.IsTrue(NeighborTableEntry.Empty.IsEmpty);
+
+    Assert.IsFalse(
+      new NeighborTableEntry(
+        ipAddress: TestIPAddress,
+        physicalAddress: null,
+        isPermanent: true,
+        state: NeighborTableEntryState.None,
+        interfaceId: null
+      ).IsEmpty
+    );
+  }
 
   [Test]
   public void Ctor()
@@ -37,6 +75,239 @@ public class NeighborTableEntryTests {
     );
   }
 
+  private static System.Collections.IEnumerable YieldTestCases_Equals()
+  {
+    static NeighborTableEntry Create(
+      string ipAddress,
+      string? macAddress,
+      bool isPermanent,
+      string? interfaceId,
+      NeighborTableEntryState state = NeighborTableEntryState.None
+    )
+      => new(
+        ipAddress: IPAddress.Parse(ipAddress),
+        physicalAddress: macAddress is null ? null : PhysicalAddress.Parse(macAddress),
+        isPermanent: isPermanent,
+        state: state,
+        interfaceId: interfaceId
+      );
+
+    const bool areEqual = true;
+    const bool areNotEqual = false;
+
+    yield return new object[] {
+      areEqual,
+      Create("192.168.2.0", "00-00-5E-00-53-00", true, "wlan0", NeighborTableEntryState.None),
+      Create("192.168.2.0", "00-00-5E-00-53-00", true, "wlan0", NeighborTableEntryState.None),
+      "are equal"
+    };
+
+    yield return new object[] {
+      areNotEqual,
+      Create("192.168.2.0", "00-00-5E-00-53-00", true, "wlan0", NeighborTableEntryState.None),
+      NeighborTableEntry.Empty,
+      "are not equal to Empty"
+    };
+
+    yield return new object[] {
+      areEqual,
+      NeighborTableEntry.Empty,
+      NeighborTableEntry.Empty,
+      "are equal (both empty)"
+    };
+
+    yield return new object[] {
+      areEqual,
+      Create("192.168.2.0", null, true, "wlan0"),
+      Create("192.168.2.0", null, true, "wlan0"),
+      "are equal (both of PhysicalAddress are null)"
+    };
+
+    yield return new object[] {
+      areEqual,
+      Create("192.168.2.0", "00-00-5E-00-53-00", false, "wlan0", NeighborTableEntryState.None),
+      Create("192.168.2.0", "00-00-5E-00-53-00", false, "wlan0", NeighborTableEntryState.None),
+      "are equal (both of IsPermanent are false)"
+    };
+
+    yield return new object[] {
+      areEqual,
+      Create("192.168.2.0", "00-00-5E-00-53-00", true, null, NeighborTableEntryState.None),
+      Create("192.168.2.0", "00-00-5E-00-53-00", true, null, NeighborTableEntryState.None),
+      "are equal (both of InterfaceId are null)"
+    };
+
+    yield return new object[] {
+      areEqual,
+      Create("192.168.2.0", "00-00-5E-00-53-00", true, "wlan0", NeighborTableEntryState.None),
+      Create("192.168.2.0", "00-00-5E-00-53-00", true, "wlan0", NeighborTableEntryState.Reachable),
+      "difference of State must be ignored"
+    };
+
+    yield return new object[] {
+      RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? areEqual : areNotEqual,
+      Create("192.168.2.0", "00-00-5E-00-53-00", true, "WLAN0"),
+      Create("192.168.2.0", "00-00-5E-00-53-00", true, "wlan0"),
+      "difference of the casing conventions for the network interface " +
+        (
+          RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+            ? "must not be ignored"
+            : "must be ignored"
+        )
+    };
+
+    yield return new object[] {
+      areNotEqual,
+      Create("192.168.2.0", "00-00-5E-00-53-00", true, "wlan0"),
+      Create("192.168.2.1", "00-00-5E-00-53-00", true, "wlan0"),
+      "difference in IPAddress"
+    };
+
+    yield return new object[] {
+      areNotEqual,
+      Create("192.168.2.0", "00-00-5E-00-53-00", true, "wlan0"),
+      Create("192.168.2.0", "00-00-5E-00-53-01", true, "wlan0"),
+      "difference in PhysicalAddress"
+    };
+
+    yield return new object[] {
+      areNotEqual,
+      Create("192.168.2.0", "00-00-5E-00-53-00", true, "wlan0"),
+      Create("192.168.2.0", null, true, "wlan0"),
+      "difference in PhysicalAddress (null)"
+    };
+
+    yield return new object[] {
+      areNotEqual,
+      Create("192.168.2.0", null, true, "wlan0"),
+      Create("192.168.2.0", "00-00-5E-00-53-00", true, "wlan0"),
+      "difference in PhysicalAddress (null)"
+    };
+
+    yield return new object[] {
+      areNotEqual,
+      Create("192.168.2.0", "00-00-5E-00-53-00", true, "wlan0"),
+      Create("192.168.2.0", "00-00-5E-00-53-00", false, "wlan0"),
+      "difference in IsPermanent"
+    };
+
+    yield return new object[] {
+      areNotEqual,
+      Create("192.168.2.0", "00-00-5E-00-53-00", false, "wlan0"),
+      Create("192.168.2.0", "00-00-5E-00-53-00", true, "wlan0"),
+      "difference in IsPermanent"
+    };
+
+    yield return new object[] {
+      areNotEqual,
+      Create("192.168.2.0", "00-00-5E-00-53-00", true, "wlan0"),
+      Create("192.168.2.0", "00-00-5E-00-53-00", true, "wlan1"),
+      "difference in InterfaceId"
+    };
+
+    yield return new object[] {
+      areNotEqual,
+      Create("192.168.2.0", "00-00-5E-00-53-00", true, null),
+      Create("192.168.2.0", "00-00-5E-00-53-00", true, "wlan0"),
+      "difference in InterfaceId (null)"
+    };
+
+    yield return new object[] {
+      areNotEqual,
+      Create("192.168.2.0", "00-00-5E-00-53-00", true, "wlan0"),
+      Create("192.168.2.0", "00-00-5E-00-53-00", true, null),
+      "difference in InterfaceId (null)"
+    };
+  }
+
+  [TestCaseSource(nameof(YieldTestCases_Equals))]
+  public void Equals(bool expected, NeighborTableEntry x, NeighborTableEntry y, string? message)
+  {
+    Assert.AreEqual(expected, x.Equals(y), $"{message}: {x} {(expected ? "==" : "!=")} {y}");
+    Assert.AreEqual(expected, y.Equals(x), $"{message}: {y} {(expected ? "==" : "!=")} {x}");
+  }
+
+  [TestCaseSource(nameof(YieldTestCases_Equals))]
+  public void GetHashCode(bool areEqual, NeighborTableEntry x, NeighborTableEntry y, string? message)
+  {
+    areEqual &= (x.State == y.State);
+
+    if (areEqual)
+      Assert.AreEqual(x.GetHashCode(), y.GetHashCode(), $"HashCode: {x} == {y}");
+    else
+      Assert.AreNotEqual(x.GetHashCode(), y.GetHashCode(), $"HashCode: {x} != {y}");
+  }
+
+  private static System.Collections.IEnumerable YieldTestCases_Equals_Object()
+  {
+    const bool areEqual = true;
+    const bool areNotEqual = false;
+
+    yield return new object[] {
+      areEqual,
+      new NeighborTableEntry(
+        ipAddress: IPAddress.Parse("192.168.2.0"),
+        physicalAddress: PhysicalAddress.Parse("00-00-5E-00-53-00"),
+        isPermanent: true,
+        state: NeighborTableEntryState.None,
+        interfaceId: "wlan0"
+      ),
+      new NeighborTableEntry(
+        ipAddress: IPAddress.Parse("192.168.2.0"),
+        physicalAddress: PhysicalAddress.Parse("00-00-5E-00-53-00"),
+        isPermanent: true,
+        state: NeighborTableEntryState.None,
+        interfaceId: "wlan0"
+      )
+    };
+
+    yield return new object[] {
+      areNotEqual,
+      new NeighborTableEntry(
+        ipAddress: IPAddress.Parse("192.168.2.0"),
+        physicalAddress: PhysicalAddress.Parse("00-00-5E-00-53-00"),
+        isPermanent: true,
+        state: NeighborTableEntryState.None,
+        interfaceId: "wlan0"
+      ),
+      new NeighborTableEntry(
+        ipAddress: IPAddress.Parse("192.168.2.1"),
+        physicalAddress: PhysicalAddress.Parse("00-00-5E-00-53-01"),
+        isPermanent: true,
+        state: NeighborTableEntryState.None,
+        interfaceId: "wlan1"
+      )
+    };
+
+    yield return new object[] {
+      areNotEqual,
+      new NeighborTableEntry(
+        ipAddress: IPAddress.Parse("192.168.2.0"),
+        physicalAddress: PhysicalAddress.Parse("00-00-5E-00-53-00"),
+        isPermanent: true,
+        state: NeighborTableEntryState.None,
+        interfaceId: "wlan0"
+      ),
+      null!
+    };
+
+    yield return new object[] {
+      areNotEqual,
+      new NeighborTableEntry(
+        ipAddress: IPAddress.Parse("192.168.2.0"),
+        physicalAddress: PhysicalAddress.Parse("00-00-5E-00-53-00"),
+        isPermanent: true,
+        state: NeighborTableEntryState.None,
+        interfaceId: "wlan0"
+      ),
+      "string"
+    };
+  }
+
+  [TestCaseSource(nameof(YieldTestCases_Equals_Object))]
+  public void Equals_Object(bool expected, NeighborTableEntry entry, object obj)
+    => Assert.AreEqual(expected, entry.Equals(obj), $"{entry} {(expected ? "==" : "!=")} {obj}");
+
   [Test]
   public void Equals_IPAddress()
   {
@@ -51,7 +322,7 @@ public class NeighborTableEntryTests {
     Assert.IsFalse(entry.Equals((IPAddress?)null), "#1");
     Assert.IsFalse(entry.Equals(IPAddress.Any), "#2");
     Assert.IsTrue(entry.Equals(entry.IPAddress), "#3");
-    Assert.IsTrue(entry.Equals(IPAddress.Parse(entry.IPAddress.ToString())), "#4");
+    Assert.IsTrue(entry.Equals(IPAddress.Parse(entry.IPAddress!.ToString())), "#4");
   }
 
   [Test]
