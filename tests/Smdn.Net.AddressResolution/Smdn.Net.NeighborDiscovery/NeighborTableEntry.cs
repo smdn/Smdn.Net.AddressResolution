@@ -76,6 +76,12 @@ public class NeighborTableEntryTests {
   }
 
   private static System.Collections.IEnumerable YieldTestCases_Equals()
+    => YieldTestCases_Equals_Common(exceptState: false);
+
+  private static System.Collections.IEnumerable YieldTestCases_Equals_ExceptState()
+    => YieldTestCases_Equals_Common(exceptState: true);
+
+  private static System.Collections.IEnumerable YieldTestCases_Equals_Common(bool exceptState)
   {
     static NeighborTableEntry Create(
       string ipAddress,
@@ -178,7 +184,7 @@ public class NeighborTableEntryTests {
     };
 
     yield return new object[] {
-      areNotEqual,
+      exceptState ? areEqual : areNotEqual,
       Create("192.168.2.0", "00-00-5E-00-53-00", true, "wlan0", NeighborTableEntryState.None),
       Create("192.168.2.0", "00-00-5E-00-53-00", true, "wlan0", NeighborTableEntryState.Reachable),
       "difference in State"
@@ -200,19 +206,60 @@ public class NeighborTableEntryTests {
   }
 
   [TestCaseSource(nameof(YieldTestCases_Equals))]
-  public void Equals(bool expected, NeighborTableEntry x, NeighborTableEntry y, string? message)
+  public void Equals(bool areEqual, NeighborTableEntry x, NeighborTableEntry y, string? message)
   {
-    Assert.AreEqual(expected, x.Equals(y), $"{message}: {x} {(expected ? "==" : "!=")} {y}");
-    Assert.AreEqual(expected, y.Equals(x), $"{message}: {y} {(expected ? "==" : "!=")} {x}");
+    Assert.AreEqual(areEqual, x.Equals(y), $"{message}: {x} {(areEqual ? "==" : "!=")} {y}");
+    Assert.AreEqual(areEqual, y.Equals(x), $"{message}: {y} {(areEqual ? "==" : "!=")} {x}");
   }
 
   [TestCaseSource(nameof(YieldTestCases_Equals))]
   public void GetHashCode(bool areEqual, NeighborTableEntry x, NeighborTableEntry y, string? message)
   {
+    var hashCodeX = x.GetHashCode();
+    var hashCodeY = y.GetHashCode();
+
     if (areEqual)
-      Assert.AreEqual(x.GetHashCode(), y.GetHashCode(), $"HashCode: {x} == {y}");
+      Assert.AreEqual(hashCodeX, hashCodeY, $"{message}: HashCode {x} == {y}");
     else
-      Assert.AreNotEqual(x.GetHashCode(), y.GetHashCode(), $"HashCode: {x} != {y}");
+      Assert.AreNotEqual(hashCodeX, hashCodeY, $"{message}: HashCode {x} != {y}");
+  }
+
+  [TestCaseSource(nameof(YieldTestCases_Equals))]
+  public void DefaultEqualityComparer_Equals(bool areEqual, NeighborTableEntry x, NeighborTableEntry y, string? message)
+  {
+    Assert.AreEqual(areEqual, NeighborTableEntry.DefaultEqualityComparer.Equals(x, y), $"{message}: {x} {(areEqual ? "==" : "!=")} {y}");
+    Assert.AreEqual(areEqual, NeighborTableEntry.DefaultEqualityComparer.Equals(y, x), $"{message}: {y} {(areEqual ? "==" : "!=")} {x}");
+  }
+
+  [TestCaseSource(nameof(YieldTestCases_Equals))]
+  public void DefaultEqualityComparer_GetHashCode(bool areEqual, NeighborTableEntry x, NeighborTableEntry y, string? message)
+  {
+    var hashCodeX = NeighborTableEntry.DefaultEqualityComparer.GetHashCode(x);
+    var hashCodeY = NeighborTableEntry.DefaultEqualityComparer.GetHashCode(y);
+
+    if (areEqual)
+      Assert.AreEqual(hashCodeX, hashCodeY, $"{message}: HashCode {x} == {y}");
+    else
+      Assert.AreNotEqual(hashCodeX, hashCodeY, $"{message}: HashCode {x} != {y}");
+  }
+
+  [TestCaseSource(nameof(YieldTestCases_Equals_ExceptState))]
+  public void ExceptStateEqualityComparer_Equals(bool areEqual, NeighborTableEntry x, NeighborTableEntry y, string? message)
+  {
+    Assert.AreEqual(areEqual, NeighborTableEntry.ExceptStateEqualityComparer.Equals(x, y), $"{message}: {x} {(areEqual ? "==" : "!=")} {y}");
+    Assert.AreEqual(areEqual, NeighborTableEntry.ExceptStateEqualityComparer.Equals(y, x), $"{message}: {y} {(areEqual ? "==" : "!=")} {x}");
+  }
+
+  [TestCaseSource(nameof(YieldTestCases_Equals_ExceptState))]
+  public void ExceptStateEqualityComparer_GetHashCode(bool areEqual, NeighborTableEntry x, NeighborTableEntry y, string? message)
+  {
+    var hashCodeX = NeighborTableEntry.ExceptStateEqualityComparer.GetHashCode(x);
+    var hashCodeY = NeighborTableEntry.ExceptStateEqualityComparer.GetHashCode(y);
+
+    if (areEqual)
+      Assert.AreEqual(hashCodeX, hashCodeY, $"{message}: HashCode {x} == {y}");
+    else
+      Assert.AreNotEqual(hashCodeX, hashCodeY, $"{message}: HashCode {x} != {y}");
   }
 
   private static System.Collections.IEnumerable YieldTestCases_Equals_Object()

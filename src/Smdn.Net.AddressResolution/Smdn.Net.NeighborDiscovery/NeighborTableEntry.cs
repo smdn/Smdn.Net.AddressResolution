@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
 using System;
+using System.Collections.Generic;
 #if SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLWHENATTRIBUTE
 using System.Diagnostics.CodeAnalysis;
 #endif
@@ -14,6 +15,9 @@ namespace Smdn.Net.NeighborDiscovery;
 public readonly struct NeighborTableEntry : IEquatable<NeighborTableEntry>, IEquatable<IPAddress>, IEquatable<PhysicalAddress> {
 #pragma warning restore CA2231
   public static readonly NeighborTableEntry Empty = default;
+
+  public static IEqualityComparer<NeighborTableEntry> DefaultEqualityComparer { get; } = new EqualityComparer(compareExceptState: false);
+  public static IEqualityComparer<NeighborTableEntry> ExceptStateEqualityComparer { get; } = new EqualityComparer(compareExceptState: true);
 
 #if SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLWHENATTRIBUTE
   [MemberNotNullWhen(false, nameof(IPAddress))]
@@ -41,19 +45,8 @@ public readonly struct NeighborTableEntry : IEquatable<NeighborTableEntry>, IEqu
     InterfaceId = interfaceId;
   }
 
-  // On Windows, NetworkInterface.Id is set to a string representing
-  // the GUID of the network interface, but its casing conventions is
-  // not specified explicitly, so perform the case-insensitive comparison.
-  private static readonly StringComparer interfaceIdComparer =
-    RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-      ? StringComparer.OrdinalIgnoreCase
-      : StringComparer.Ordinal;
-
-  internal bool InterfaceIdEquals(string? other)
-    => interfaceIdComparer.Equals(InterfaceId, other);
-
-  private int GetHashCodeForInterfaceId()
-    => InterfaceId is null ? 0 : interfaceIdComparer.GetHashCode(InterfaceId);
+  internal bool InterfaceIdEquals(string? otherInterfaceId)
+    => EqualityComparer.InterfaceIdEquals(InterfaceId, otherInterfaceId);
 
   public override bool Equals(object? obj)
     => obj switch {
@@ -63,12 +56,7 @@ public readonly struct NeighborTableEntry : IEquatable<NeighborTableEntry>, IEqu
     };
 
   public bool Equals(NeighborTableEntry other)
-    =>
-      Equals(other.IPAddress) &&
-      Equals(other.PhysicalAddress) &&
-      IsPermanent == other.IsPermanent &&
-      State == other.State &&
-      InterfaceIdEquals(other.InterfaceId);
+    => DefaultEqualityComparer.Equals(this, other);
 
   public bool Equals(IPAddress? other)
   {
@@ -87,30 +75,65 @@ public readonly struct NeighborTableEntry : IEquatable<NeighborTableEntry>, IEqu
   }
 
   public override int GetHashCode()
-#if SYSTEM_HASHCODE
-    => HashCode.Combine(
-      IPAddress,
-      PhysicalAddress,
-      IsPermanent,
-      State,
-      GetHashCodeForInterfaceId()
-    );
-#else
-  {
-    var hash = 17;
-
-    unchecked {
-      hash = (hash * 31) + IPAddress?.GetHashCode() ?? 0;
-      hash = (hash * 31) + PhysicalAddress?.GetHashCode() ?? 0;
-      hash = (hash * 31) + IsPermanent.GetHashCode();
-      hash = (hash * 31) + State.GetHashCode();
-      hash = (hash * 31) + GetHashCodeForInterfaceId();
-    }
-
-    return hash;
-  }
-#endif
+    => DefaultEqualityComparer.GetHashCode(this);
 
   public override string ToString()
     => $"{{IP={IPAddress}, MAC={PhysicalAddress?.ToMacAddressString() ?? "(null)"}, IsPermanent={IsPermanent}, State={State}, Iface={InterfaceId}}}";
+
+  private sealed class EqualityComparer : EqualityComparer<NeighborTableEntry> {
+    // On Windows, NetworkInterface.Id is set to a string representing
+    // the GUID of the network interface, but its casing conventions is
+    // not specified explicitly, so perform the case-insensitive comparison.
+    private static readonly StringComparer interfaceIdComparer =
+      RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+        ? StringComparer.OrdinalIgnoreCase
+        : StringComparer.Ordinal;
+
+    private readonly bool compareExceptState;
+
+    public EqualityComparer(bool compareExceptState)
+    {
+      this.compareExceptState = compareExceptState;
+    }
+
+    internal static bool InterfaceIdEquals(string? x, string? y)
+      => interfaceIdComparer.Equals(x, y);
+
+    public override bool Equals(NeighborTableEntry x, NeighborTableEntry y)
+      =>
+        x.Equals(y.IPAddress) &&
+        x.Equals(y.PhysicalAddress) &&
+        x.IsPermanent == y.IsPermanent &&
+        (compareExceptState || x.State == y.State) &&
+        InterfaceIdEquals(x.InterfaceId, y.InterfaceId);
+
+    public override int GetHashCode(NeighborTableEntry obj)
+    {
+      static int GetHashCodeForInterfaceId(NeighborTableEntry obj)
+        => obj.InterfaceId is null ? 0 : interfaceIdComparer.GetHashCode(obj.InterfaceId);
+
+#if SYSTEM_HASHCODE
+      return HashCode.Combine(
+        obj.IPAddress,
+        obj.PhysicalAddress,
+        obj.IsPermanent,
+        compareExceptState ? 0 : obj.State,
+        GetHashCodeForInterfaceId(obj)
+      );
+#else
+      var hash = 17;
+
+      unchecked {
+        hash = (hash * 31) + IPAddress?.GetHashCode() ?? 0;
+        hash = (hash * 31) + PhysicalAddress?.GetHashCode() ?? 0;
+        hash = (hash * 31) + IsPermanent.GetHashCode();
+        if (!compareExceptState)
+          hash = (hash * 31) + State.GetHashCode();
+        hash = (hash * 31) + GetHashCodeForInterfaceId();
+      }
+
+      return hash;
+#endif
+    }
+  }
 }
