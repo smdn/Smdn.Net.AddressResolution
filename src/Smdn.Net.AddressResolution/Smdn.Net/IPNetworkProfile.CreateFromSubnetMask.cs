@@ -107,8 +107,8 @@ partial class IPNetworkProfile {
 
     public IPv4AddressRange(uint address, uint addressMask)
     {
-      this.networkAddress = address & addressMask;
-      this.broadcastAddress = networkAddress + ~addressMask;
+      networkAddress = address & addressMask;
+      broadcastAddress = networkAddress + ~addressMask;
     }
 
     public IEnumerator<IPAddress> GetEnumerator()
@@ -118,8 +118,8 @@ partial class IPNetworkProfile {
         yield break;
       }
 
-      for (var address = networkAddress + 1u; address <= broadcastAddress; address++) {
-        yield return new IPAddress(HostToNetworkOrder(address));
+      for (var hostAddress = networkAddress + 1u; hostAddress < broadcastAddress; hostAddress++) {
+        yield return new IPAddress(HostToNetworkOrder(hostAddress));
       }
     }
 

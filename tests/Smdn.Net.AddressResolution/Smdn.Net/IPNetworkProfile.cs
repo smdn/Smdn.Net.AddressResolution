@@ -35,10 +35,11 @@ public partial class IPNetworkProfileTests {
       IPAddress.Parse("192.168.0.1"),
       24,
       new Action<IReadOnlyList<IPAddress>>(static addresses => {
-        Assert.AreEqual(255, addresses.Count);
+        Assert.AreEqual(254, addresses.Count);
         CollectionAssert.Contains(addresses, IPAddress.Parse("192.168.0.1"));
-        CollectionAssert.Contains(addresses, IPAddress.Parse("192.168.0.255"));
+        CollectionAssert.Contains(addresses, IPAddress.Parse("192.168.0.254"));
         CollectionAssert.DoesNotContain(addresses, IPAddress.Parse("192.168.0.0"));
+        CollectionAssert.DoesNotContain(addresses, IPAddress.Parse("192.168.0.255"));
         CollectionAssert.DoesNotContain(addresses, IPAddress.Parse("192.168.1.0"));
         CollectionAssert.DoesNotContain(addresses, IPAddress.Parse("127.0.0.1"));
       })
@@ -48,11 +49,11 @@ public partial class IPNetworkProfileTests {
       IPAddress.Parse("192.168.0.1"),
       30,
       new Action<IReadOnlyList<IPAddress>>(static addresses => {
-        Assert.AreEqual(3, addresses.Count);
+        Assert.AreEqual(2, addresses.Count);
         CollectionAssert.Contains(addresses, IPAddress.Parse("192.168.0.1"));
-        CollectionAssert.Contains(addresses, IPAddress.Parse("192.168.0.3"));
+        CollectionAssert.Contains(addresses, IPAddress.Parse("192.168.0.2"));
         CollectionAssert.DoesNotContain(addresses, IPAddress.Parse("192.168.0.0"));
-        CollectionAssert.DoesNotContain(addresses, IPAddress.Parse("192.168.0.4"));
+        CollectionAssert.DoesNotContain(addresses, IPAddress.Parse("192.168.0.3"));
         CollectionAssert.DoesNotContain(addresses, IPAddress.Parse("127.0.0.1"));
       })
     };
@@ -61,13 +62,13 @@ public partial class IPNetworkProfileTests {
       IPAddress.Parse("192.168.0.1"),
       20,
       new Action<IReadOnlyList<IPAddress>>(static addresses => {
-        Assert.AreEqual(4095, addresses.Count);
+        Assert.AreEqual(4094, addresses.Count);
         CollectionAssert.Contains(addresses, IPAddress.Parse("192.168.0.1"));
         CollectionAssert.Contains(addresses, IPAddress.Parse("192.168.0.255"));
         CollectionAssert.Contains(addresses, IPAddress.Parse("192.168.15.0"));
-        CollectionAssert.Contains(addresses, IPAddress.Parse("192.168.15.255"));
+        CollectionAssert.Contains(addresses, IPAddress.Parse("192.168.15.254"));
         CollectionAssert.DoesNotContain(addresses, IPAddress.Parse("192.168.0.0"));
-        CollectionAssert.DoesNotContain(addresses, IPAddress.Parse("192.168.16.0"));
+        CollectionAssert.DoesNotContain(addresses, IPAddress.Parse("192.168.15.255"));
         CollectionAssert.DoesNotContain(addresses, IPAddress.Parse("127.0.0.1"));
       })
     };
@@ -144,10 +145,11 @@ public partial class IPNetworkProfileTests {
       IPAddress.Parse("192.168.0.1"),
       IPAddress.Parse("255.255.255.0"), // /24
       new Action<IReadOnlyList<IPAddress>>(static addresses => {
-        Assert.AreEqual(255, addresses.Count);
+        Assert.AreEqual(254, addresses.Count);
         CollectionAssert.Contains(addresses, IPAddress.Parse("192.168.0.1"));
-        CollectionAssert.Contains(addresses, IPAddress.Parse("192.168.0.255"));
+        CollectionAssert.Contains(addresses, IPAddress.Parse("192.168.0.254"));
         CollectionAssert.DoesNotContain(addresses, IPAddress.Parse("192.168.0.0"));
+        CollectionAssert.DoesNotContain(addresses, IPAddress.Parse("192.168.0.255"));
         CollectionAssert.DoesNotContain(addresses, IPAddress.Parse("192.168.1.0"));
         CollectionAssert.DoesNotContain(addresses, IPAddress.Parse("127.0.0.1"));
       })
@@ -157,11 +159,11 @@ public partial class IPNetworkProfileTests {
       IPAddress.Parse("192.168.0.1"),
       IPAddress.Parse("255.255.255.252"), // /30
       new Action<IReadOnlyList<IPAddress>>(static addresses => {
-        Assert.AreEqual(3, addresses.Count);
+        Assert.AreEqual(2, addresses.Count);
         CollectionAssert.Contains(addresses, IPAddress.Parse("192.168.0.1"));
-        CollectionAssert.Contains(addresses, IPAddress.Parse("192.168.0.3"));
+        CollectionAssert.Contains(addresses, IPAddress.Parse("192.168.0.2"));
         CollectionAssert.DoesNotContain(addresses, IPAddress.Parse("192.168.0.0"));
-        CollectionAssert.DoesNotContain(addresses, IPAddress.Parse("192.168.0.4"));
+        CollectionAssert.DoesNotContain(addresses, IPAddress.Parse("192.168.0.3"));
         CollectionAssert.DoesNotContain(addresses, IPAddress.Parse("127.0.0.1"));
       })
     };
@@ -170,13 +172,13 @@ public partial class IPNetworkProfileTests {
       IPAddress.Parse("192.168.0.1"),
       IPAddress.Parse("255.255.240.0"), // /20
       new Action<IReadOnlyList<IPAddress>>(static addresses => {
-        Assert.AreEqual(4095, addresses.Count);
+        Assert.AreEqual(4094, addresses.Count);
         CollectionAssert.Contains(addresses, IPAddress.Parse("192.168.0.1"));
         CollectionAssert.Contains(addresses, IPAddress.Parse("192.168.0.255"));
         CollectionAssert.Contains(addresses, IPAddress.Parse("192.168.15.0"));
-        CollectionAssert.Contains(addresses, IPAddress.Parse("192.168.15.255"));
+        CollectionAssert.Contains(addresses, IPAddress.Parse("192.168.15.254"));
         CollectionAssert.DoesNotContain(addresses, IPAddress.Parse("192.168.0.0"));
-        CollectionAssert.DoesNotContain(addresses, IPAddress.Parse("192.168.16.0"));
+        CollectionAssert.DoesNotContain(addresses, IPAddress.Parse("192.168.15.255"));
         CollectionAssert.DoesNotContain(addresses, IPAddress.Parse("127.0.0.1"));
       })
     };
