@@ -10,6 +10,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Smdn.Net.AddressResolution;
 
+/// <summary>
+/// Provides an abstract mechanism for the mutual address resolution between IP addresses and corresponding MAC addresses.
+/// </summary>
 public abstract class MacAddressResolverBase :
   IDisposable,
   IAddressResolver<PhysicalAddress, IPAddress>,
@@ -17,12 +20,35 @@ public abstract class MacAddressResolverBase :
 {
   protected static PhysicalAddress AllZeroMacAddress => PhysicalAddressExtensions.AllZeroMacAddress;
 
+  /// <summary>
+  /// Gets an empty implementation of <see cref="MacAddressResolverBase"/> that returns all addresses as unresolvable (<see langworkd="null"/>).
+  /// </summary>
   public static MacAddressResolverBase Null { get; } = new NullMacAddressResolver();
 
   /*
    * instance members
    */
+
+  /// <summary>
+  /// Gets a value indicating whether any of the addresses have been invalidated.
+  /// </summary>
+  /// <remarks>
+  /// <para>
+  /// If <see langword="true" />, updating for the invalidated addresses by invoking <see cref="RefreshInvalidatedCacheAsync(CancellationToken)" />
+  /// will be triggered by a call to <see cref="ResolveIPAddressToMacAddressAsync(IPAddress, CancellationToken)" /> or
+  /// <see cref="ResolveMacAddressToIPAddressAsync(PhysicalAddress, CancellationToken)" />.
+  /// </para>
+  /// <para>
+  /// Calling <see cref="Invalidate(IPAddress)" /> or <see cref="Invalidate(PhysicalAddress)" /> method sets this property to <see langword="true" />.
+  /// </para>
+  /// </remarks>
+  /// <seealso cref="Invalidate(IPAddress)"/>
+  /// <seealso cref="Invalidate(PhysicalAddress)"/>
+  /// <seealso cref="RefreshInvalidatedCacheAsync(CancellationToken)"/>
+  /// <seealso cref="ResolveIPAddressToMacAddressAsync(IPAddress, CancellationToken)"/>
+  /// <seealso cref="ResolveMacAddressToIPAddressAsync(PhysicalAddress, CancellationToken)"/>
   public abstract bool HasInvalidated { get; }
+
   protected ILogger? Logger { get; }
 
   protected MacAddressResolverBase(
@@ -37,6 +63,7 @@ public abstract class MacAddressResolverBase :
    */
   private bool disposed = false;
 
+  /// <inheritdoc cref="IDisposable.Dispose" />
   public void Dispose()
   {
     Dispose(true);
@@ -48,6 +75,10 @@ public abstract class MacAddressResolverBase :
     disposed = true;
   }
 
+  /// <summary>
+  /// Throws <see cref="ObjectDisposedException"/> if instance has been marked as disposed.
+  /// </summary>
+  /// <exception cref="ObjectDisposedException">The instance has been disposed.</exception>
   protected void ThrowIfDisposed()
   {
     if (disposed)
@@ -71,6 +102,18 @@ public abstract class MacAddressResolverBase :
   )
     => Invalidate(ipAddress: address);
 
+  /// <summary>
+  /// Resolves from an IP address to its corresponding MAC address.
+  /// </summary>
+  /// <param name="ipAddress">The <see cref="IPAddress" /> to be resolved.</param>
+  /// <param name="cancellationToken">The <see cref="CancellationToken" /> to monitor for cancellation requests. The default value is <see langword="default" />.</param>
+  /// <returns>
+  /// A <see cref="ValueTask{PhysicalAddress?}"/> representing the result of address resolution.
+  /// If the address is successfully resolved, <see cref="PhysicalAddress"/> representing the resolved address is set. If not, <see langword="null" /> is set.
+  /// </returns>
+  /// <seealso cref="Invalidate(IPAddress)"/>
+  /// <seealso cref="ResolveMacAddressToIPAddressAsync(PhysicalAddress, CancellationToken)"/>
+  /// <exception cref="ObjectDisposedException">The instance has been disposed.</exception>
   public ValueTask<PhysicalAddress?> ResolveIPAddressToMacAddressAsync(
     IPAddress ipAddress,
     CancellationToken cancellationToken = default
@@ -113,6 +156,18 @@ public abstract class MacAddressResolverBase :
     CancellationToken cancellationToken
   );
 
+  /// <summary>
+  /// Marks the <paramref name="ipAddress"/> as 'invalidated', for example, if the resolved <see cref="PhysicalAddress"/>
+  /// corresponding to the <paramref name="ipAddress"/> was unreachable or expired.
+  /// </summary>
+  /// <remarks>
+  /// Invalidated addresses will not be used in subsequent address resolution or will be automatically updated before resolution.
+  /// To explicitly update the invalidated addresses, invoke <see cref="RefreshInvalidatedCacheAsync(CancellationToken)"/>.
+  /// </remarks>
+  /// <param name="ipAddress">The <see cref="IPAddress"/> to mark as 'invalidated'.</param>
+  /// <seealso cref="ResolveIPAddressToMacAddressAsync(IPAddress, CancellationToken)"/>
+  /// <seealso cref="RefreshInvalidatedCacheAsync(CancellationToken)"/>
+  /// <exception cref="ObjectDisposedException">The instance has been disposed.</exception>
   public void Invalidate(IPAddress ipAddress)
   {
     if (ipAddress is null)
@@ -144,6 +199,18 @@ public abstract class MacAddressResolverBase :
   )
     => Invalidate(macAddress: address);
 
+  /// <summary>
+  /// Resolves from a MAC address to its corresponding IP address.
+  /// </summary>
+  /// <param name="macAddress">The <see cref="PhysicalAddress" /> to be resolved.</param>
+  /// <param name="cancellationToken">The <see cref="CancellationToken" /> to monitor for cancellation requests. The default value is <see langword="default" />.</param>
+  /// <returns>
+  /// A <see cref="ValueTask{IPAddress?}"/> representing the result of address resolution.
+  /// If the address is successfully resolved, <see cref="IPAddress"/> representing the resolved address is set. If not, <see langword="null" /> is set.
+  /// </returns>
+  /// <seealso cref="Invalidate(PhysicalAddress)"/>
+  /// <seealso cref="ResolveIPAddressToMacAddressAsync(IPAddress, CancellationToken)"/>
+  /// <exception cref="ObjectDisposedException">The instance has been disposed.</exception>
   public ValueTask<IPAddress?> ResolveMacAddressToIPAddressAsync(
     PhysicalAddress macAddress,
     CancellationToken cancellationToken = default
@@ -193,6 +260,18 @@ public abstract class MacAddressResolverBase :
     CancellationToken cancellationToken
   );
 
+  /// <summary>
+  /// Marks the <paramref name="macAddress"/> as 'invalidated', for example, if the resolved <see cref="IPAddress"/>
+  /// corresponding to the <paramref name="macAddress"/> was unreachable or expired.
+  /// </summary>
+  /// <remarks>
+  /// Invalidated addresses will not be used in subsequent address resolution or will be automatically updated before resolution.
+  /// To explicitly update the invalidated addresses, invoke <see cref="RefreshInvalidatedCacheAsync(CancellationToken)"/>.
+  /// </remarks>
+  /// <param name="macAddress">The <see cref="PhysicalAddress"/> to mark as 'invalidated'.</param>
+  /// <seealso cref="ResolveMacAddressToIPAddressAsync(PhysicalAddress, CancellationToken)"/>
+  /// <seealso cref="RefreshInvalidatedCacheAsync(CancellationToken)"/>
+  /// <exception cref="ObjectDisposedException">The instance has been disposed.</exception>
   public void Invalidate(PhysicalAddress macAddress)
   {
     if (macAddress is null)
@@ -210,6 +289,15 @@ public abstract class MacAddressResolverBase :
   /*
    * other virtual/abstract members
    */
+
+  /// <summary>
+  /// Requests an update to the mechanism that caches the correspondence between IP addresses and MAC addresses.
+  /// </summary>
+  /// <remarks>
+  /// In a concrete implementation, updates the system cache (e.g., ARP table) by performing neighbor discovery.
+  /// </remarks>
+  /// <param name="cancellationToken">The <see cref="CancellationToken" /> to monitor for cancellation requests. The default value is <see langword="default" />.</param>
+  /// <exception cref="ObjectDisposedException">The instance has been disposed.</exception>
   public ValueTask RefreshCacheAsync(
     CancellationToken cancellationToken = default
   )
@@ -237,6 +325,14 @@ public abstract class MacAddressResolverBase :
       default;
 #endif
 
+  /// <summary>
+  /// Requests an update to the invalidated addresses, to the mechanism that caches the correspondence between IP addresses and MAC addresses.
+  /// </summary>
+  /// <remarks>
+  /// In a concrete implementation, updates the system cache (e.g., ARP table) by performing neighbor discovery for the invalidated addresses.
+  /// </remarks>
+  /// <param name="cancellationToken">The <see cref="CancellationToken" /> to monitor for cancellation requests. The default value is <see langword="default" />.</param>
+  /// <exception cref="ObjectDisposedException">The instance has been disposed.</exception>
   public ValueTask RefreshInvalidatedCacheAsync(
     CancellationToken cancellationToken = default
   )

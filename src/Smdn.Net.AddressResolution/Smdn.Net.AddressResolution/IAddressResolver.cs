@@ -5,11 +5,32 @@ using System.Threading.Tasks;
 
 namespace Smdn.Net.AddressResolution;
 
+/// <summary>
+/// Provides a mechanism for resolving address of <typeparamref name="TAddress"/> to the corresponding address of <typeparamref name="TResolvedAddress"/>.
+/// </summary>
+/// <typeparam name="TAddress">The address type to be resolved to the corresponding address type <typeparamref name="TResolvedAddress"/>.</typeparam>
+/// <typeparam name="TResolvedAddress">The address type that is resolved from and corresponds to the address type <typeparamref name="TAddress"/>.</typeparam>
 public interface IAddressResolver<TAddress, TResolvedAddress>
   where TAddress : notnull
   where TResolvedAddress : notnull
 {
-  /// <returns>An resolved address. <see langword="null"/> if address could not be resolved.</returns>
+  /// <summary>
+  /// Resolves from a address of <see cref="TAddress"/> to its corresponding address of <see cref="TResolvedAddress"/>.
+  /// </summary>
+  /// <param name="address">The address of <see cref="TAddress" /> to be resolved.</param>
+  /// <param name="cancellationToken">The <see cref="CancellationToken" /> to monitor for cancellation requests.</param>
+  /// <returns>
+  /// A <see cref="ValueTask{TResolvedAddress?}"/> representing the result of address resolution.
+  /// If the address is successfully resolved, <see cref="TResolvedAddress"/> representing the resolved address is set. If not, <see langword="null" /> is set.
+  /// </returns>
+  /// <seealso cref="Invalidate(TAddress)"/>
   ValueTask<TResolvedAddress?> ResolveAsync(TAddress address, CancellationToken cancellationToken);
+
+  /// <summary>
+  /// Marks the <paramref name="address"/> as 'invalidated', for example, if the resolved <see cref="TResolvedAddress"/>
+  /// corresponding to the <paramref name="address"/> is unreachable or expired.
+  /// </summary>
+  /// <param name="address">The <see cref="TAddress"/> to mark as 'invalidated'.</param>
+  /// <seealso cref="ResolveAsync(TAddress, CancellationToken)"/>
   void Invalidate(TAddress address);
 }

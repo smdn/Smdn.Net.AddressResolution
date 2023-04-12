@@ -13,6 +13,21 @@ using Smdn.Net.NeighborDiscovery;
 
 namespace Smdn.Net.AddressResolution;
 
+/// <summary>
+/// Provides a mechanism for the mutual address resolution between IP addresses and corresponding MAC addresses.
+/// </summary>
+/// <remarks>
+///   <para>
+///     This implementation uses the system's address cache mechanism (such as the ARP table) and neighbor discovery
+///     mechanism (such as the network scan command) for address resolution.
+///   </para>
+///   <para>
+///     Any <see cref="INeighborTable"/> can be specified as an implementation that references an address table.
+///     Also any <see cref="INeighborDiscoverer"/> can be specified as an implementation that performs the neighbor discovery.
+///   </para>
+/// </remarks>
+/// <seealso cref="INeighborTable"/>
+/// <seealso cref="INeighborDiscoverer"/>
 public partial class MacAddressResolver : MacAddressResolverBase {
   private INeighborTable neighborTable;
   private INeighborDiscoverer neighborDiscoverer;
@@ -171,6 +186,43 @@ public partial class MacAddressResolver : MacAddressResolverBase {
   /// <summary>
   /// Initializes a new instance of the <see cref="MacAddressResolver"/> class.
   /// </summary>
+  /// <param name="neighborTable">
+  ///   An <see cref="INeighborTable"/> that implements a mechanism to refer address table.
+  ///   If <see langword="null" />, attempts to retrieve <see cref="INeighborTable"/> from <paramref name="serviceProvider"/>.
+  /// </param>
+  /// <param name="neighborDiscoverer">
+  ///   An <see cref="INeighborDiscoverer"/> that implements a mechanism to perform neighbor discovery.
+  ///   If <see langword="null" />, attempts to retrieve <see cref="INeighborDiscoverer"/> from <paramref name="serviceProvider"/>.
+  /// </param>
+  /// <param name="shouldDisposeNeighborTable">
+  ///   A value that indicates whether the <see cref="INeighborTable"/> passed from the <paramref name="neighborTable"/> should also be disposed when the instance is disposed.
+  /// </param>
+  /// <param name="shouldDisposeNeighborDiscoverer">
+  ///   A value that indicates whether the <see cref="INeighborDiscoverer"/> passed from the <paramref name="neighborDiscoverer"/> should also be disposed when the instance is disposed.
+  /// </param>
+  /// <param name="networkInterface">
+  ///   A <see cref="NetworkInterface"/> on which the entry should be referenced from the <see cref="INeighborTable"/>.
+  ///   If <see langword="null" />, all entries that can be referenced from the <see cref="INeighborTable"/> are used to address resolution.
+  /// </param>
+  /// <param name="maxParallelCountForRefreshInvalidatedCache">
+  ///   A value that specifies the maximum number of parallel executions allowed when <paramref name="neighborTable"/> updates the invalidated addresses.
+  /// </param>
+  /// <param name="serviceProvider">
+  ///   A <see cref="IServiceProvider"/>.
+  ///   This constructor overload attempts to retrieve the <see cref="INeighborTable"/>, <see cref="INeighborDiscoverer"/>,
+  ///   and <see cref="ILogger"/> if not explicitly specified.
+  /// </param>
+  /// <exception cref="ArgumentNullException">
+  ///   <para>Both <paramref name="serviceProvider"/> and <paramref name="neighborTable"/> are <see langword="null" />.</para>
+  ///   <para>Or both <paramref name="serviceProvider"/> and <paramref name="neighborDiscoverer"/> are <see langword="null" />.</para>
+  /// </exception>
+  /// <exception cref="ArgumentOutOfRangeException">
+  ///   <paramref name="maxParallelCountForRefreshInvalidatedCache"/> is zero or negative number.
+  /// </exception>
+  /// <exception cref="InvalidOperationException">
+  ///   <para><paramref name="neighborTable"/> is <see langword="null" /> and cannot retrieve <see cref="INeighborTable"/> from <paramref name="serviceProvider"/>.</para>
+  ///   <para><paramref name="neighborDiscoverer"/> is <see langword="null" /> and cannot retrieve <see cref="INeighborTable"/> from <paramref name="serviceProvider"/>.</para>
+  /// </exception>
   public MacAddressResolver(
     INeighborTable? neighborTable,
     INeighborDiscoverer? neighborDiscoverer,

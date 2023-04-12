@@ -16,7 +16,10 @@ public readonly struct NeighborTableEntry : IEquatable<NeighborTableEntry>, IEqu
 #pragma warning restore CA2231
   public static readonly NeighborTableEntry Empty = default;
 
+  /// <summary>Gets the <see cref="IEqualityComparer{NeighborTableEntry}"/> that performs the default equality comparison.</summary>
   public static IEqualityComparer<NeighborTableEntry> DefaultEqualityComparer { get; } = new EqualityComparer(compareExceptState: false);
+
+  /// <summary>Gets the <see cref="IEqualityComparer{NeighborTableEntry}"/> that performs equality comparisons except the value of <see cref="State"/> property.</summary>
   public static IEqualityComparer<NeighborTableEntry> ExceptStateEqualityComparer { get; } = new EqualityComparer(compareExceptState: true);
 
 #if SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLWHENATTRIBUTE
@@ -27,7 +30,19 @@ public readonly struct NeighborTableEntry : IEquatable<NeighborTableEntry>, IEqu
   public IPAddress? IPAddress { get; }
   public PhysicalAddress? PhysicalAddress { get; }
   public bool IsPermanent { get; }
+
+  /// <summary>
+  /// Gets the value of <see cref="NeighborTableEntryState"/> that represents the state of this entry.
+  /// </summary>
   public NeighborTableEntryState State { get; }
+
+  /// <summary>
+  /// Gets the netowrk interface ID corresponding to this entry.
+  /// </summary>
+  /// <remarks>
+  /// On Windows OS, this property represents the string of GUID in 'B' format representing the specific network interface, such as <c>{00000000-0000-0000-0000-000000000000}</c>.
+  /// On other system, this property represents the string of specific network interface ID, such as 'eth0' or 'wlan0', etc.
+  /// </remarks>
   public string? InterfaceId { get; }
 
   public NeighborTableEntry(

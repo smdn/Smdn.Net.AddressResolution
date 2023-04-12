@@ -17,6 +17,17 @@ namespace Smdn.Net.AddressResolution;
 #pragma warning disable IDE0040
 partial class MacAddressResolver {
 #pragma warning restore IDE0040
+
+  /// <summary>
+  /// Enumerates the relevant address table entries from the <see cref="INeighborTable"/> associated with the current instance.
+  /// </summary>
+  /// <param name="cancellationToken">
+  /// The <see cref="CancellationToken" /> to monitor for cancellation requests.
+  /// The default value is <see langword="default" />.
+  /// </param>
+  /// <exception cref="ObjectDisposedException">The instance has been disposed.</exception>
+  /// <seealso cref="INeighborTable"/>
+  /// <seealso cref="NeighborTableEntry"/>
   public IAsyncEnumerable<NeighborTableEntry> EnumerateNeighborTableEntriesAsync(
     CancellationToken cancellationToken = default
   )
@@ -25,6 +36,10 @@ partial class MacAddressResolver {
       cancellationToken: cancellationToken
     );
 
+  /// <inheritdoc cref="EnumerateNeighborTableEntriesAsync(CancellationToken)"/>
+  /// <param name="predicate">
+  /// A <see cref="Predicate{NeighborTableEntry}"/> that filters the entries enumerated from <see cref="INeighborTable"/>.
+  /// </param>
   public IAsyncEnumerable<NeighborTableEntry> EnumerateNeighborTableEntriesAsync(
     Predicate<NeighborTableEntry> predicate,
     CancellationToken cancellationToken = default
