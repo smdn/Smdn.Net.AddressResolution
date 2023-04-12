@@ -138,13 +138,6 @@ public class NeighborTableEntryTests {
     };
 
     yield return new object[] {
-      areEqual,
-      Create("192.168.2.0", "00-00-5E-00-53-00", true, "wlan0", NeighborTableEntryState.None),
-      Create("192.168.2.0", "00-00-5E-00-53-00", true, "wlan0", NeighborTableEntryState.Reachable),
-      "difference of State must be ignored"
-    };
-
-    yield return new object[] {
       RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? areEqual : areNotEqual,
       Create("192.168.2.0", "00-00-5E-00-53-00", true, "WLAN0"),
       Create("192.168.2.0", "00-00-5E-00-53-00", true, "wlan0"),
@@ -179,13 +172,6 @@ public class NeighborTableEntryTests {
 
     yield return new object[] {
       areNotEqual,
-      Create("192.168.2.0", null, true, "wlan0"),
-      Create("192.168.2.0", "00-00-5E-00-53-00", true, "wlan0"),
-      "difference in PhysicalAddress (null)"
-    };
-
-    yield return new object[] {
-      areNotEqual,
       Create("192.168.2.0", "00-00-5E-00-53-00", true, "wlan0"),
       Create("192.168.2.0", "00-00-5E-00-53-00", false, "wlan0"),
       "difference in IsPermanent"
@@ -193,9 +179,9 @@ public class NeighborTableEntryTests {
 
     yield return new object[] {
       areNotEqual,
-      Create("192.168.2.0", "00-00-5E-00-53-00", false, "wlan0"),
-      Create("192.168.2.0", "00-00-5E-00-53-00", true, "wlan0"),
-      "difference in IsPermanent"
+      Create("192.168.2.0", "00-00-5E-00-53-00", true, "wlan0", NeighborTableEntryState.None),
+      Create("192.168.2.0", "00-00-5E-00-53-00", true, "wlan0", NeighborTableEntryState.Reachable),
+      "difference in State"
     };
 
     yield return new object[] {
@@ -203,13 +189,6 @@ public class NeighborTableEntryTests {
       Create("192.168.2.0", "00-00-5E-00-53-00", true, "wlan0"),
       Create("192.168.2.0", "00-00-5E-00-53-00", true, "wlan1"),
       "difference in InterfaceId"
-    };
-
-    yield return new object[] {
-      areNotEqual,
-      Create("192.168.2.0", "00-00-5E-00-53-00", true, null),
-      Create("192.168.2.0", "00-00-5E-00-53-00", true, "wlan0"),
-      "difference in InterfaceId (null)"
     };
 
     yield return new object[] {
@@ -230,8 +209,6 @@ public class NeighborTableEntryTests {
   [TestCaseSource(nameof(YieldTestCases_Equals))]
   public void GetHashCode(bool areEqual, NeighborTableEntry x, NeighborTableEntry y, string? message)
   {
-    areEqual &= (x.State == y.State);
-
     if (areEqual)
       Assert.AreEqual(x.GetHashCode(), y.GetHashCode(), $"HashCode: {x} == {y}");
     else

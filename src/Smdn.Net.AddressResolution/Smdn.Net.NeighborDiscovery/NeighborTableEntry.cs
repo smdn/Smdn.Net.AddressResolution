@@ -44,13 +44,16 @@ public readonly struct NeighborTableEntry : IEquatable<NeighborTableEntry>, IEqu
   // On Windows, NetworkInterface.Id is set to a string representing
   // the GUID of the network interface, but its casing conventions is
   // not specified explicitly, so perform the case-insensitive comparison.
-  private static readonly StringComparison interfaceIdComparison =
+  private static readonly StringComparer interfaceIdComparer =
     RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-      ? StringComparison.OrdinalIgnoreCase
-      : StringComparison.Ordinal;
+      ? StringComparer.OrdinalIgnoreCase
+      : StringComparer.Ordinal;
 
   internal bool InterfaceIdEquals(string? other)
-    => string.Equals(InterfaceId, other, interfaceIdComparison);
+    => interfaceIdComparer.Equals(InterfaceId, other);
+
+  private int GetHashCodeForInterfaceId()
+    => InterfaceId is null ? 0 : interfaceIdComparer.GetHashCode(InterfaceId);
 
   public override bool Equals(object? obj)
     => obj switch {
@@ -61,10 +64,10 @@ public readonly struct NeighborTableEntry : IEquatable<NeighborTableEntry>, IEqu
 
   public bool Equals(NeighborTableEntry other)
     =>
-      // compare the properties of this and other except State
       Equals(other.IPAddress) &&
       Equals(other.PhysicalAddress) &&
       IsPermanent == other.IsPermanent &&
+      State == other.State &&
       InterfaceIdEquals(other.InterfaceId);
 
   public bool Equals(IPAddress? other)
@@ -90,7 +93,7 @@ public readonly struct NeighborTableEntry : IEquatable<NeighborTableEntry>, IEqu
       PhysicalAddress,
       IsPermanent,
       State,
-      InterfaceId
+      GetHashCodeForInterfaceId()
     );
 #else
   {
@@ -101,7 +104,7 @@ public readonly struct NeighborTableEntry : IEquatable<NeighborTableEntry>, IEqu
       hash = (hash * 31) + PhysicalAddress?.GetHashCode() ?? 0;
       hash = (hash * 31) + IsPermanent.GetHashCode();
       hash = (hash * 31) + State.GetHashCode();
-      hash = (hash * 31) + InterfaceId?.GetHashCode() ?? 0;
+      hash = (hash * 31) + GetHashCodeForInterfaceId();
     }
 
     return hash;
