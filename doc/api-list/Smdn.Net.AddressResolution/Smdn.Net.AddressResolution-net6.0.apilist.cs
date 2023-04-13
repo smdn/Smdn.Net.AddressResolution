@@ -1,24 +1,26 @@
-// Smdn.Net.AddressResolution.dll (Smdn.Net.AddressResolution-1.0.0-preview6)
+// Smdn.Net.AddressResolution.dll (Smdn.Net.AddressResolution-1.0.0-rc1)
 //   Name: Smdn.Net.AddressResolution
 //   AssemblyVersion: 1.0.0.0
-//   InformationalVersion: 1.0.0-preview6+867630e3d8768ccca99d991e9c0c1cca62c64c76
+//   InformationalVersion: 1.0.0-rc1+54f2767c7798db11d76ae3836009b55f701af69f
 //   TargetFramework: .NETCoreApp,Version=v6.0
 //   Configuration: Release
 //   Referenced assemblies:
 //     Microsoft.Extensions.DependencyInjection.Abstractions, Version=6.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60
 //     Microsoft.Extensions.Logging.Abstractions, Version=6.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60
+//     System.Collections, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
 //     System.Collections.Concurrent, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
 //     System.ComponentModel, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+//     System.ComponentModel.Primitives, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
 //     System.Diagnostics.Process, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
 //     System.Linq, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
 //     System.Memory, Version=6.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51
 //     System.Net.NetworkInformation, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+//     System.Net.Ping, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
 //     System.Net.Primitives, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
 //     System.Runtime, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
 //     System.Runtime.InteropServices, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
 //     System.Runtime.InteropServices.RuntimeInformation, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
 //     System.Threading, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
-//     Vanara.Core, Version=3.4.13.0, Culture=neutral, PublicKeyToken=c37e4080322237fa
 //     Vanara.PInvoke.IpHlpApi, Version=3.4.13.0, Culture=neutral, PublicKeyToken=c37e4080322237fa
 //     Vanara.PInvoke.Shared, Version=3.4.13.0, Culture=neutral, PublicKeyToken=c37e4080322237fa
 //     Vanara.PInvoke.Ws2_32, Version=3.4.13.0, Culture=neutral, PublicKeyToken=c37e4080322237fa
@@ -26,6 +28,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Runtime.CompilerServices;
@@ -34,7 +38,8 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Smdn.Net;
 using Smdn.Net.AddressResolution;
-using Smdn.Net.NeighborDiscovery;
+using Smdn.Net.AddressTables;
+using Smdn.Net.NetworkScanning;
 
 namespace Smdn.Net {
   public abstract class IPNetworkProfile {
@@ -43,7 +48,7 @@ namespace Smdn.Net {
     public static IPNetworkProfile Create(IPAddress baseAddress, IPAddress subnetMask, NetworkInterface? networkInterface = null) {}
     public static IPNetworkProfile Create(IPAddress baseAddress, int prefixLength, NetworkInterface? networkInterface = null) {}
     public static IPNetworkProfile Create(NetworkInterface networkInterface) {}
-    public static IPNetworkProfile Create(Predicate<NetworkInterface> predicate) {}
+    public static IPNetworkProfile Create(Predicate<NetworkInterface> predicateForNetworkInterface) {}
 
     protected IPNetworkProfile(NetworkInterface? networkInterface) {}
 
@@ -58,27 +63,32 @@ namespace Smdn.Net {
 }
 
 namespace Smdn.Net.AddressResolution {
-  public interface IAddressResolver<TAddress, TResolvedAddress> {
+  public interface IAddressResolver<TAddress, TResolvedAddress> where TAddress : notnull where TResolvedAddress : notnull {
     void Invalidate(TAddress address);
-    ValueTask<TResolvedAddress> ResolveAsync(TAddress address, CancellationToken cancellationToken);
+    ValueTask<TResolvedAddress?> ResolveAsync(TAddress address, CancellationToken cancellationToken);
   }
 
   public class MacAddressResolver : MacAddressResolverBase {
-    protected MacAddressResolver(INeighborTable neighborTable, INeighborDiscoverer neighborDiscoverer, TimeSpan neighborDiscoveryInterval, ILogger? logger) {}
-    public MacAddressResolver(INeighborTable? neighborTable = null, INeighborDiscoverer? neighborDiscoverer = null, int neighborDiscoveryIntervalMilliseconds = -1, IServiceProvider? serviceProvider = null) {}
+    protected MacAddressResolver(IAddressTable addressTable, bool shouldDisposeAddressTable, INetworkScanner? networkScanner, bool shouldDisposeNetworkScanner, NetworkInterface? networkInterface, int maxParallelCountForRefreshInvalidatedCache, ILogger? logger) {}
+    public MacAddressResolver() {}
+    public MacAddressResolver(IAddressTable? addressTable, INetworkScanner? networkScanner, bool shouldDisposeAddressTable = false, bool shouldDisposeNetworkScanner = false, NetworkInterface? networkInterface = null, int maxParallelCountForRefreshInvalidatedCache = 3, IServiceProvider? serviceProvider = null) {}
     public MacAddressResolver(IPNetworkProfile? networkProfile, IServiceProvider? serviceProvider = null) {}
-    public MacAddressResolver(IPNetworkProfile? networkProfile, TimeSpan neighborDiscoveryInterval, IServiceProvider? serviceProvider = null) {}
-    public MacAddressResolver(TimeSpan neighborDiscoveryInterval, INeighborTable? neighborTable = null, INeighborDiscoverer? neighborDiscoverer = null, IServiceProvider? serviceProvider = null) {}
 
+    public bool CanPerformNetworkScan { get; }
     public override bool HasInvalidated { get; }
+    public TimeSpan NetworkScanInterval { get; set; }
+    public TimeSpan NetworkScanMinInterval { get; set; }
 
     protected override void Dispose(bool disposing) {}
+    public IAsyncEnumerable<AddressTableEntry> EnumerateAddressTableEntriesAsync(CancellationToken cancellationToken = default) {}
+    public IAsyncEnumerable<AddressTableEntry> EnumerateAddressTableEntriesAsync(Predicate<AddressTableEntry> predicate, CancellationToken cancellationToken = default) {}
     protected override void InvalidateCore(IPAddress ipAddress) {}
     protected override void InvalidateCore(PhysicalAddress macAddress) {}
     protected override ValueTask RefreshCacheAsyncCore(CancellationToken cancellationToken = default) {}
     protected override ValueTask RefreshInvalidatedCacheAsyncCore(CancellationToken cancellationToken = default) {}
     protected override async ValueTask<PhysicalAddress?> ResolveIPAddressToMacAddressAsyncCore(IPAddress ipAddress, CancellationToken cancellationToken) {}
     protected override async ValueTask<IPAddress?> ResolveMacAddressToIPAddressAsyncCore(PhysicalAddress macAddress, CancellationToken cancellationToken) {}
+    protected virtual async ValueTask<AddressTableEntry> SelectAddressTableEntryAsync(Predicate<AddressTableEntry> predicate, CancellationToken cancellationToken) {}
   }
 
   public abstract class MacAddressResolverBase :
@@ -116,17 +126,12 @@ namespace Smdn.Net.AddressResolution {
   }
 }
 
-namespace Smdn.Net.NeighborDiscovery {
-  public interface INeighborDiscoverer {
-    ValueTask DiscoverAsync(CancellationToken cancellationToken);
-    ValueTask DiscoverAsync(IEnumerable<IPAddress> addresses, CancellationToken cancellationToken);
+namespace Smdn.Net.AddressTables {
+  public interface IAddressTable : IDisposable {
+    IAsyncEnumerable<AddressTableEntry> EnumerateEntriesAsync(CancellationToken cancellationToken);
   }
 
-  public interface INeighborTable {
-    IAsyncEnumerable<NeighborTableEntry> EnumerateEntriesAsync(CancellationToken cancellationToken);
-  }
-
-  public enum NeighborTableEntryState : int {
+  public enum AddressTableEntryState : int {
     Delay = 4,
     Incomplete = 1,
     None = 0,
@@ -135,82 +140,121 @@ namespace Smdn.Net.NeighborDiscovery {
     Stale = 3,
   }
 
-  public sealed class ArpScanCommandNeighborDiscoverer : RunCommandNeighborDiscovererBase {
+  public sealed class IpHlpApiAddressTable : IAddressTable {
     public static bool IsSupported { get; }
 
-    public ArpScanCommandNeighborDiscoverer(IPNetworkProfile? networkProfile, IServiceProvider? serviceProvider) {}
+    public IpHlpApiAddressTable(IServiceProvider? serviceProvider = null) {}
 
-    protected override bool GetCommandLineArguments(IEnumerable<IPAddress> addressesToDiscover, out string executable, out string arguments) {}
-    protected override bool GetCommandLineArguments(out string executable, out string arguments) {}
+    [AsyncIteratorStateMachine(typeof(IpHlpApiAddressTable.<EnumerateEntriesAsync>d__6))]
+    public IAsyncEnumerable<AddressTableEntry> EnumerateEntriesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default) {}
+    void IDisposable.Dispose() {}
   }
 
-  public sealed class IpHlpApiNeighborDiscoverer : INeighborDiscoverer {
-    public IpHlpApiNeighborDiscoverer(IPNetworkProfile networkProfile, ILogger? logger = null) {}
-
-    public ValueTask DiscoverAsync(CancellationToken cancellationToken = default) {}
-    public async ValueTask DiscoverAsync(IEnumerable<IPAddress> addresses, CancellationToken cancellationToken = default) {}
-  }
-
-  public sealed class IpHlpApiNeighborTable : INeighborTable {
+  public sealed class ProcfsArpAddressTable : IAddressTable {
     public static bool IsSupported { get; }
 
-    public IpHlpApiNeighborTable(IServiceProvider? serviceProvider = null) {}
+    public ProcfsArpAddressTable(IServiceProvider? serviceProvider = null) {}
 
-    [AsyncIteratorStateMachine(typeof(IpHlpApiNeighborTable.<EnumerateEntriesAsync>d__5))]
-    public IAsyncEnumerable<NeighborTableEntry> EnumerateEntriesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default) {}
+    [AsyncIteratorStateMachine(typeof(ProcfsArpAddressTable.<EnumerateEntriesAsync>d__7))]
+    public IAsyncEnumerable<AddressTableEntry> EnumerateEntriesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default) {}
+    void IDisposable.Dispose() {}
   }
 
-  public sealed class NmapCommandNeighborDiscoverer : RunCommandNeighborDiscovererBase {
-    public static bool IsSupported { get; }
-
-    public NmapCommandNeighborDiscoverer(IPNetworkProfile networkProfile, IServiceProvider? serviceProvider) {}
-
-    protected override bool GetCommandLineArguments(IEnumerable<IPAddress> addressesToDiscover, out string executable, out string arguments) {}
-    protected override bool GetCommandLineArguments(out string executable, out string arguments) {}
-  }
-
-  public sealed class NullNeighborDiscoverer : INeighborDiscoverer {
-    public static readonly NullNeighborDiscoverer Instance; // = "Smdn.Net.NeighborDiscovery.NullNeighborDiscoverer"
-
-    public ValueTask DiscoverAsync(CancellationToken cancellationToken) {}
-    public ValueTask DiscoverAsync(IEnumerable<IPAddress> addresses, CancellationToken cancellationToken) {}
-  }
-
-  public sealed class ProcfsArpNeighborTable : INeighborTable {
-    public static bool IsSupported { get; }
-
-    public ProcfsArpNeighborTable(IServiceProvider? serviceProvider = null) {}
-
-    [AsyncIteratorStateMachine(typeof(ProcfsArpNeighborTable.<EnumerateEntriesAsync>d__6))]
-    public IAsyncEnumerable<NeighborTableEntry> EnumerateEntriesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default) {}
-  }
-
-  public abstract class RunCommandNeighborDiscovererBase : INeighborDiscoverer {
-    protected static string FindPathToCommand(string command, IEnumerable<string> paths) {}
-
-    protected RunCommandNeighborDiscovererBase(ILogger? logger) {}
-
-    public virtual ValueTask DiscoverAsync(CancellationToken cancellationToken) {}
-    public virtual ValueTask DiscoverAsync(IEnumerable<IPAddress> addresses, CancellationToken cancellationToken) {}
-    protected abstract bool GetCommandLineArguments(IEnumerable<IPAddress> addressesToDiscover, out string executable, out string arguments);
-    protected abstract bool GetCommandLineArguments(out string executable, out string arguments);
-  }
-
-  public readonly struct NeighborTableEntry :
+  public readonly struct AddressTableEntry :
+    IEquatable<AddressTableEntry>,
     IEquatable<IPAddress>,
     IEquatable<PhysicalAddress>
   {
-    public NeighborTableEntry(IPAddress ipAddress, PhysicalAddress? physicalAddress, bool isPermanent, NeighborTableEntryState state, int? interfaceIndex = null, string? interfaceName = null) {}
+    public static readonly AddressTableEntry Empty; // = "{IP=, MAC=(null), IsPermanent=False, State=None, Iface=}"
 
-    public IPAddress IPAddress { get; }
-    public int? InterfaceIndex { get; }
-    public string? InterfaceName { get; }
+    public static IEqualityComparer<AddressTableEntry> DefaultEqualityComparer { get; }
+    public static IEqualityComparer<AddressTableEntry> ExceptStateEqualityComparer { get; }
+
+    public AddressTableEntry(IPAddress ipAddress, PhysicalAddress? physicalAddress, bool isPermanent, AddressTableEntryState state, string? interfaceId) {}
+
+    public IPAddress? IPAddress { get; }
+    public string? InterfaceId { get; }
+    [MemberNotNullWhen(false, "IPAddress")]
+    public bool IsEmpty { [MemberNotNullWhen(false, "IPAddress")] get; }
     public bool IsPermanent { get; }
     public PhysicalAddress? PhysicalAddress { get; }
-    public NeighborTableEntryState State { get; }
+    public AddressTableEntryState State { get; }
 
+    public bool Equals(AddressTableEntry other) {}
     public bool Equals(IPAddress? other) {}
     public bool Equals(PhysicalAddress? other) {}
+    public override bool Equals(object? obj) {}
+    public override int GetHashCode() {}
+    public override string ToString() {}
+  }
+}
+
+namespace Smdn.Net.NetworkScanning {
+  public interface INetworkScanner : IDisposable {
+    ValueTask ScanAsync(CancellationToken cancellationToken);
+    ValueTask ScanAsync(IEnumerable<IPAddress> addresses, CancellationToken cancellationToken);
+  }
+
+  public sealed class ArpScanCommandNetworkScanner : CommandNetworkScanner {
+    public static bool IsSupported { get; }
+
+    public ArpScanCommandNetworkScanner(IPNetworkProfile? networkProfile, IServiceProvider? serviceProvider) {}
+
+    protected override bool GetCommandLineArguments(IEnumerable<IPAddress> addressesToScan, out string executable, out string arguments) {}
+    protected override bool GetCommandLineArguments(out string executable, out string arguments) {}
+  }
+
+  public abstract class CommandNetworkScanner : INetworkScanner {
+    public interface IProcessFactory {
+      Process CreateProcess(ProcessStartInfo processStartInfo);
+    }
+
+    protected readonly struct Command {
+      public Command(string name, string? executablePath) {}
+
+      public bool IsAvailable { get; }
+      public string Name { get; }
+
+      public string GetExecutablePathOrThrow() {}
+    }
+
+    protected static IReadOnlyCollection<string> DefaultCommandPaths { get; }
+
+    protected static CommandNetworkScanner.Command FindCommand(string command, IEnumerable<string> paths) {}
+
+    protected CommandNetworkScanner(ILogger? logger, IServiceProvider? serviceProvider) {}
+
+    protected virtual void Dispose(bool disposing) {}
+    public void Dispose() {}
+    protected abstract bool GetCommandLineArguments(IEnumerable<IPAddress> addressesToScan, out string executable, out string? arguments);
+    protected abstract bool GetCommandLineArguments(out string executable, out string? arguments);
+    public virtual ValueTask ScanAsync(CancellationToken cancellationToken = default) {}
+    public virtual ValueTask ScanAsync(IEnumerable<IPAddress> addresses, CancellationToken cancellationToken = default) {}
+  }
+
+  public sealed class IpHlpApiNetworkScanner : INetworkScanner {
+    public IpHlpApiNetworkScanner(IPNetworkProfile networkProfile, IServiceProvider? serviceProvider = null) {}
+
+    public ValueTask ScanAsync(CancellationToken cancellationToken = default) {}
+    public async ValueTask ScanAsync(IEnumerable<IPAddress> addresses, CancellationToken cancellationToken = default) {}
+    void IDisposable.Dispose() {}
+  }
+
+  public sealed class NmapCommandNetworkScanner : CommandNetworkScanner {
+    public static bool IsSupported { get; }
+
+    public NmapCommandNetworkScanner(IPNetworkProfile networkProfile, IServiceProvider? serviceProvider) {}
+
+    protected override bool GetCommandLineArguments(IEnumerable<IPAddress> addressesToScan, out string executable, out string arguments) {}
+    protected override bool GetCommandLineArguments(out string executable, out string arguments) {}
+  }
+
+  public sealed class PingNetworkScanner : INetworkScanner {
+    public PingNetworkScanner(IPNetworkProfile networkProfile, IServiceProvider? serviceProvider = null) {}
+
+    public void Dispose() {}
+    public ValueTask ScanAsync(CancellationToken cancellationToken = default) {}
+    public ValueTask ScanAsync(IEnumerable<IPAddress> addresses, CancellationToken cancellationToken = default) {}
   }
 }
 // API list generated by Smdn.Reflection.ReverseGenerating.ListApi.MSBuild.Tasks v1.2.1.0.
