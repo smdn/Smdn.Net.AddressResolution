@@ -83,7 +83,7 @@ partial class MacAddressResolver {
     // exclude entries that are irrelevant to the network interface
     if (
       entry.InterfaceId is not null &&
-      !entry.InterfaceIdEquals(networkInterface.Id)
+      !entry.InterfaceIdEquals(networkInterface!.Id)
     ) {
       return false;
     }
@@ -94,14 +94,14 @@ partial class MacAddressResolver {
     // exclude addresses of address families not supported by the network interface
     if (
       entry.IPAddress.AddressFamily == AddressFamily.InterNetwork &&
-      !networkInterface.Supports(NetworkInterfaceComponent.IPv4)
+      !networkInterface!.Supports(NetworkInterfaceComponent.IPv4)
     ) {
       return false;
     }
 
     if (
       entry.IPAddress.AddressFamily == AddressFamily.InterNetworkV6 &&
-      !networkInterface.Supports(NetworkInterfaceComponent.IPv6)
+      !networkInterface!.Supports(NetworkInterfaceComponent.IPv6)
     ) {
       return false;
     }
