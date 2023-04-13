@@ -14,7 +14,7 @@ namespace Smdn.Net.AddressTables;
 #pragma warning disable CA2231
 public readonly struct AddressTableEntry : IEquatable<AddressTableEntry>, IEquatable<IPAddress>, IEquatable<PhysicalAddress> {
 #pragma warning restore CA2231
-  public static readonly AddressTableEntry Empty = default;
+  public static readonly AddressTableEntry Empty;
 
   /// <summary>Gets the <see cref="IEqualityComparer{AddressTableEntry}"/> that performs the default equality comparison.</summary>
   public static IEqualityComparer<AddressTableEntry> DefaultEqualityComparer { get; } = new EqualityComparer(compareExceptState: false);

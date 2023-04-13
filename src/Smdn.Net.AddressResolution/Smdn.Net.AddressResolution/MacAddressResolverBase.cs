@@ -61,7 +61,7 @@ public abstract class MacAddressResolverBase :
   /*
    * IDisposable
    */
-  private bool disposed = false;
+  private bool disposed;
 
   /// <inheritdoc cref="IDisposable.Dispose" />
   public void Dispose()

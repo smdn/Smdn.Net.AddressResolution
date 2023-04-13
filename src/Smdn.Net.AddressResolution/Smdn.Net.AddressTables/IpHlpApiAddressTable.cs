@@ -11,7 +11,6 @@ using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 #endif
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -49,7 +48,7 @@ public sealed class IpHlpApiAddressTable : IAddressTable {
 
   public IpHlpApiAddressTable(IServiceProvider? serviceProvider = null)
   {
-    this.logger = serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger<IpHlpApiAddressTable>();
+    logger = serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger<IpHlpApiAddressTable>();
   }
 
   void IDisposable.Dispose()

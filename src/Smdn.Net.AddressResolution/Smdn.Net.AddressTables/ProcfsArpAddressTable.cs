@@ -41,7 +41,7 @@ public sealed class ProcfsArpAddressTable : IAddressTable {
 
   public ProcfsArpAddressTable(IServiceProvider? serviceProvider = null)
   {
-    this.logger = serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger<ProcfsArpAddressTable>();
+    logger = serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger<ProcfsArpAddressTable>();
   }
 
   void IDisposable.Dispose()
