@@ -45,10 +45,14 @@ public partial class MacAddressResolver : MacAddressResolverBase {
   /// Gets or sets the <see cref="TimeSpan"/> which represents the interval to perform a network scan.
   /// </summary>
   /// <remarks>
+  /// <para>
   /// If the period represented by this property has elapsed since the lastest network scan,
   /// the instance performs network scan automatically when the <see cref="ResolveIPAddressToMacAddressAsync(IPAddress, CancellationToken)" /> or
   /// <see cref="ResolveMacAddressToIPAddressAsync(PhysicalAddress, CancellationToken)" /> is called.
+  /// </para>
+  /// <para>
   /// If <see cref="Timeout.InfiniteTimeSpan" /> is specified, the instance does not perform network scan automatically.
+  /// </para>
   /// </remarks>
   /// <seealso cref="NetworkScanMinInterval"/>
   /// <seealso cref="ResolveIPAddressToMacAddressAsync(IPAddress, CancellationToken)" />
@@ -69,13 +73,19 @@ public partial class MacAddressResolver : MacAddressResolverBase {
   /// Gets or sets the <see cref="TimeSpan"/> which represents the minimum interval to perform a network scan.
   /// </summary>
   /// <remarks>
+  /// <para>
   /// If the period represented by this property has not elapsed since the lastest network scan,
   /// the instance will not performs network scan.
+  /// </para>
+  /// <para>
   /// The network scan will be performed automatically when the <see cref="ResolveIPAddressToMacAddressAsync(IPAddress, CancellationToken)" /> or
   /// <see cref="ResolveMacAddressToIPAddressAsync(PhysicalAddress, CancellationToken)" /> is called, or explicitly performed by calling the
   /// <see cref="RefreshCacheAsync(CancellationToken)" />.
+  /// </para>
+  /// <para>
   /// If <see cref="Timeout.InfiniteTimeSpan" /> is specified, the instance does not perform the network scan.
   /// If <see cref="TimeSpan.Zero" /> is specified, the instance always performs the network scan as requested.
+  /// </para>
   /// </remarks>
   /// <seealso cref="NetworkScanInterval"/>
   /// <seealso cref="RefreshCacheAsync(CancellationToken)" />
