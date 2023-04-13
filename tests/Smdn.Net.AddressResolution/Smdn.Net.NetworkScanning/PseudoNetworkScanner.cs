@@ -6,9 +6,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Smdn.Net.NeighborDiscovery;
-
-namespace Smdn.Net.AddressResolution;
+namespace Smdn.Net.NetworkScanning;
 
 internal sealed class PseudoNetworkScanner : INetworkScanner {
   public bool IsDisposed { get; private set; }

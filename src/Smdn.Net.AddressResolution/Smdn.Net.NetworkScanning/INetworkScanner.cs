@@ -6,7 +6,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Smdn.Net.NeighborDiscovery;
+namespace Smdn.Net.NetworkScanning;
 
 /// <summary>
 /// Provides a mechanism for performing network scan.

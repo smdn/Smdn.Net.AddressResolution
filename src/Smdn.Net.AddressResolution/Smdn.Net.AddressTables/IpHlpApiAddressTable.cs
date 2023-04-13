@@ -21,7 +21,7 @@ using Microsoft.Extensions.Logging;
 using static Vanara.PInvoke.IpHlpApi;
 using static Vanara.PInvoke.Ws2_32;
 
-namespace Smdn.Net.NeighborDiscovery;
+namespace Smdn.Net.AddressTables;
 
 public sealed class IpHlpApiAddressTable : IAddressTable {
   public static bool IsSupported => RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && lazyIsSupported.Value;

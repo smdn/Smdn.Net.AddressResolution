@@ -6,9 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 
-using Smdn.Net.NeighborDiscovery;
-
-namespace Smdn.Net.AddressResolution;
+namespace Smdn.Net.AddressTables;
 
 internal sealed class StaticAddressTable : IAddressTable {
   private readonly IList<AddressTableEntry> staticEntries;

@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace Smdn.Net.NeighborDiscovery;
+namespace Smdn.Net.NetworkScanning;
 
 public abstract class RunCommandNetworkScannerBase : INetworkScanner {
   public interface IProcessFactory {

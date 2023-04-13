@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace Smdn.Net.NeighborDiscovery;
+namespace Smdn.Net.NetworkScanning;
 
 public sealed class PingNetworkScanner : INetworkScanner {
   private readonly ILogger? logger;

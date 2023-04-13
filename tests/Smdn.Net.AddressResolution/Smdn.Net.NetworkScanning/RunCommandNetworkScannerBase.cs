@@ -15,7 +15,7 @@ using NUnit.Framework;
 
 using Smdn.OperatingSystem;
 
-namespace Smdn.Net.NeighborDiscovery;
+namespace Smdn.Net.NetworkScanning;
 
 [TestFixture]
 public class RunCommandNetworkScannerBaseTests {

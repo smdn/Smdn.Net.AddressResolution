@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 
 using NUnit.Framework;
 
-namespace Smdn.Net.NeighborDiscovery;
+namespace Smdn.Net.AddressTables;
 
 [TestFixture]
 public class AddressTableEntryTests {

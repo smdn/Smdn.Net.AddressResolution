@@ -8,9 +8,7 @@ using System.Threading.Tasks;
 
 using NUnit.Framework;
 
-using Smdn.Net.NeighborDiscovery;
-
-namespace Smdn.Net.AddressResolution;
+namespace Smdn.Net.NetworkScanning;
 
 internal sealed class NullNetworkScanner : INetworkScanner {
   public void Dispose()

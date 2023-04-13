@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace Smdn.Net.NeighborDiscovery;
+namespace Smdn.Net.AddressTables;
 
 /// <summary>
 /// Provides a mechanism for referencing address tables such as ARP table.

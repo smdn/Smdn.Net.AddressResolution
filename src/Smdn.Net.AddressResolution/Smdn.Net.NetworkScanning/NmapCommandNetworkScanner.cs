@@ -7,7 +7,7 @@ using System.Net;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace Smdn.Net.NeighborDiscovery;
+namespace Smdn.Net.NetworkScanning;
 
 public sealed class NmapCommandNetworkScanner : RunCommandNetworkScannerBase {
   // ref: https://nmap.org/book/man-briefoptions.html

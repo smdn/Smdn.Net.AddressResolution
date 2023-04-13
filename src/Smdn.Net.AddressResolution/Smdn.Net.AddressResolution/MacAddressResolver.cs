@@ -9,7 +9,8 @@ using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-using Smdn.Net.NeighborDiscovery;
+using Smdn.Net.AddressTables;
+using Smdn.Net.NetworkScanning;
 
 namespace Smdn.Net.AddressResolution;
 

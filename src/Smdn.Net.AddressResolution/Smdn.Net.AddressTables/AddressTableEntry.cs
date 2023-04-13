@@ -9,7 +9,7 @@ using System.Net;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 
-namespace Smdn.Net.NeighborDiscovery;
+namespace Smdn.Net.AddressTables;
 
 #pragma warning disable CA2231
 public readonly struct AddressTableEntry : IEquatable<AddressTableEntry>, IEquatable<IPAddress>, IEquatable<PhysicalAddress> {

@@ -11,7 +11,8 @@ using Microsoft.Extensions.DependencyInjection;
 
 using NUnit.Framework;
 
-using Smdn.Net.NeighborDiscovery;
+using Smdn.Net.AddressTables;
+using Smdn.Net.NetworkScanning;
 
 namespace Smdn.Net.AddressResolution;
 

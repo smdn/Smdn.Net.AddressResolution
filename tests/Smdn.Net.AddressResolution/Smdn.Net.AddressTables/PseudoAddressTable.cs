@@ -5,9 +5,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Threading;
 
-using Smdn.Net.NeighborDiscovery;
-
-namespace Smdn.Net.AddressResolution;
+namespace Smdn.Net.AddressTables;
 
 internal sealed class PseudoAddressTable : IAddressTable {
   public bool IsDisposed { get; private set; }

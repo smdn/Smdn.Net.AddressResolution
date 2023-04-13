@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace Smdn.Net.NeighborDiscovery;
+namespace Smdn.Net.NetworkScanning;
 
 public sealed class ArpScanCommandNetworkScanner : RunCommandNetworkScannerBase {
   // ref: https://manpages.ubuntu.com/manpages/jammy/man1/arp-scan.1.html

@@ -3,7 +3,8 @@
 using System;
 using System.Runtime.InteropServices;
 
-using Smdn.Net.NeighborDiscovery;
+using Smdn.Net.AddressTables;
+using Smdn.Net.NetworkScanning;
 
 namespace Smdn.Net.AddressResolution;
 

@@ -19,7 +19,7 @@ using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace Smdn.Net.NeighborDiscovery;
+namespace Smdn.Net.AddressTables;
 
 public sealed class ProcfsArpAddressTable : IAddressTable {
   private const string PathToProcNetArp = "/proc/net/arp";

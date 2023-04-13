@@ -9,7 +9,8 @@ using System.Threading.Tasks;
 
 using NUnit.Framework;
 
-using Smdn.Net.NeighborDiscovery;
+using Smdn.Net.AddressTables;
+using Smdn.Net.NetworkScanning;
 
 namespace Smdn.Net.AddressResolution;
 

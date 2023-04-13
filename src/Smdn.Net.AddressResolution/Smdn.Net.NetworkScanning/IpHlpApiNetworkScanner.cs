@@ -22,7 +22,7 @@ using Vanara.PInvoke;
 using static Vanara.PInvoke.IpHlpApi;
 using static Vanara.PInvoke.Ws2_32;
 
-namespace Smdn.Net.NeighborDiscovery;
+namespace Smdn.Net.NetworkScanning;
 
 public sealed class IpHlpApiNetworkScanner : INetworkScanner {
   private static readonly Win32Error ERROR_BAD_NET_NAME = new(0x80070043u);
