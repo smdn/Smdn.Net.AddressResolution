@@ -125,7 +125,7 @@ partial class MacAddressResolver {
     var sw = Logger is null ? null : Stopwatch.StartNew();
 
     try {
-      Logger?.LogInformation("Performing address resolution for the invalidated {Count} IP addresses.", invalidatedIPAddresses.Count);
+      Logger?.LogInformation("Performing network scan for the invalidated {Count} IP addresses.", invalidatedIPAddresses.Count);
 
       await networkScanner!.ScanAsync(
         addresses: invalidatedIPAddresses,
@@ -135,7 +135,7 @@ partial class MacAddressResolver {
       invalidatedIPAddressSet.Clear();
     }
     finally {
-      Logger?.LogInformation("Address resolution finished in {ElapsedMilliseconds} ms.", sw!.ElapsedMilliseconds);
+      Logger?.LogInformation("Network scan finished in {ElapsedMilliseconds} ms.", sw!.ElapsedMilliseconds);
 
       partialScanSemaphore.Release();
     }
