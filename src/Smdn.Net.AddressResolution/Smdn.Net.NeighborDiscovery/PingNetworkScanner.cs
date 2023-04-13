@@ -12,19 +12,19 @@ using Microsoft.Extensions.Logging;
 
 namespace Smdn.Net.NeighborDiscovery;
 
-public sealed class PingNeighborDiscoverer : INeighborDiscoverer {
+public sealed class PingNetworkScanner : INetworkScanner {
   private readonly ILogger? logger;
-  private readonly Func<IEnumerable<IPAddress>?> getDiscoveryTargetAddresses;
+  private readonly Func<IEnumerable<IPAddress>?> getScanTargetAddresses;
   private Ping? ping;
   private readonly PingOptions pingOptions;
 
-  public PingNeighborDiscoverer(
+  public PingNetworkScanner(
     IPNetworkProfile networkProfile,
     IServiceProvider? serviceProvider = null
   )
   {
-    getDiscoveryTargetAddresses = (networkProfile ?? throw new ArgumentNullException(nameof(networkProfile))).GetAddressRange;
-    logger = serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger<PingNeighborDiscoverer>();
+    getScanTargetAddresses = (networkProfile ?? throw new ArgumentNullException(nameof(networkProfile))).GetAddressRange;
+    logger = serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger<PingNetworkScanner>();
 
     ping = new Ping();
     pingOptions = new() {
@@ -46,17 +46,17 @@ public sealed class PingNeighborDiscoverer : INeighborDiscoverer {
   }
 
   /*
-   * INeighborDiscoverer
+   * INetworkScanner
    */
-  public ValueTask DiscoverAsync(
+  public ValueTask ScanAsync(
     CancellationToken cancellationToken = default
   )
-    => DiscoverAsync(
-      addresses: getDiscoveryTargetAddresses() ?? throw new InvalidOperationException("could not get address range"),
+    => ScanAsync(
+      addresses: getScanTargetAddresses() ?? throw new InvalidOperationException("could not get address range"),
       cancellationToken: cancellationToken
     );
 
-  public ValueTask DiscoverAsync(
+  public ValueTask ScanAsync(
     IEnumerable<IPAddress> addresses,
     CancellationToken cancellationToken = default
   )
@@ -66,9 +66,9 @@ public sealed class PingNeighborDiscoverer : INeighborDiscoverer {
 
     ThrowIfDisposed();
 
-    return DiscoverAsyncCore();
+    return ScanAsyncCore();
 
-    async ValueTask DiscoverAsyncCore()
+    async ValueTask ScanAsyncCore()
     {
       const int timeoutMilliseconds = 100;
 

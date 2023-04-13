@@ -18,11 +18,11 @@ partial class MacAddressResolverTests {
   [Test]
   public void RefreshCacheAsync_AddressInvalidated()
   {
-    var discoverer = new PseudoNeighborDiscoverer();
+    var scanner = new PseudoNetworkScanner();
 
     var resolver = new MacAddressResolver(
       addressTable: new PseudoAddressTable(),
-      neighborDiscoverer: discoverer
+      networkScanner: scanner
     );
 
     resolver.Invalidate(TestIPAddress);
@@ -34,22 +34,22 @@ partial class MacAddressResolverTests {
 
     Assert.IsFalse(resolver.HasInvalidated, $"{nameof(resolver.HasInvalidated)} after refresh");
 
-    Assert.IsTrue(discoverer.FullDiscoveryRequested, nameof(discoverer.FullDiscoveryRequested));
-    Assert.IsFalse(discoverer.PartialDiscoveryRequested, nameof(discoverer.PartialDiscoveryRequested));
+    Assert.IsTrue(scanner.FullScanRequested, nameof(scanner.FullScanRequested));
+    Assert.IsFalse(scanner.PartialScanRequested, nameof(scanner.PartialScanRequested));
     CollectionAssert.IsEmpty(
-      discoverer.DiscoveryRequestedAddresses,
-      nameof(discoverer.DiscoveryRequestedAddresses)
+      scanner.ScanRequestedAddresses,
+      nameof(scanner.ScanRequestedAddresses)
     );
   }
 
   [Test]
   public void RefreshCacheAsync_NothingInvalidated()
   {
-    var discoverer = new PseudoNeighborDiscoverer();
+    var scanner = new PseudoNetworkScanner();
 
     var resolver = new MacAddressResolver(
       addressTable: new PseudoAddressTable(),
-      neighborDiscoverer: discoverer
+      networkScanner: scanner
     );
 
     Assert.IsFalse(resolver.HasInvalidated, $"{nameof(resolver.HasInvalidated)} brefore refresh");
@@ -58,43 +58,43 @@ partial class MacAddressResolverTests {
 
     Assert.IsFalse(resolver.HasInvalidated, $"{nameof(resolver.HasInvalidated)} after refresh");
 
-    Assert.IsTrue(discoverer.FullDiscoveryRequested, nameof(discoverer.FullDiscoveryRequested));
-    Assert.IsFalse(discoverer.PartialDiscoveryRequested, nameof(discoverer.PartialDiscoveryRequested));
+    Assert.IsTrue(scanner.FullScanRequested, nameof(scanner.FullScanRequested));
+    Assert.IsFalse(scanner.PartialScanRequested, nameof(scanner.PartialScanRequested));
     CollectionAssert.IsEmpty(
-      discoverer.DiscoveryRequestedAddresses,
-      nameof(discoverer.DiscoveryRequestedAddresses)
+      scanner.ScanRequestedAddresses,
+      nameof(scanner.ScanRequestedAddresses)
     );
   }
 
-  private static System.Collections.IEnumerable YieldTestCases_RefreshCacheAsync_NeighborDiscoveryIntervalMustNotAffect()
+  private static System.Collections.IEnumerable YieldTestCases_RefreshCacheAsync_NetworkScanIntervalMustNotAffect()
   {
     yield return new object[] { TimeSpan.FromTicks(1) };
     yield return new object[] { TimeSpan.MaxValue };
     yield return new object[] { Timeout.InfiniteTimeSpan };
   }
 
-  [TestCaseSource(nameof(YieldTestCases_RefreshCacheAsync_NeighborDiscoveryIntervalMustNotAffect))]
-  public void RefreshCacheAsync_NeighborDiscoveryIntervalMustNotAffect(TimeSpan neighborDiscoveryInterval)
+  [TestCaseSource(nameof(YieldTestCases_RefreshCacheAsync_NetworkScanIntervalMustNotAffect))]
+  public void RefreshCacheAsync_NetworkScanIntervalMustNotAffect(TimeSpan networkScanInterval)
   {
-    var discoverer = new PseudoNeighborDiscoverer();
+    var scanner = new PseudoNetworkScanner();
 
     var resolver = new MacAddressResolver(
       addressTable: new PseudoAddressTable(),
-      neighborDiscoverer: discoverer
+      networkScanner: scanner
     ) {
-      NeighborDiscoveryInterval = neighborDiscoveryInterval,
-      NeighborDiscoveryMinInterval = TimeSpan.Zero
+      NetworkScanInterval = networkScanInterval,
+      NetworkScanMinInterval = TimeSpan.Zero
     };
 
     Assert.DoesNotThrowAsync(async () => await resolver.RefreshCacheAsync(), $"{nameof(resolver.RefreshCacheAsync)} #1");
 
-    Assert.IsTrue(discoverer.FullDiscoveryRequested, $"{nameof(discoverer.FullDiscoveryRequested)} #1");
+    Assert.IsTrue(scanner.FullScanRequested, $"{nameof(scanner.FullScanRequested)} #1");
 
-    discoverer.Reset();
+    scanner.Reset();
 
     Assert.DoesNotThrowAsync(async () => await resolver.RefreshCacheAsync(), $"{nameof(resolver.RefreshCacheAsync)} #2");
 
-    Assert.IsTrue(discoverer.FullDiscoveryRequested, $"{nameof(discoverer.FullDiscoveryRequested)} #2");
+    Assert.IsTrue(scanner.FullScanRequested, $"{nameof(scanner.FullScanRequested)} #2");
   }
 
   [Test]
@@ -102,13 +102,13 @@ partial class MacAddressResolverTests {
   {
     const int numberOfParallelism = 20;
 
-    var discoverer = new PerformDelayNeighborDiscoverer(delayOnNeighborDiscovery: TimeSpan.FromMilliseconds(100));
+    var scanner = new PerformDelayNetworkScanner(delayOnNetworkScan: TimeSpan.FromMilliseconds(100));
     var resolver = new MacAddressResolver(
       addressTable: new PseudoAddressTable(),
-      neighborDiscoverer: discoverer
+      networkScanner: scanner
     ) {
-      NeighborDiscoveryInterval = Timeout.InfiniteTimeSpan,
-      NeighborDiscoveryMinInterval = TimeSpan.Zero
+      NetworkScanInterval = Timeout.InfiniteTimeSpan,
+      NetworkScanMinInterval = TimeSpan.Zero
     };
 
     using var cts = new CancellationTokenSource(delay: TimeSpan.FromSeconds(10.0));
@@ -125,7 +125,7 @@ partial class MacAddressResolverTests {
       }
     );
 
-    Assert.AreEqual(1, discoverer.MaxNumberOfTasksPerformedInParallel, nameof(discoverer.MaxNumberOfTasksPerformedInParallel));
-    Assert.Greater(discoverer.NumberOfTasksPerformed, 1, nameof(discoverer.NumberOfTasksPerformed));
+    Assert.AreEqual(1, scanner.MaxNumberOfTasksPerformedInParallel, nameof(scanner.MaxNumberOfTasksPerformedInParallel));
+    Assert.Greater(scanner.NumberOfTasksPerformed, 1, nameof(scanner.NumberOfTasksPerformed));
   }
 }

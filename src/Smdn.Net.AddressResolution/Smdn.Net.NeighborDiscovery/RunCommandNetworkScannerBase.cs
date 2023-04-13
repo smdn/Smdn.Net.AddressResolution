@@ -19,7 +19,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Smdn.Net.NeighborDiscovery;
 
-public abstract class RunCommandNeighborDiscovererBase : INeighborDiscoverer {
+public abstract class RunCommandNetworkScannerBase : INetworkScanner {
   public interface IProcessFactory {
     Process CreateProcess(ProcessStartInfo processStartInfo);
   }
@@ -126,7 +126,7 @@ public abstract class RunCommandNeighborDiscovererBase : INeighborDiscoverer {
   private readonly ILogger? logger;
   private readonly IProcessFactory processFactory;
 
-  protected RunCommandNeighborDiscovererBase(
+  protected RunCommandNetworkScannerBase(
     ILogger? logger,
     IServiceProvider? serviceProvider
   )
@@ -153,10 +153,10 @@ public abstract class RunCommandNeighborDiscovererBase : INeighborDiscoverer {
   );
 
   /// <summary>
-  /// Gets the path of the executable file and the arguments pass to the command for performing the neighbor discovery.
+  /// Gets the path of the executable file and the arguments pass to the command for performing the network scan.
   /// </summary>
-  /// <param name="addressesToDiscover">
-  /// The target list of <see cref="IPAddress" /> for performing the neighbor discovery.
+  /// <param name="addressesToScan">
+  /// The target list of <see cref="IPAddress" /> for performing the network scan.
   /// </param>
   /// <param name="executable">
   /// The path to the executable file of the command.
@@ -165,16 +165,16 @@ public abstract class RunCommandNeighborDiscovererBase : INeighborDiscoverer {
   /// The arguments pass to the command.
   /// </param>
   /// <return>
-  /// If <see langword="true" />, performs the neighbor discovery by invoking the command with specified <paramref name="executable"/> and <paramref name="arguments"/>.
-  /// If <see langword="false" />, the neighbor discovery is not performed.
+  /// If <see langword="true" />, performs the network scan by invoking the command with specified <paramref name="executable"/> and <paramref name="arguments"/>.
+  /// If <see langword="false" />, the network scan is not performed.
   /// </return>
   protected abstract bool GetCommandLineArguments(
-    IEnumerable<IPAddress> addressesToDiscover,
+    IEnumerable<IPAddress> addressesToScan,
     out string executable,
     out string? arguments
   );
 
-  public virtual ValueTask DiscoverAsync(
+  public virtual ValueTask ScanAsync(
     CancellationToken cancellationToken = default
   )
   {
@@ -191,7 +191,7 @@ public abstract class RunCommandNeighborDiscovererBase : INeighborDiscoverer {
     return default; // do nothing
   }
 
-  public virtual ValueTask DiscoverAsync(
+  public virtual ValueTask ScanAsync(
     IEnumerable<IPAddress> addresses,
     CancellationToken cancellationToken = default
   )

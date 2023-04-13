@@ -34,21 +34,21 @@ partial class MacAddressResolver {
   private async ValueTask FullScanAsync(CancellationToken cancellationToken)
   {
     if (!HasFullScanMinIntervalElapsed) {
-      Logger?.LogInformation("Neighbor discovery was not performed since the minimum perform interval had not elapsed.");
+      Logger?.LogInformation("Network scan was not performed since the minimum perform interval had not elapsed.");
       return;
     }
 
     if (!await fullScanMutex.WaitAsync(0, cancellationToken: default).ConfigureAwait(false)) {
-      Logger?.LogInformation("Neighbor discovery was not performed since the another discovery is currently being proceeding.");
+      Logger?.LogInformation("Network scan was not performed since the another scan is currently being proceeding.");
       return;
     }
 
-    Logger?.LogInformation("Performing neighbor discovery.");
+    Logger?.LogInformation("Performing network scan.");
 
     var sw = Logger is null ? null : Stopwatch.StartNew();
 
     try {
-      await neighborDiscoverer.DiscoverAsync(
+      await networkScanner.ScanAsync(
         cancellationToken: cancellationToken
       ).ConfigureAwait(false);
 
@@ -59,7 +59,7 @@ partial class MacAddressResolver {
       timeStampForFullScan.Restart();
     }
     finally {
-      Logger?.LogInformation("Neighbor discovery finished in {ElapsedMilliseconds} ms.", sw!.ElapsedMilliseconds);
+      Logger?.LogInformation("Network scan finished in {ElapsedMilliseconds} ms.", sw!.ElapsedMilliseconds);
 
       fullScanMutex.Release();
     }
@@ -104,7 +104,7 @@ partial class MacAddressResolver {
     try {
       Logger?.LogInformation("Performing address resolution for the invalidated {Count} IP addresses.", invalidatedIPAddresses.Count);
 
-      await neighborDiscoverer.DiscoverAsync(
+      await networkScanner.ScanAsync(
         addresses: invalidatedIPAddresses,
         cancellationToken: cancellationToken
       ).ConfigureAwait(false);

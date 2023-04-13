@@ -12,14 +12,14 @@ using Smdn.Net.NeighborDiscovery;
 
 namespace Smdn.Net.AddressResolution;
 
-internal sealed class NullNeighborDiscoverer : INeighborDiscoverer {
+internal sealed class NullNetworkScanner : INetworkScanner {
   public void Dispose()
   {
   }
 
-  public ValueTask DiscoverAsync(CancellationToken cancellationToken)
+  public ValueTask ScanAsync(CancellationToken cancellationToken)
     => default;
 
-  public ValueTask DiscoverAsync(IEnumerable<IPAddress> addresses, CancellationToken cancellationToken)
+  public ValueTask ScanAsync(IEnumerable<IPAddress> addresses, CancellationToken cancellationToken)
     => default;
 }

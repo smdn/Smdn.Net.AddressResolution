@@ -14,28 +14,28 @@ using Smdn.Net.NeighborDiscovery;
 namespace Smdn.Net.AddressResolution;
 
 partial class MacAddressResolverTests {
-  private sealed class InterceptingNeighborDiscoverer : INeighborDiscoverer {
-    private readonly Action actionBeforePerformDiscovery;
+  private sealed class InterceptingNetworkScanner : INetworkScanner {
+    private readonly Action actionBeforePerformScan;
 
-    public InterceptingNeighborDiscoverer(Action actionBeforePerformDiscovery)
+    public InterceptingNetworkScanner(Action actionBeforePerformScan)
     {
-      this.actionBeforePerformDiscovery = actionBeforePerformDiscovery;
+      this.actionBeforePerformScan = actionBeforePerformScan;
     }
 
     public void Dispose()
     {
     }
 
-    public ValueTask DiscoverAsync(CancellationToken cancellationToken)
+    public ValueTask ScanAsync(CancellationToken cancellationToken)
     {
-      actionBeforePerformDiscovery();
+      actionBeforePerformScan();
 
       return default;
     }
 
-    public ValueTask DiscoverAsync(IEnumerable<IPAddress> addresses, CancellationToken cancellationToken)
+    public ValueTask ScanAsync(IEnumerable<IPAddress> addresses, CancellationToken cancellationToken)
     {
-      actionBeforePerformDiscovery();
+      actionBeforePerformScan();
 
       return default;
     }
@@ -44,113 +44,113 @@ partial class MacAddressResolverTests {
   [Test]
   public async Task ResolveIPAddressToMacAddressAsync_PerformCacheRefresh()
   {
-    var performedNeighborDiscovery = false;
+    var performedNetworkScan = false;
 
     using var resolver = new MacAddressResolver(
       addressTable: new NullAddressTable(),
-      neighborDiscoverer: new InterceptingNeighborDiscoverer(() => performedNeighborDiscovery = true)
+      networkScanner: new InterceptingNetworkScanner(() => performedNetworkScan = true)
     ) {
-      NeighborDiscoveryMinInterval = TimeSpan.Zero,
-      NeighborDiscoveryInterval = TimeSpan.FromMilliseconds(500),
+      NetworkScanMinInterval = TimeSpan.Zero,
+      NetworkScanInterval = TimeSpan.FromMilliseconds(500),
     };
 
     await resolver.ResolveIPAddressToMacAddressAsync(TestIPAddress);
 
-    Assert.IsTrue(performedNeighborDiscovery, "attempt initial resolution");
+    Assert.IsTrue(performedNetworkScan, "attempt initial resolution");
 
-    // NeighborDiscoveryInterval not elapsed
-    performedNeighborDiscovery = false;
-
-    await resolver.ResolveIPAddressToMacAddressAsync(TestIPAddress);
-
-    Assert.IsFalse(performedNeighborDiscovery, "attempt resolution at the time the interval has not elapsed yet");
-
-    // NeighborDiscoveryInterval elapsed
-    await Task.Delay(resolver.NeighborDiscoveryInterval + TimeSpan.FromMilliseconds(100));
-
-    performedNeighborDiscovery = false;
+    // NetworkScanInterval not elapsed
+    performedNetworkScan = false;
 
     await resolver.ResolveIPAddressToMacAddressAsync(TestIPAddress);
 
-    Assert.IsTrue(performedNeighborDiscovery, "attempt resolution at the time the interval has elapsed");
+    Assert.IsFalse(performedNetworkScan, "attempt resolution at the time the interval has not elapsed yet");
+
+    // NetworkScanInterval elapsed
+    await Task.Delay(resolver.NetworkScanInterval + TimeSpan.FromMilliseconds(100));
+
+    performedNetworkScan = false;
+
+    await resolver.ResolveIPAddressToMacAddressAsync(TestIPAddress);
+
+    Assert.IsTrue(performedNetworkScan, "attempt resolution at the time the interval has elapsed");
   }
 
   [Test]
   public async Task ResolveMacAddressToIPAddressAsync_PerformCacheRefresh()
   {
-    var performedNeighborDiscovery = false;
+    var performedNetworkScan = false;
 
     using var resolver = new MacAddressResolver(
       addressTable: new NullAddressTable(),
-      neighborDiscoverer: new InterceptingNeighborDiscoverer(() => performedNeighborDiscovery = true)
+      networkScanner: new InterceptingNetworkScanner(() => performedNetworkScan = true)
     ) {
-      NeighborDiscoveryMinInterval = TimeSpan.Zero,
-      NeighborDiscoveryInterval = TimeSpan.FromMilliseconds(500),
+      NetworkScanMinInterval = TimeSpan.Zero,
+      NetworkScanInterval = TimeSpan.FromMilliseconds(500),
     };
 
     await resolver.ResolveMacAddressToIPAddressAsync(TestMacAddress);
 
-    Assert.IsTrue(performedNeighborDiscovery, "attempt initial resolution");
+    Assert.IsTrue(performedNetworkScan, "attempt initial resolution");
 
-    // NeighborDiscoveryInterval not elapsed
-    performedNeighborDiscovery = false;
-
-    await resolver.ResolveMacAddressToIPAddressAsync(TestMacAddress);
-
-    Assert.IsFalse(performedNeighborDiscovery, "attempt resolution at the time the interval has not elapsed yet");
-
-    // NeighborDiscoveryInterval elapsed
-    await Task.Delay(resolver.NeighborDiscoveryInterval + TimeSpan.FromMilliseconds(100));
-
-    performedNeighborDiscovery = false;
+    // NetworkScanInterval not elapsed
+    performedNetworkScan = false;
 
     await resolver.ResolveMacAddressToIPAddressAsync(TestMacAddress);
 
-    Assert.IsTrue(performedNeighborDiscovery, "attempt resolution at the time the interval has elapsed");
+    Assert.IsFalse(performedNetworkScan, "attempt resolution at the time the interval has not elapsed yet");
+
+    // NetworkScanInterval elapsed
+    await Task.Delay(resolver.NetworkScanInterval + TimeSpan.FromMilliseconds(100));
+
+    performedNetworkScan = false;
+
+    await resolver.ResolveMacAddressToIPAddressAsync(TestMacAddress);
+
+    Assert.IsTrue(performedNetworkScan, "attempt resolution at the time the interval has elapsed");
   }
 
   [Test]
   public async Task ResolveIPAddressToMacAddressAsync_PerformCacheRefresh_Never()
   {
-    var performedNeighborDiscovery = false;
+    var performedNetworkScan = false;
 
     using var resolver = new MacAddressResolver(
       addressTable: new NullAddressTable(),
-      neighborDiscoverer: new InterceptingNeighborDiscoverer(() => performedNeighborDiscovery = true)
+      networkScanner: new InterceptingNetworkScanner(() => performedNetworkScan = true)
     ) {
-      NeighborDiscoveryMinInterval = TimeSpan.Zero,
-      NeighborDiscoveryInterval = Timeout.InfiniteTimeSpan,
+      NetworkScanMinInterval = TimeSpan.Zero,
+      NetworkScanInterval = Timeout.InfiniteTimeSpan,
     };
 
     await resolver.ResolveIPAddressToMacAddressAsync(TestIPAddress);
 
-    Assert.IsFalse(performedNeighborDiscovery, "attempt initial resolution");
+    Assert.IsFalse(performedNetworkScan, "attempt initial resolution");
 
     await resolver.ResolveIPAddressToMacAddressAsync(TestIPAddress);
 
-    Assert.IsFalse(performedNeighborDiscovery, "attempt second resolution");
+    Assert.IsFalse(performedNetworkScan, "attempt second resolution");
   }
 
   [Test]
   public async Task ResolveMacAddressToIPAddressAsync_PerformCacheRefresh_Never()
   {
-    var performedNeighborDiscovery = false;
+    var performedNetworkScan = false;
 
     using var resolver = new MacAddressResolver(
       addressTable: new NullAddressTable(),
-      neighborDiscoverer: new InterceptingNeighborDiscoverer(() => performedNeighborDiscovery = true)
+      networkScanner: new InterceptingNetworkScanner(() => performedNetworkScan = true)
     ) {
-      NeighborDiscoveryMinInterval = TimeSpan.Zero,
-      NeighborDiscoveryInterval = Timeout.InfiniteTimeSpan,
+      NetworkScanMinInterval = TimeSpan.Zero,
+      NetworkScanInterval = Timeout.InfiniteTimeSpan,
     };
 
     await resolver.ResolveMacAddressToIPAddressAsync(TestMacAddress);
 
-    Assert.IsFalse(performedNeighborDiscovery, "attempt initial resolution");
+    Assert.IsFalse(performedNetworkScan, "attempt initial resolution");
 
     await resolver.ResolveMacAddressToIPAddressAsync(TestMacAddress);
 
-    Assert.IsFalse(performedNeighborDiscovery, "attempt second resolution");
+    Assert.IsFalse(performedNetworkScan, "attempt second resolution");
   }
 
   [Test]
@@ -159,10 +159,10 @@ partial class MacAddressResolverTests {
     using var cts = new CancellationTokenSource();
     using var resolver = new MacAddressResolver(
       addressTable: new NullAddressTable(),
-      neighborDiscoverer: new InterceptingNeighborDiscoverer(() => cts.Cancel())
+      networkScanner: new InterceptingNetworkScanner(() => cts.Cancel())
     ) {
-      NeighborDiscoveryMinInterval = TimeSpan.Zero,
-      NeighborDiscoveryInterval = TimeSpan.FromTicks(1),
+      NetworkScanMinInterval = TimeSpan.Zero,
+      NetworkScanInterval = TimeSpan.FromTicks(1),
     };
 
     var ex = Assert.CatchAsync(
@@ -178,10 +178,10 @@ partial class MacAddressResolverTests {
     using var cts = new CancellationTokenSource();
     using var resolver = new MacAddressResolver(
       addressTable: new NullAddressTable(),
-      neighborDiscoverer: new InterceptingNeighborDiscoverer(() => cts.Cancel())
+      networkScanner: new InterceptingNetworkScanner(() => cts.Cancel())
     ) {
-      NeighborDiscoveryMinInterval = TimeSpan.Zero,
-      NeighborDiscoveryInterval = TimeSpan.FromTicks(1),
+      NetworkScanMinInterval = TimeSpan.Zero,
+      NetworkScanInterval = TimeSpan.FromTicks(1),
     };
 
     var ex = Assert.CatchAsync(
@@ -191,16 +191,16 @@ partial class MacAddressResolverTests {
     Assert.That(ex, Is.InstanceOf<OperationCanceledException>().Or.InstanceOf<TaskCanceledException>());
   }
 
-  private static MacAddressResolver CreateNullDiscovererMacAddressResolver(
+  private static MacAddressResolver CreateNullNetworkScannerMacAddressResolver(
     IAddressTable addressTable,
     string? networkInterfaceId = null
   )
     => new(
       networkInterface: networkInterfaceId is null ? null : new PseudoNetworkInterface(networkInterfaceId, true, true),
       addressTable: addressTable,
-      neighborDiscoverer: new NullNeighborDiscoverer()
+      networkScanner: new NullNetworkScanner()
     ) {
-      NeighborDiscoveryInterval = Timeout.InfiniteTimeSpan,
+      NetworkScanInterval = Timeout.InfiniteTimeSpan,
     };
 
   private static System.Collections.IEnumerable YieldTestCases_ResolveAsync_NoCandidatesEnumerated()
@@ -221,7 +221,7 @@ partial class MacAddressResolverTests {
   [TestCaseSource(nameof(YieldTestCases_ResolveAsync_NoCandidatesEnumerated))]
   public async Task ResolveIPAddressToMacAddressAsync_NoCandidatesEnumerated(IAddressTable addressTable)
   {
-    using var resolver = CreateNullDiscovererMacAddressResolver(addressTable);
+    using var resolver = CreateNullNetworkScannerMacAddressResolver(addressTable);
 
     Assert.IsNull(await resolver.ResolveIPAddressToMacAddressAsync(IPAddress.Parse("192.168.2.255")));
   }
@@ -229,7 +229,7 @@ partial class MacAddressResolverTests {
   [TestCaseSource(nameof(YieldTestCases_ResolveAsync_NoCandidatesEnumerated))]
   public async Task ResolveMacAddressToIPAddressAsync_NoCandidatesEnumerated(IAddressTable addressTable)
   {
-    using var resolver = CreateNullDiscovererMacAddressResolver(addressTable);
+    using var resolver = CreateNullNetworkScannerMacAddressResolver(addressTable);
 
     Assert.IsNull(await resolver.ResolveMacAddressToIPAddressAsync(PhysicalAddress.Parse("00-00-5E-00-53-FF")));
   }
@@ -258,7 +258,7 @@ partial class MacAddressResolverTests {
   [TestCaseSource(nameof(YieldTestCases_ResolveAsync_UnresolvableEntriesMustBeExcluded))]
   public async Task ResolveIPAddressToMacAddressAsync_UnresolvableEntriesMustBeExcluded(IAddressTable addressTable)
   {
-    using var resolver = CreateNullDiscovererMacAddressResolver(addressTable);
+    using var resolver = CreateNullNetworkScannerMacAddressResolver(addressTable);
 
     Assert.AreEqual(
       PhysicalAddress.Parse("00-00-5E-00-53-00"),
@@ -269,7 +269,7 @@ partial class MacAddressResolverTests {
   [TestCaseSource(nameof(YieldTestCases_ResolveAsync_UnresolvableEntriesMustBeExcluded))]
   public async Task ResolveMacAddressToIPAddressAsync_UnresolvableEntriesMustBeExcluded(IAddressTable addressTable)
   {
-    using var resolver = CreateNullDiscovererMacAddressResolver(addressTable);
+    using var resolver = CreateNullNetworkScannerMacAddressResolver(addressTable);
 
     Assert.AreEqual(
       IPAddress.Parse("192.168.2.0"),
@@ -330,7 +330,7 @@ partial class MacAddressResolverTests {
     string message
   )
   {
-    using var resolver = CreateNullDiscovererMacAddressResolver(addressTable);
+    using var resolver = CreateNullNetworkScannerMacAddressResolver(addressTable);
 
     foreach (var addressToBeInvalidated in addressesToBeInvalidated) {
       resolver.Invalidate(addressToBeInvalidated);
@@ -396,7 +396,7 @@ partial class MacAddressResolverTests {
     string message
   )
   {
-    using var resolver = CreateNullDiscovererMacAddressResolver(addressTable);
+    using var resolver = CreateNullNetworkScannerMacAddressResolver(addressTable);
 
     foreach (var addressToBeInvalidated in addressesToBeInvalidated) {
       resolver.Invalidate(addressToBeInvalidated);
@@ -447,7 +447,7 @@ partial class MacAddressResolverTests {
     AddressTableEntry expectedEntry
   )
   {
-    using var resolver = CreateNullDiscovererMacAddressResolver(addressTable, networkInterfaceId);
+    using var resolver = CreateNullNetworkScannerMacAddressResolver(addressTable, networkInterfaceId);
 
     Assert.AreEqual(
       expectedEntry.PhysicalAddress,
@@ -463,7 +463,7 @@ partial class MacAddressResolverTests {
     AddressTableEntry expectedEntry
   )
   {
-    using var resolver = CreateNullDiscovererMacAddressResolver(addressTable, networkInterfaceId);
+    using var resolver = CreateNullNetworkScannerMacAddressResolver(addressTable, networkInterfaceId);
 
     Assert.AreEqual(
       expectedEntry.IPAddress,
@@ -494,7 +494,7 @@ partial class MacAddressResolverTests {
     AddressTableEntry expectedEntry
   )
   {
-    using var resolver = CreateNullDiscovererMacAddressResolver(addressTable);
+    using var resolver = CreateNullNetworkScannerMacAddressResolver(addressTable);
 
     Assert.AreEqual(
       expectedEntry.PhysicalAddress,
@@ -509,7 +509,7 @@ partial class MacAddressResolverTests {
     AddressTableEntry expectedEntry
   )
   {
-    using var resolver = CreateNullDiscovererMacAddressResolver(addressTable);
+    using var resolver = CreateNullNetworkScannerMacAddressResolver(addressTable);
 
     Assert.AreEqual(
       expectedEntry.IPAddress,
@@ -540,7 +540,7 @@ partial class MacAddressResolverTests {
     AddressTableEntry expectedEntry
   )
   {
-    using var resolver = CreateNullDiscovererMacAddressResolver(addressTable);
+    using var resolver = CreateNullNetworkScannerMacAddressResolver(addressTable);
 
     Assert.AreEqual(
       expectedEntry.PhysicalAddress,
@@ -555,7 +555,7 @@ partial class MacAddressResolverTests {
     AddressTableEntry expectedEntry
   )
   {
-    using var resolver = CreateNullDiscovererMacAddressResolver(addressTable);
+    using var resolver = CreateNullNetworkScannerMacAddressResolver(addressTable);
 
     Assert.AreEqual(
       expectedEntry.IPAddress,

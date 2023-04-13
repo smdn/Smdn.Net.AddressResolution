@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Smdn.Net.NeighborDiscovery;
 
-public sealed class NmapCommandNeighborDiscoverer : RunCommandNeighborDiscovererBase {
+public sealed class NmapCommandNetworkScanner : RunCommandNetworkScannerBase {
   // ref: https://nmap.org/book/man-briefoptions.html
   //   -sn: Ping Scan - disable port scan
   //   -n: Never do DNS resolution
@@ -34,12 +34,12 @@ public sealed class NmapCommandNeighborDiscoverer : RunCommandNeighborDiscoverer
   private readonly string nmapCommandCommonOptions;
   private readonly string nmapCommandFullScanOptions;
 
-  public NmapCommandNeighborDiscoverer(
+  public NmapCommandNetworkScanner(
     IPNetworkProfile networkProfile,
     IServiceProvider? serviceProvider
   )
     : base(
-      logger: serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger<NmapCommandNeighborDiscoverer>(),
+      logger: serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger<NmapCommandNetworkScanner>(),
       serviceProvider: serviceProvider
     )
   {
@@ -77,14 +77,14 @@ public sealed class NmapCommandNeighborDiscoverer : RunCommandNeighborDiscoverer
   }
 
   protected override bool GetCommandLineArguments(
-    IEnumerable<IPAddress> addressesToDiscover,
+    IEnumerable<IPAddress> addressesToScan,
     out string executable,
     out string arguments
   )
   {
     executable = lazyNmapCommand.Value.GetExecutablePathOrThrow();
 
-    var nmapCommandOptionTargetSpecification = string.Join(" ", addressesToDiscover);
+    var nmapCommandOptionTargetSpecification = string.Join(" ", addressesToScan);
 
     if (nmapCommandOptionTargetSpecification.Length == 0) {
       arguments = string.Empty;

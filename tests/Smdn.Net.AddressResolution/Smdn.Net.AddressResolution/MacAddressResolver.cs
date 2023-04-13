@@ -17,8 +17,8 @@ namespace Smdn.Net.AddressResolution;
 
 [TestFixture]
 public partial class MacAddressResolverTests {
-  private sealed class PerformDelayNeighborDiscoverer : INeighborDiscoverer {
-    private readonly TimeSpan delayOnNeighborDiscovery;
+  private sealed class PerformDelayNetworkScanner : INetworkScanner {
+    private readonly TimeSpan delayOnNetworkScan;
     private readonly object lockObject = new();
     private volatile int numberOfTasksPerformed;
     private volatile int numberOfTasksInProgress;
@@ -27,16 +27,16 @@ public partial class MacAddressResolverTests {
     public int NumberOfTasksPerformed => numberOfTasksPerformed;
     public int MaxNumberOfTasksPerformedInParallel => maxNumberOfTasksPerformedInParallel;
 
-    public PerformDelayNeighborDiscoverer(TimeSpan delayOnNeighborDiscovery)
+    public PerformDelayNetworkScanner(TimeSpan delayOnNetworkScan)
     {
-      this.delayOnNeighborDiscovery = delayOnNeighborDiscovery;
+      this.delayOnNetworkScan = delayOnNetworkScan;
     }
 
     public void Dispose()
     {
     }
 
-    public async ValueTask DiscoverAsync(CancellationToken cancellationToken)
+    public async ValueTask ScanAsync(CancellationToken cancellationToken)
     {
       Interlocked.Increment(ref numberOfTasksPerformed);
       Interlocked.Increment(ref numberOfTasksInProgress);
@@ -45,12 +45,12 @@ public partial class MacAddressResolverTests {
         if (maxNumberOfTasksPerformedInParallel < numberOfTasksInProgress)
           Interlocked.Exchange(ref maxNumberOfTasksPerformedInParallel, numberOfTasksInProgress);
       }
-      await Task.Delay(delayOnNeighborDiscovery, cancellationToken);
+      await Task.Delay(delayOnNetworkScan, cancellationToken);
 
       Interlocked.Decrement(ref numberOfTasksInProgress);
     }
 
-    public async ValueTask DiscoverAsync(IEnumerable<IPAddress> addresses, CancellationToken cancellationToken)
+    public async ValueTask ScanAsync(IEnumerable<IPAddress> addresses, CancellationToken cancellationToken)
     {
       Interlocked.Increment(ref numberOfTasksPerformed);
       Interlocked.Increment(ref numberOfTasksInProgress);
@@ -60,7 +60,7 @@ public partial class MacAddressResolverTests {
           Interlocked.Exchange(ref maxNumberOfTasksPerformedInParallel, numberOfTasksInProgress);
       }
 
-      await Task.Delay(delayOnNeighborDiscovery, cancellationToken);
+      await Task.Delay(delayOnNetworkScan, cancellationToken);
 
       Interlocked.Decrement(ref numberOfTasksInProgress);
     }
@@ -75,7 +75,7 @@ public partial class MacAddressResolverTests {
     Assert.Throws<ArgumentNullException>(
       () => new MacAddressResolver(
         addressTable: null,
-        neighborDiscoverer: new PseudoNeighborDiscoverer(),
+        networkScanner: new PseudoNetworkScanner(),
         serviceProvider: null
       ),
       "#1"
@@ -84,7 +84,7 @@ public partial class MacAddressResolverTests {
     Assert.Throws<InvalidOperationException>(
       () => new MacAddressResolver(
         addressTable: null,
-        neighborDiscoverer: new PseudoNeighborDiscoverer(),
+        networkScanner: new PseudoNetworkScanner(),
         serviceProvider: new ServiceCollection().BuildServiceProvider()
       ),
       "#2"
@@ -92,12 +92,12 @@ public partial class MacAddressResolverTests {
   }
 
   [Test]
-  public void Ctor_NeighborDiscoverer_ArgumentNull()
+  public void Ctor_NetworkScanner_ArgumentNull()
   {
     Assert.Throws<ArgumentNullException>(
       () => new MacAddressResolver(
         addressTable: new PseudoAddressTable(),
-        neighborDiscoverer: null,
+        networkScanner: null,
         serviceProvider: null
       ),
       "#1"
@@ -106,7 +106,7 @@ public partial class MacAddressResolverTests {
     Assert.Throws<InvalidOperationException>(
       () => new MacAddressResolver(
         addressTable: new PseudoAddressTable(),
-        neighborDiscoverer: null,
+        networkScanner: null,
         serviceProvider: new ServiceCollection().BuildServiceProvider()
       ),
       "#2"
@@ -120,12 +120,12 @@ public partial class MacAddressResolverTests {
     => Assert.Throws<ArgumentOutOfRangeException>(
       () => new MacAddressResolver(
         addressTable: new PseudoAddressTable(),
-        neighborDiscoverer: new PseudoNeighborDiscoverer(),
+        networkScanner: new PseudoNetworkScanner(),
         maxParallelCountForRefreshInvalidatedCache: maxParallelCount
       )
     );
 
-  private static System.Collections.IEnumerable YieldTestCases_NeighborDiscoveryInterval()
+  private static System.Collections.IEnumerable YieldTestCases_NetworkScanInterval()
   {
     yield return new object?[] { TimeSpan.Zero, typeof(ArgumentOutOfRangeException) };
     yield return new object?[] { TimeSpan.MinValue, typeof(ArgumentOutOfRangeException) };
@@ -138,30 +138,30 @@ public partial class MacAddressResolverTests {
     yield return new object?[] { Timeout.InfiniteTimeSpan, null };
   }
 
-  [TestCaseSource(nameof(YieldTestCases_NeighborDiscoveryInterval))]
-  public void NeighborDiscoveryInterval(
-    TimeSpan neighborDiscoveryInterval,
+  [TestCaseSource(nameof(YieldTestCases_NetworkScanInterval))]
+  public void NetworkScanInterval(
+    TimeSpan networkScanInterval,
     Type? typeOfExpectedException
   )
   {
     var resolver = new MacAddressResolver(
       addressTable: new PseudoAddressTable(),
-      neighborDiscoverer: new PseudoNeighborDiscoverer()
+      networkScanner: new PseudoNetworkScanner()
     );
 
     if (typeOfExpectedException is null) {
-      Assert.DoesNotThrow(() => resolver.NeighborDiscoveryInterval = neighborDiscoveryInterval);
-      Assert.AreEqual(neighborDiscoveryInterval, resolver.NeighborDiscoveryInterval, nameof(resolver.NeighborDiscoveryInterval));
+      Assert.DoesNotThrow(() => resolver.NetworkScanInterval = networkScanInterval);
+      Assert.AreEqual(networkScanInterval, resolver.NetworkScanInterval, nameof(resolver.NetworkScanInterval));
     }
     else {
-      var initialNeighborDiscoveryInterval = resolver.NeighborDiscoveryInterval;
+      var initialNetworkScanInterval = resolver.NetworkScanInterval;
 
-      Assert.Throws(typeOfExpectedException, () => resolver.NeighborDiscoveryInterval = neighborDiscoveryInterval);
-      Assert.AreEqual(initialNeighborDiscoveryInterval, resolver.NeighborDiscoveryInterval, nameof(resolver.NeighborDiscoveryInterval));
+      Assert.Throws(typeOfExpectedException, () => resolver.NetworkScanInterval = networkScanInterval);
+      Assert.AreEqual(initialNetworkScanInterval, resolver.NetworkScanInterval, nameof(resolver.NetworkScanInterval));
     }
   }
 
-  private static System.Collections.IEnumerable YieldTestCases_NeighborDiscoveryMinInterval()
+  private static System.Collections.IEnumerable YieldTestCases_NetworkScanMinInterval()
   {
     yield return new object?[] { TimeSpan.MinValue, typeof(ArgumentOutOfRangeException) };
     yield return new object?[] { TimeSpan.FromTicks(-1), typeof(ArgumentOutOfRangeException) };
@@ -174,26 +174,26 @@ public partial class MacAddressResolverTests {
     yield return new object?[] { Timeout.InfiniteTimeSpan, null };
   }
 
-  [TestCaseSource(nameof(YieldTestCases_NeighborDiscoveryMinInterval))]
-  public void NeighborDiscoveryMinInterval(
-    TimeSpan neighborDiscoveryMinInterval,
+  [TestCaseSource(nameof(YieldTestCases_NetworkScanMinInterval))]
+  public void NetworkScanMinInterval(
+    TimeSpan networkScanMinInterval,
     Type? typeOfExpectedException
   )
   {
     var resolver = new MacAddressResolver(
       addressTable: new PseudoAddressTable(),
-      neighborDiscoverer: new PseudoNeighborDiscoverer()
+      networkScanner: new PseudoNetworkScanner()
     );
 
     if (typeOfExpectedException is null) {
-      Assert.DoesNotThrow(() => resolver.NeighborDiscoveryMinInterval = neighborDiscoveryMinInterval);
-      Assert.AreEqual(neighborDiscoveryMinInterval, resolver.NeighborDiscoveryMinInterval, nameof(resolver.NeighborDiscoveryMinInterval));
+      Assert.DoesNotThrow(() => resolver.NetworkScanMinInterval = networkScanMinInterval);
+      Assert.AreEqual(networkScanMinInterval, resolver.NetworkScanMinInterval, nameof(resolver.NetworkScanMinInterval));
     }
     else {
-      var initialNeighborDiscoveryMinInterval = resolver.NeighborDiscoveryMinInterval;
+      var initialNetworkScanMinInterval = resolver.NetworkScanMinInterval;
 
-      Assert.Throws(typeOfExpectedException, () => resolver.NeighborDiscoveryMinInterval = neighborDiscoveryMinInterval);
-      Assert.AreEqual(initialNeighborDiscoveryMinInterval, resolver.NeighborDiscoveryMinInterval, nameof(resolver.NeighborDiscoveryMinInterval));
+      Assert.Throws(typeOfExpectedException, () => resolver.NetworkScanMinInterval = networkScanMinInterval);
+      Assert.AreEqual(initialNetworkScanMinInterval, resolver.NetworkScanMinInterval, nameof(resolver.NetworkScanMinInterval));
     }
   }
 
@@ -202,7 +202,7 @@ public partial class MacAddressResolverTests {
   {
     var resolver = new MacAddressResolver(
       addressTable: new PseudoAddressTable(),
-      neighborDiscoverer: new PseudoNeighborDiscoverer()
+      networkScanner: new PseudoNetworkScanner()
     );
 
     Assert.IsFalse(resolver.HasInvalidated, "initial state");
@@ -221,7 +221,7 @@ public partial class MacAddressResolverTests {
   {
     var resolver = new MacAddressResolver(
       addressTable: new PseudoAddressTable(),
-      neighborDiscoverer: new PseudoNeighborDiscoverer()
+      networkScanner: new PseudoNetworkScanner()
     );
 
     Assert.IsFalse(resolver.HasInvalidated, "initial state");
@@ -236,14 +236,14 @@ public partial class MacAddressResolverTests {
   }
 
   [Test]
-  public void Dispose_AddressTableAndNeighborDiscovererAreSuppliedViaServiceProvider()
+  public void Dispose_AddressTableAndNetworkScannerAreSuppliedViaServiceProvider()
   {
     var addressTable = new PseudoAddressTable();
-    var neighborDiscoverer = new PseudoNeighborDiscoverer();
+    var networkScanner = new PseudoNetworkScanner();
     var services = new ServiceCollection();
 
     services.AddSingleton<IAddressTable>(addressTable);
-    services.AddSingleton<INeighborDiscoverer>(neighborDiscoverer);
+    services.AddSingleton<INetworkScanner>(networkScanner);
 
     var resolver = new MacAddressResolver(
       networkProfile: null,
@@ -253,51 +253,51 @@ public partial class MacAddressResolverTests {
     resolver.Dispose();
 
     Assert.IsFalse(addressTable.IsDisposed, $"{nameof(IAddressTable)} should not be disposed by default.");
-    Assert.IsFalse(neighborDiscoverer.IsDisposed, $"{nameof(INeighborDiscoverer)} should not be disposed by default.");
+    Assert.IsFalse(networkScanner.IsDisposed, $"{nameof(INetworkScanner)} should not be disposed by default.");
   }
 
   [Test]
-  public void Dispose_AddressTableAndNeighborDiscovererAreSuppliedAsCtorParameter()
+  public void Dispose_AddressTableAndNetworkScannerAreSuppliedAsCtorParameter()
   {
     var addressTable = new PseudoAddressTable();
-    var neighborDiscoverer = new PseudoNeighborDiscoverer();
+    var networkScanner = new PseudoNetworkScanner();
     var resolver = new MacAddressResolver(
       addressTable: addressTable,
-      neighborDiscoverer: neighborDiscoverer
+      networkScanner: networkScanner
     );
 
     resolver.Dispose();
 
     Assert.IsFalse(addressTable.IsDisposed, $"{nameof(IAddressTable)} should not be disposed by default.");
-    Assert.IsFalse(neighborDiscoverer.IsDisposed, $"{nameof(INeighborDiscoverer)} should not be disposed by default.");
+    Assert.IsFalse(networkScanner.IsDisposed, $"{nameof(INetworkScanner)} should not be disposed by default.");
   }
 
   [TestCase(true, true)]
   [TestCase(false, true)]
   [TestCase(true, false)]
   [TestCase(false, false)]
-  public void Dispose_ShouldDisposeAddressTableAndNeighborDiscoverer(
+  public void Dispose_ShouldDisposeAddressTableAndNetworkScanner(
     bool shouldDisposeAddressTable,
-    bool shouldDisposeNeighborDiscoverer
+    bool shouldDisposeNetworkScanner
   )
   {
     var addressTable = new PseudoAddressTable();
-    var neighborDiscoverer = new PseudoNeighborDiscoverer();
+    var networkScanner = new PseudoNetworkScanner();
     var resolver = new MacAddressResolver(
       addressTable: addressTable,
       shouldDisposeAddressTable: shouldDisposeAddressTable,
-      neighborDiscoverer: neighborDiscoverer,
-      shouldDisposeNeighborDiscoverer: shouldDisposeNeighborDiscoverer
+      networkScanner: networkScanner,
+      shouldDisposeNetworkScanner: shouldDisposeNetworkScanner
     );
 
     resolver.Dispose();
 
     Assert.AreEqual(addressTable.IsDisposed, shouldDisposeAddressTable);
-    Assert.AreEqual(neighborDiscoverer.IsDisposed, shouldDisposeNeighborDiscoverer);
+    Assert.AreEqual(networkScanner.IsDisposed, shouldDisposeNetworkScanner);
 
     Assert.DoesNotThrow(() => resolver.Dispose(), "dispose again");
 
     Assert.AreEqual(addressTable.IsDisposed, shouldDisposeAddressTable);
-    Assert.AreEqual(neighborDiscoverer.IsDisposed, shouldDisposeNeighborDiscoverer);
+    Assert.AreEqual(networkScanner.IsDisposed, shouldDisposeNetworkScanner);
   }
 }

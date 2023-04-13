@@ -22,7 +22,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Smdn.Net.NeighborDiscovery;
 
-public sealed class ArpScanCommandNeighborDiscoverer : RunCommandNeighborDiscovererBase {
+public sealed class ArpScanCommandNetworkScanner : RunCommandNetworkScannerBase {
   // ref: https://manpages.ubuntu.com/manpages/jammy/man1/arp-scan.1.html
   //   --numeric: IP addresses only, no hostnames.
   //   --quiet: Only display minimal output. No protocol decoding.
@@ -63,12 +63,12 @@ public sealed class ArpScanCommandNeighborDiscoverer : RunCommandNeighborDiscove
   private readonly string arpScanCommandCommonOptions;
   private readonly string arpScanCommandFullScanOptions;
 
-  public ArpScanCommandNeighborDiscoverer(
+  public ArpScanCommandNetworkScanner(
     IPNetworkProfile? networkProfile,
     IServiceProvider? serviceProvider
   )
     : base(
-      logger: serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger<ArpScanCommandNeighborDiscoverer>(),
+      logger: serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger<ArpScanCommandNetworkScanner>(),
       serviceProvider: serviceProvider
     )
   {
@@ -104,14 +104,14 @@ public sealed class ArpScanCommandNeighborDiscoverer : RunCommandNeighborDiscove
   }
 
   protected override bool GetCommandLineArguments(
-    IEnumerable<IPAddress> addressesToDiscover,
+    IEnumerable<IPAddress> addressesToScan,
     out string executable,
     out string arguments
   )
   {
     executable = lazyArpScanCommand.Value.GetExecutablePathOrThrow();
 
-    var arpScanCommandTargetSpecification = string.Join(" ", addressesToDiscover);
+    var arpScanCommandTargetSpecification = string.Join(" ", addressesToScan);
 
     if (arpScanCommandTargetSpecification.Length == 0) {
       arguments = string.Empty;

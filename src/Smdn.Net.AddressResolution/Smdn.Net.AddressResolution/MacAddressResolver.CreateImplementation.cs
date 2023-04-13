@@ -27,27 +27,27 @@ public partial class MacAddressResolver : MacAddressResolverBase {
     throw new PlatformNotSupportedException($"There is no {nameof(IAddressTable)} implementation available to perform address table lookups for this platform currently. Please implement and supply {nameof(IAddressTable)} for this platform.");
   }
 
-  private static INeighborDiscoverer CreateNeighborDiscoverer(
+  private static INetworkScanner CreateNetworkScanner(
     IPNetworkProfile? networkProfile,
     IServiceProvider? serviceProvider
   )
   {
-    if (NmapCommandNeighborDiscoverer.IsSupported) {
-      return new NmapCommandNeighborDiscoverer(
-        networkProfile: networkProfile ?? throw CreateMandatoryArgumentNullException(typeof(NmapCommandNeighborDiscoverer), nameof(networkProfile)),
+    if (NmapCommandNetworkScanner.IsSupported) {
+      return new NmapCommandNetworkScanner(
+        networkProfile: networkProfile ?? throw CreateMandatoryArgumentNullException(typeof(NmapCommandNetworkScanner), nameof(networkProfile)),
         serviceProvider: serviceProvider
       );
     }
 
-    if (ArpScanCommandNeighborDiscoverer.IsSupported) {
-      return new ArpScanCommandNeighborDiscoverer(
+    if (ArpScanCommandNetworkScanner.IsSupported) {
+      return new ArpScanCommandNetworkScanner(
         networkProfile: networkProfile, // nullable
         serviceProvider: serviceProvider
       );
     }
 
-    return new PingNeighborDiscoverer(
-      networkProfile: networkProfile ?? throw CreateMandatoryArgumentNullException(typeof(PingNeighborDiscoverer), nameof(networkProfile)),
+    return new PingNetworkScanner(
+      networkProfile: networkProfile ?? throw CreateMandatoryArgumentNullException(typeof(PingNetworkScanner), nameof(networkProfile)),
       serviceProvider: serviceProvider
     );
   }

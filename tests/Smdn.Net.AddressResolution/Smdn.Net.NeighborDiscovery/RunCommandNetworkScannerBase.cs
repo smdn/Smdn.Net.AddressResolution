@@ -18,8 +18,8 @@ using Smdn.OperatingSystem;
 namespace Smdn.Net.NeighborDiscovery;
 
 [TestFixture]
-public class RunCommandNeighborDiscovererBaseTests {
-  public class InterceptingProcessFactory : RunCommandNeighborDiscovererBase.IProcessFactory {
+public class RunCommandNetworkScannerBaseTests {
+  public class InterceptingProcessFactory : RunCommandNetworkScannerBase.IProcessFactory {
     private readonly Action<ProcessStartInfo> actionBeforeCreateProcess;
 
     public InterceptingProcessFactory(
@@ -37,10 +37,10 @@ public class RunCommandNeighborDiscovererBaseTests {
     }
   }
 
-  private class ConcreteRunCommandNeighborDiscoverer : RunCommandNeighborDiscovererBase {
+  private class ConcreteRunCommandNetworkScanner : RunCommandNetworkScannerBase {
     public static string FindCommand(string command, bool expectAsAvailable)
     {
-      var comm = RunCommandNeighborDiscovererBase.FindCommand(command, DefaultCommandPaths);
+      var comm = RunCommandNetworkScannerBase.FindCommand(command, DefaultCommandPaths);
 
       Assert.AreEqual(command, comm.Name, nameof(comm.Name));
       Assert.AreEqual(expectAsAvailable, comm.IsAvailable, nameof(comm.IsAvailable));
@@ -48,7 +48,7 @@ public class RunCommandNeighborDiscovererBaseTests {
       return comm.GetExecutablePathOrThrow();
     }
 
-    public ConcreteRunCommandNeighborDiscoverer(
+    public ConcreteRunCommandNetworkScanner(
       IServiceProvider? serviceProvider = null
     )
       : base(
@@ -61,7 +61,7 @@ public class RunCommandNeighborDiscovererBaseTests {
     protected override bool GetCommandLineArguments(out string executable, out string? arguments)
       => throw new NotImplementedException();
 
-    protected override bool GetCommandLineArguments(IEnumerable<IPAddress> addressesToDiscover, out string executable, out string? arguments)
+    protected override bool GetCommandLineArguments(IEnumerable<IPAddress> addressesToScan, out string executable, out string? arguments)
       => throw new NotImplementedException();
   }
 
@@ -79,7 +79,7 @@ public class RunCommandNeighborDiscovererBaseTests {
       return;
     }
 
-    var commandExecutablePath = ConcreteRunCommandNeighborDiscoverer.FindCommand(
+    var commandExecutablePath = ConcreteRunCommandNetworkScanner.FindCommand(
       "nslookup",
       expectAsAvailable: true
     );
@@ -101,24 +101,24 @@ public class RunCommandNeighborDiscovererBaseTests {
   public void FindCommand_CommandNotAvailable()
   {
     Assert.Throws<NotSupportedException>(() => {
-      ConcreteRunCommandNeighborDiscoverer.FindCommand(
+      ConcreteRunCommandNetworkScanner.FindCommand(
         "_non.existent.unavailable.command_",
         expectAsAvailable: false
       );
     });
   }
 
-  private class PseudoRunCommandNeighborDiscoverer : RunCommandNeighborDiscovererBase {
+  private class PseudoRunCommandNetworkScanner : RunCommandNetworkScannerBase {
     private readonly string commandExecutablePath;
     private readonly string? commandArguments;
     private readonly Func<IEnumerable<IPAddress>, string> commandAddressArgumentsGenerator;
-    private readonly bool performNeighborDiscovery;
+    private readonly bool performNetworkScan;
 
-    public PseudoRunCommandNeighborDiscoverer(
+    public PseudoRunCommandNetworkScanner(
       string commandExecutablePath,
       string? commandArguments,
       Func<IEnumerable<IPAddress>, string> commandAddressArgumentsGenerator,
-      bool performNeighborDiscovery,
+      bool performNetworkScan,
       IServiceProvider serviceProvider
     )
       : base(
@@ -129,7 +129,7 @@ public class RunCommandNeighborDiscovererBaseTests {
       this.commandExecutablePath = commandExecutablePath;
       this.commandArguments = commandArguments;
       this.commandAddressArgumentsGenerator = commandAddressArgumentsGenerator;
-      this.performNeighborDiscovery = performNeighborDiscovery;
+      this.performNetworkScan = performNetworkScan;
     }
 
     protected override bool GetCommandLineArguments(out string executable, out string? arguments)
@@ -137,24 +137,24 @@ public class RunCommandNeighborDiscovererBaseTests {
       executable = commandExecutablePath;
       arguments = commandArguments;
 
-      return performNeighborDiscovery;
+      return performNetworkScan;
     }
 
-    protected override bool GetCommandLineArguments(IEnumerable<IPAddress> addressesToDiscover, out string executable, out string? arguments)
+    protected override bool GetCommandLineArguments(IEnumerable<IPAddress> addressesToScan, out string executable, out string? arguments)
     {
       executable = commandExecutablePath;
-      arguments = (commandArguments ?? string.Empty) + " " + commandAddressArgumentsGenerator(addressesToDiscover);
+      arguments = (commandArguments ?? string.Empty) + " " + commandAddressArgumentsGenerator(addressesToScan);
 
-      return performNeighborDiscovery;
+      return performNetworkScan;
     }
   }
 
   [Test]
-  public void RunCommandAsync_InvokedByDiscoverAsync()
+  public void RunCommandAsync_InvokedByScanAsync()
     => RunCommandAsync(withAddressesParameter: false);
 
   [Test]
-  public void RunCommandAsync_InvokedByDiscoverAsync_WithAddresses()
+  public void RunCommandAsync_InvokedByScanAsync_WithAddresses()
     => RunCommandAsync(withAddressesParameter: true);
 
   private void RunCommandAsync(bool withAddressesParameter)
@@ -193,24 +193,24 @@ public class RunCommandNeighborDiscovererBaseTests {
 
     var services = new ServiceCollection();
 
-    services.AddSingleton<RunCommandNeighborDiscovererBase.IProcessFactory>(
+    services.AddSingleton<RunCommandNetworkScannerBase.IProcessFactory>(
       new InterceptingProcessFactory(AssertProcessStartInfo)
     );
 
-    using var neighborDiscoverer = new PseudoRunCommandNeighborDiscoverer(
+    using var networkScanner = new PseudoRunCommandNetworkScanner(
       commandExecutablePath: commandExecutablePath,
       commandArguments: commandArguments,
       commandAddressArgumentsGenerator: GenerateAddressesArgument,
-      performNeighborDiscovery: true,
+      performNetworkScan: true,
       serviceProvider: services.BuildServiceProvider()
     );
 
     var ex = Assert.CatchAsync(
       async () => {
         if (withAddressesParameter)
-          await neighborDiscoverer.DiscoverAsync(addresses: addresses, cts.Token);
+          await networkScanner.ScanAsync(addresses: addresses, cts.Token);
         else
-          await neighborDiscoverer.DiscoverAsync(cts.Token);
+          await networkScanner.ScanAsync(cts.Token);
       }
     );
 
@@ -235,51 +235,51 @@ public class RunCommandNeighborDiscovererBaseTests {
 
     var services = new ServiceCollection();
 
-    services.AddSingleton<RunCommandNeighborDiscovererBase.IProcessFactory>(
+    services.AddSingleton<RunCommandNetworkScannerBase.IProcessFactory>(
       new InterceptingProcessFactory(AssertProcessStartInfo)
     );
 
-    using var neighborDiscoverer = new PseudoRunCommandNeighborDiscoverer(
+    using var networkScanner = new PseudoRunCommandNetworkScanner(
       commandExecutablePath: commandExecutablePath,
       commandArguments: null,
       commandAddressArgumentsGenerator: static _ => throw new NotImplementedException(),
-      performNeighborDiscovery: true,
+      performNetworkScan: true,
       serviceProvider: services.BuildServiceProvider()
     );
 
     var ex = Assert.CatchAsync(
-      async () => await neighborDiscoverer.DiscoverAsync(cts.Token)
+      async () => await networkScanner.ScanAsync(cts.Token)
     );
 
     Assert.That(ex, Is.InstanceOf<OperationCanceledException>().Or.InstanceOf<TaskCanceledException>());
   }
 
   [Test]
-  public void DiscoverAsync_CommandNotInvoked()
-    => DiscoverAsync_CommandNotInvoked(withAddressesParameter: false);
+  public void ScanAsync_CommandNotInvoked()
+    => ScanAsync_CommandNotInvoked(withAddressesParameter: false);
 
   [Test]
-  public void DiscoverAsync_WithAddresses_CommandNotInvoked()
-    => DiscoverAsync_CommandNotInvoked(withAddressesParameter: true);
+  public void ScanAsync_WithAddresses_CommandNotInvoked()
+    => ScanAsync_CommandNotInvoked(withAddressesParameter: true);
 
-  private void DiscoverAsync_CommandNotInvoked(bool withAddressesParameter)
+  private void ScanAsync_CommandNotInvoked(bool withAddressesParameter)
   {
     const string commandExecutablePath = "_non.existent.unavailable.command_";
     const string commandArguments = "--args";
 
     var services = new ServiceCollection();
 
-    services.AddSingleton<RunCommandNeighborDiscovererBase.IProcessFactory>(
+    services.AddSingleton<RunCommandNetworkScannerBase.IProcessFactory>(
       new InterceptingProcessFactory(
         static _ => Assert.Fail("must not be called")
       )
     );
 
-    using var neighborDiscoverer = new PseudoRunCommandNeighborDiscoverer(
+    using var networkScanner = new PseudoRunCommandNetworkScanner(
       commandExecutablePath: commandExecutablePath,
       commandArguments: commandArguments,
       commandAddressArgumentsGenerator: static _ => string.Empty,
-      performNeighborDiscovery: false,
+      performNetworkScan: false,
       serviceProvider: services.BuildServiceProvider()
     );
 
@@ -291,12 +291,12 @@ public class RunCommandNeighborDiscovererBaseTests {
       };
 
       Assert.DoesNotThrowAsync(
-        async () => await neighborDiscoverer.DiscoverAsync(addresses: addresses)
+        async () => await networkScanner.ScanAsync(addresses: addresses)
       );
     }
     else {
       Assert.DoesNotThrowAsync(
-        async () => await neighborDiscoverer.DiscoverAsync()
+        async () => await networkScanner.ScanAsync()
       );
     }
   }

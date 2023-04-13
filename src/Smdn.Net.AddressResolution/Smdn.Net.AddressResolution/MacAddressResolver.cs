@@ -18,95 +18,95 @@ namespace Smdn.Net.AddressResolution;
 /// </summary>
 /// <remarks>
 ///   <para>
-///     This implementation uses the system's address cache mechanism (such as the ARP table) and neighbor discovery
+///     This implementation uses the system's address cache mechanism (such as the ARP table) and network scan
 ///     mechanism (such as the network scan command) for address resolution.
 ///   </para>
 ///   <para>
 ///     Any <see cref="IAddressTable"/> can be specified as an implementation that references an address table.
-///     Also any <see cref="INeighborDiscoverer"/> can be specified as an implementation that performs the neighbor discovery.
+///     Also any <see cref="INetworkScanner"/> can be specified as an implementation that performs the network scan.
 ///   </para>
 /// </remarks>
 /// <seealso cref="IAddressTable"/>
-/// <seealso cref="INeighborDiscoverer"/>
+/// <seealso cref="INetworkScanner"/>
 public partial class MacAddressResolver : MacAddressResolverBase {
   private IAddressTable addressTable;
-  private INeighborDiscoverer neighborDiscoverer;
+  private INetworkScanner networkScanner;
   private readonly NetworkInterface? networkInterface;
 
   private readonly bool shouldDisposeAddressTable;
-  private readonly bool shouldDisposeNeighborDiscoverer;
+  private readonly bool shouldDisposeNetworkScanner;
 
   private Stopwatch? timeStampForFullScan;
-  private TimeSpan neighborDiscoveryInterval = Timeout.InfiniteTimeSpan;
-  private TimeSpan neighborDiscoveryMinInterval = TimeSpan.FromSeconds(20.0);
+  private TimeSpan networkScanInterval = Timeout.InfiniteTimeSpan;
+  private TimeSpan networkScanMinInterval = TimeSpan.FromSeconds(20.0);
 
   /// <summary>
-  /// Gets or sets the <see cref="TimeSpan"/> which represents the interval to perform a neighbor discovery.
+  /// Gets or sets the <see cref="TimeSpan"/> which represents the interval to perform a network scan.
   /// </summary>
   /// <remarks>
-  /// If the period represented by this property has elapsed since the lastest neighbor discovery,
-  /// the instance performs neighbor discovery automatically when the <see cref="ResolveIPAddressToMacAddressAsync(IPAddress, CancellationToken)" /> or
+  /// If the period represented by this property has elapsed since the lastest network scan,
+  /// the instance performs network scan automatically when the <see cref="ResolveIPAddressToMacAddressAsync(IPAddress, CancellationToken)" /> or
   /// <see cref="ResolveMacAddressToIPAddressAsync(PhysicalAddress, CancellationToken)" /> is called.
-  /// If <see cref="Timeout.InfiniteTimeSpan" /> is specified, the instance does not perform neighbor discovery automatically.
+  /// If <see cref="Timeout.InfiniteTimeSpan" /> is specified, the instance does not perform network scan automatically.
   /// </remarks>
-  /// <seealso cref="NeighborDiscoveryMinInterval"/>
+  /// <seealso cref="NetworkScanMinInterval"/>
   /// <seealso cref="ResolveIPAddressToMacAddressAsync(IPAddress, CancellationToken)" />
   /// <seealso cref="ResolveMacAddressToIPAddressAsync(PhysicalAddress, CancellationToken)" />
-  public TimeSpan NeighborDiscoveryInterval {
-    get => neighborDiscoveryInterval;
+  public TimeSpan NetworkScanInterval {
+    get => networkScanInterval;
     set {
       if (value <= TimeSpan.Zero) {
         if (value != Timeout.InfiniteTimeSpan)
-          throw new ArgumentOutOfRangeException(message: $"The value must be non-zero positive {nameof(TimeSpan)} or {nameof(Timeout)}.{nameof(Timeout.InfiniteTimeSpan)}.", paramName: nameof(NeighborDiscoveryInterval));
+          throw new ArgumentOutOfRangeException(message: $"The value must be non-zero positive {nameof(TimeSpan)} or {nameof(Timeout)}.{nameof(Timeout.InfiniteTimeSpan)}.", paramName: nameof(NetworkScanInterval));
       }
 
-      neighborDiscoveryInterval = value;
+      networkScanInterval = value;
     }
   }
 
   /// <summary>
-  /// Gets or sets the <see cref="TimeSpan"/> which represents the minimum interval to perform a neighbor discovery.
+  /// Gets or sets the <see cref="TimeSpan"/> which represents the minimum interval to perform a network scan.
   /// </summary>
   /// <remarks>
-  /// If the period represented by this property has not elapsed since the lastest neighbor discovery,
-  /// the instance will not performs neighbor discovery.
-  /// The neighbor discovery will be performed automatically when the <see cref="ResolveIPAddressToMacAddressAsync(IPAddress, CancellationToken)" /> or
+  /// If the period represented by this property has not elapsed since the lastest network scan,
+  /// the instance will not performs network scan.
+  /// The network scan will be performed automatically when the <see cref="ResolveIPAddressToMacAddressAsync(IPAddress, CancellationToken)" /> or
   /// <see cref="ResolveMacAddressToIPAddressAsync(PhysicalAddress, CancellationToken)" /> is called, or explicitly performed by calling the
   /// <see cref="RefreshCacheAsync(CancellationToken)" />.
-  /// If <see cref="Timeout.InfiniteTimeSpan" /> is specified, the instance does not perform the neighbor discovery.
-  /// If <see cref="TimeSpan.Zero" /> is specified, the instance always performs the neighbor discovery as requested.
+  /// If <see cref="Timeout.InfiniteTimeSpan" /> is specified, the instance does not perform the network scan.
+  /// If <see cref="TimeSpan.Zero" /> is specified, the instance always performs the network scan as requested.
   /// </remarks>
-  /// <seealso cref="NeighborDiscoveryInterval"/>
+  /// <seealso cref="NetworkScanInterval"/>
   /// <seealso cref="RefreshCacheAsync(CancellationToken)" />
   /// <seealso cref="ResolveIPAddressToMacAddressAsync(IPAddress, CancellationToken)" />
   /// <seealso cref="ResolveMacAddressToIPAddressAsync(PhysicalAddress, CancellationToken)" />
-  public TimeSpan NeighborDiscoveryMinInterval {
-    get => neighborDiscoveryMinInterval;
+  public TimeSpan NetworkScanMinInterval {
+    get => networkScanMinInterval;
     set {
       if (value < TimeSpan.Zero) {
         if (value != Timeout.InfiniteTimeSpan)
-          throw new ArgumentOutOfRangeException(message: $"The value must be non-zero positive {nameof(TimeSpan)} or {nameof(Timeout)}.{nameof(Timeout.InfiniteTimeSpan)}.", paramName: nameof(NeighborDiscoveryMinInterval));
+          throw new ArgumentOutOfRangeException(message: $"The value must be non-zero positive {nameof(TimeSpan)} or {nameof(Timeout)}.{nameof(Timeout.InfiniteTimeSpan)}.", paramName: nameof(NetworkScanMinInterval));
       }
 
-      neighborDiscoveryMinInterval = value;
+      networkScanMinInterval = value;
     }
   }
 
   private bool HasFullScanMinIntervalElapsed =>
-    neighborDiscoveryMinInterval == TimeSpan.Zero ||
+    networkScanMinInterval == TimeSpan.Zero ||
     (
-      neighborDiscoveryMinInterval != Timeout.InfiniteTimeSpan &&
+      networkScanMinInterval != Timeout.InfiniteTimeSpan &&
       (
         timeStampForFullScan is null || // not performed yet
-        neighborDiscoveryMinInterval <= timeStampForFullScan.Elapsed // interval elapsed
+        networkScanMinInterval <= timeStampForFullScan.Elapsed // interval elapsed
       )
     );
 
   private bool ShouldPerformFullScanBeforeResolution =>
-    neighborDiscoveryInterval != Timeout.InfiniteTimeSpan &&
+    networkScanInterval != Timeout.InfiniteTimeSpan &&
     (
       timeStampForFullScan is null || // not performed yet
-      neighborDiscoveryInterval <= timeStampForFullScan.Elapsed // interval elapsed
+      networkScanInterval <= timeStampForFullScan.Elapsed // interval elapsed
     );
 
   private readonly ConcurrentSet<IPAddress> invalidatedIPAddressSet = new();
@@ -114,7 +114,7 @@ public partial class MacAddressResolver : MacAddressResolverBase {
 
   public override bool HasInvalidated => !(invalidatedIPAddressSet.IsEmpty && invalidatedMacAddressSet.IsEmpty);
 
-  // mutex for neighbor discovery (a.k.a full scan)
+  // mutex for network scan (a.k.a full scan)
   private SemaphoreSlim fullScanMutex = new(initialCount: 1, maxCount: 1);
 
   // semaphore for address resolution (a.k.a partial scan)
@@ -136,8 +136,8 @@ public partial class MacAddressResolver : MacAddressResolverBase {
   /// Initializes a new instance of the <see cref="MacAddressResolver"/> class.
   /// </summary>
   /// <param name="networkProfile">
-  /// The <see cref="IPNetworkProfile"/> which specifying the network interface and neighbor discovery target addresses.
-  /// This is used as necessary for neighbor discovery in address resolution.
+  /// The <see cref="IPNetworkProfile"/> which specifying the network interface and network scan target addresses.
+  /// This is used as necessary for network scan in address resolution.
   /// </param>
   /// <param name="serviceProvider">
   /// The <see cref="IServiceProvider"/>.
@@ -148,7 +148,7 @@ public partial class MacAddressResolver : MacAddressResolverBase {
   )
     : this(
       addressTable: GetOrCreateAddressTableImplementation(networkProfile, serviceProvider),
-      neighborDiscoverer: GetOrCreateNeighborDiscovererImplementation(networkProfile, serviceProvider),
+      networkScanner: GetOrCreateNetworkScannerImplementation(networkProfile, serviceProvider),
       networkInterface: networkProfile?.NetworkInterface,
       maxParallelCountForRefreshInvalidatedCache: DefaultParallelCountForRefreshInvalidatedCache,
       logger: CreateLogger(serviceProvider)
@@ -171,15 +171,15 @@ public partial class MacAddressResolver : MacAddressResolverBase {
       : (impl, false);
   }
 
-  private static (INeighborDiscoverer Implementation, bool ShouldDispose) GetOrCreateNeighborDiscovererImplementation(
+  private static (INetworkScanner Implementation, bool ShouldDispose) GetOrCreateNetworkScannerImplementation(
     IPNetworkProfile? networkProfile,
     IServiceProvider? serviceProvider
   )
   {
-    var impl = serviceProvider?.GetService<INeighborDiscoverer>();
+    var impl = serviceProvider?.GetService<INetworkScanner>();
 
     return impl is null
-      ? (CreateNeighborDiscoverer(networkProfile, serviceProvider), true)
+      ? (CreateNetworkScanner(networkProfile, serviceProvider), true)
       : (impl, false);
   }
 
@@ -190,15 +190,15 @@ public partial class MacAddressResolver : MacAddressResolverBase {
   ///   An <see cref="IAddressTable"/> that implements a mechanism to refer address table.
   ///   If <see langword="null" />, attempts to retrieve <see cref="IAddressTable"/> from <paramref name="serviceProvider"/>.
   /// </param>
-  /// <param name="neighborDiscoverer">
-  ///   An <see cref="INeighborDiscoverer"/> that implements a mechanism to perform neighbor discovery.
-  ///   If <see langword="null" />, attempts to retrieve <see cref="INeighborDiscoverer"/> from <paramref name="serviceProvider"/>.
+  /// <param name="networkScanner">
+  ///   An <see cref="INetworkScanner"/> that implements a mechanism to perform network scan.
+  ///   If <see langword="null" />, attempts to retrieve <see cref="INetworkScanner"/> from <paramref name="serviceProvider"/>.
   /// </param>
   /// <param name="shouldDisposeAddressTable">
   ///   A value that indicates whether the <see cref="IAddressTable"/> passed from the <paramref name="addressTable"/> should also be disposed when the instance is disposed.
   /// </param>
-  /// <param name="shouldDisposeNeighborDiscoverer">
-  ///   A value that indicates whether the <see cref="INeighborDiscoverer"/> passed from the <paramref name="neighborDiscoverer"/> should also be disposed when the instance is disposed.
+  /// <param name="shouldDisposeNetworkScanner">
+  ///   A value that indicates whether the <see cref="INetworkScanner"/> passed from the <paramref name="networkScanner"/> should also be disposed when the instance is disposed.
   /// </param>
   /// <param name="networkInterface">
   ///   A <see cref="NetworkInterface"/> on which the entry should be referenced from the <see cref="IAddressTable"/>.
@@ -209,25 +209,25 @@ public partial class MacAddressResolver : MacAddressResolverBase {
   /// </param>
   /// <param name="serviceProvider">
   ///   A <see cref="IServiceProvider"/>.
-  ///   This constructor overload attempts to retrieve the <see cref="IAddressTable"/>, <see cref="INeighborDiscoverer"/>,
+  ///   This constructor overload attempts to retrieve the <see cref="IAddressTable"/>, <see cref="INetworkScanner"/>,
   ///   and <see cref="ILogger"/> if not explicitly specified.
   /// </param>
   /// <exception cref="ArgumentNullException">
   ///   <para>Both <paramref name="serviceProvider"/> and <paramref name="addressTable"/> are <see langword="null" />.</para>
-  ///   <para>Or both <paramref name="serviceProvider"/> and <paramref name="neighborDiscoverer"/> are <see langword="null" />.</para>
+  ///   <para>Or both <paramref name="serviceProvider"/> and <paramref name="networkScanner"/> are <see langword="null" />.</para>
   /// </exception>
   /// <exception cref="ArgumentOutOfRangeException">
   ///   <paramref name="maxParallelCountForRefreshInvalidatedCache"/> is zero or negative number.
   /// </exception>
   /// <exception cref="InvalidOperationException">
   ///   <para><paramref name="addressTable"/> is <see langword="null" /> and cannot retrieve <see cref="IAddressTable"/> from <paramref name="serviceProvider"/>.</para>
-  ///   <para><paramref name="neighborDiscoverer"/> is <see langword="null" /> and cannot retrieve <see cref="IAddressTable"/> from <paramref name="serviceProvider"/>.</para>
+  ///   <para><paramref name="networkScanner"/> is <see langword="null" /> and cannot retrieve <see cref="IAddressTable"/> from <paramref name="serviceProvider"/>.</para>
   /// </exception>
   public MacAddressResolver(
     IAddressTable? addressTable,
-    INeighborDiscoverer? neighborDiscoverer,
+    INetworkScanner? networkScanner,
     bool shouldDisposeAddressTable = false,
-    bool shouldDisposeNeighborDiscoverer = false,
+    bool shouldDisposeNetworkScanner = false,
     NetworkInterface? networkInterface = null,
     int maxParallelCountForRefreshInvalidatedCache = DefaultParallelCountForRefreshInvalidatedCache,
     IServiceProvider? serviceProvider = null
@@ -238,11 +238,11 @@ public partial class MacAddressResolver : MacAddressResolverBase {
         serviceProvider?.GetRequiredService<IAddressTable>() ??
         throw new ArgumentNullException(nameof(addressTable)),
       shouldDisposeAddressTable: shouldDisposeAddressTable,
-      neighborDiscoverer:
-        neighborDiscoverer ??
-        serviceProvider?.GetRequiredService<INeighborDiscoverer>() ??
-        throw new ArgumentNullException(nameof(neighborDiscoverer)),
-      shouldDisposeNeighborDiscoverer: shouldDisposeNeighborDiscoverer,
+      networkScanner:
+        networkScanner ??
+        serviceProvider?.GetRequiredService<INetworkScanner>() ??
+        throw new ArgumentNullException(nameof(networkScanner)),
+      shouldDisposeNetworkScanner: shouldDisposeNetworkScanner,
       networkInterface: networkInterface,
       maxParallelCountForRefreshInvalidatedCache: maxParallelCountForRefreshInvalidatedCache,
       logger: CreateLogger(serviceProvider)
@@ -252,7 +252,7 @@ public partial class MacAddressResolver : MacAddressResolverBase {
 
   private MacAddressResolver(
     (IAddressTable Implementation, bool ShouldDispose) addressTable,
-    (INeighborDiscoverer Implementation, bool ShouldDispose) neighborDiscoverer,
+    (INetworkScanner Implementation, bool ShouldDispose) networkScanner,
     NetworkInterface? networkInterface,
     int maxParallelCountForRefreshInvalidatedCache,
     ILogger? logger
@@ -260,8 +260,8 @@ public partial class MacAddressResolver : MacAddressResolverBase {
     : this(
       addressTable: addressTable.Implementation,
       shouldDisposeAddressTable: addressTable.ShouldDispose,
-      neighborDiscoverer: neighborDiscoverer.Implementation,
-      shouldDisposeNeighborDiscoverer: neighborDiscoverer.ShouldDispose,
+      networkScanner: networkScanner.Implementation,
+      shouldDisposeNetworkScanner: networkScanner.ShouldDispose,
       networkInterface: networkInterface,
       maxParallelCountForRefreshInvalidatedCache: maxParallelCountForRefreshInvalidatedCache,
       logger: logger
@@ -272,8 +272,8 @@ public partial class MacAddressResolver : MacAddressResolverBase {
   protected MacAddressResolver(
     IAddressTable addressTable,
     bool shouldDisposeAddressTable,
-    INeighborDiscoverer neighborDiscoverer,
-    bool shouldDisposeNeighborDiscoverer,
+    INetworkScanner networkScanner,
+    bool shouldDisposeNetworkScanner,
     NetworkInterface? networkInterface,
     int maxParallelCountForRefreshInvalidatedCache,
     ILogger? logger
@@ -286,14 +286,14 @@ public partial class MacAddressResolver : MacAddressResolverBase {
       throw new ArgumentOutOfRangeException(message: "must be non-zero positive number", paramName: nameof(maxParallelCountForRefreshInvalidatedCache));
 
     this.addressTable = addressTable ?? throw new ArgumentNullException(nameof(addressTable));
-    this.neighborDiscoverer = neighborDiscoverer ?? throw new ArgumentNullException(nameof(neighborDiscoverer));
+    this.networkScanner = networkScanner ?? throw new ArgumentNullException(nameof(networkScanner));
     this.networkInterface = networkInterface;
 
     this.shouldDisposeAddressTable = shouldDisposeAddressTable;
-    this.shouldDisposeNeighborDiscoverer = shouldDisposeNeighborDiscoverer;
+    this.shouldDisposeNetworkScanner = shouldDisposeNetworkScanner;
 
     logger?.LogInformation("IAddressTable: {IAddressTable}", this.addressTable.GetType().FullName);
-    logger?.LogInformation("INeighborDiscoverer: {INeighborDiscoverer}", this.neighborDiscoverer.GetType().FullName);
+    logger?.LogInformation("INetworkScanner: {INetworkScanner}", this.networkScanner.GetType().FullName);
     logger?.LogInformation(
       "NetworkInterface: {NetworkInterfaceId}, IPv4={IPv4}, IPv6={IPv6}",
       networkInterface?.Id ?? "(null)",
@@ -317,10 +317,10 @@ public partial class MacAddressResolver : MacAddressResolverBase {
 
     addressTable = null!;
 
-    if (shouldDisposeNeighborDiscoverer)
-      neighborDiscoverer?.Dispose();
+    if (shouldDisposeNetworkScanner)
+      networkScanner?.Dispose();
 
-    neighborDiscoverer = null!;
+    networkScanner = null!;
 
     fullScanMutex?.Dispose();
     fullScanMutex = null!;

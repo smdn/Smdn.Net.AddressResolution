@@ -294,7 +294,7 @@ public abstract class MacAddressResolverBase :
   /// Requests an update to the mechanism that caches the correspondence between IP addresses and MAC addresses.
   /// </summary>
   /// <remarks>
-  /// In a concrete implementation, updates the system cache (e.g., ARP table) by performing neighbor discovery.
+  /// In a concrete implementation, updates the system cache (e.g., ARP table) by performing network scan.
   /// </remarks>
   /// <param name="cancellationToken">The <see cref="CancellationToken" /> to monitor for cancellation requests. The default value is <see langword="default" />.</param>
   /// <exception cref="ObjectDisposedException">The instance has been disposed.</exception>
@@ -329,7 +329,7 @@ public abstract class MacAddressResolverBase :
   /// Requests an update to the invalidated addresses, to the mechanism that caches the correspondence between IP addresses and MAC addresses.
   /// </summary>
   /// <remarks>
-  /// In a concrete implementation, updates the system cache (e.g., ARP table) by performing neighbor discovery for the invalidated addresses.
+  /// In a concrete implementation, updates the system cache (e.g., ARP table) by performing network scan for the invalidated addresses.
   /// </remarks>
   /// <param name="cancellationToken">The <see cref="CancellationToken" /> to monitor for cancellation requests. The default value is <see langword="default" />.</param>
   /// <exception cref="ObjectDisposedException">The instance has been disposed.</exception>

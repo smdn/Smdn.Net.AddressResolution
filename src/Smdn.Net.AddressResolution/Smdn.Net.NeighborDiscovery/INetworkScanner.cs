@@ -9,19 +9,19 @@ using System.Threading.Tasks;
 namespace Smdn.Net.NeighborDiscovery;
 
 /// <summary>
-/// Provides a mechanism for performing neighbor discovery or network scan.
+/// Provides a mechanism for performing network scan.
 /// </summary>
-public interface INeighborDiscoverer : IDisposable {
+public interface INetworkScanner : IDisposable {
   /// <summary>
-  /// Performs neighbor discovery or network scan for all targets.
+  /// Performs network scan for all targets.
   /// </summary>
   /// <param name="cancellationToken">The <see cref="CancellationToken" /> to monitor for cancellation requests.</param>
-  ValueTask DiscoverAsync(CancellationToken cancellationToken);
+  ValueTask ScanAsync(CancellationToken cancellationToken);
 
   /// <summary>
-  /// Performs neighbor discovery or network scan for the targets specified by <paramref name="addresses"/>.
+  /// Performs network scan for the targets specified by <paramref name="addresses"/>.
   /// </summary>
-  /// <param name="addresses">The target addresses to perform neighbor discovery.</param>
+  /// <param name="addresses">The target addresses to perform network scan.</param>
   /// <param name="cancellationToken">The <see cref="CancellationToken" /> to monitor for cancellation requests.</param>
-  ValueTask DiscoverAsync(IEnumerable<IPAddress> addresses, CancellationToken cancellationToken);
+  ValueTask ScanAsync(IEnumerable<IPAddress> addresses, CancellationToken cancellationToken);
 }

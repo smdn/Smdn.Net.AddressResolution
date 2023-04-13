@@ -24,20 +24,20 @@ using static Vanara.PInvoke.Ws2_32;
 
 namespace Smdn.Net.NeighborDiscovery;
 
-public sealed class IpHlpApiNeighborDiscoverer : INeighborDiscoverer {
+public sealed class IpHlpApiNetworkScanner : INetworkScanner {
   private static readonly Win32Error ERROR_BAD_NET_NAME = new(0x80070043u);
 
-  private readonly Func<IEnumerable<IPAddress>?> getDiscoveryTargetAddresses;
+  private readonly Func<IEnumerable<IPAddress>?> getScanTargetAddresses;
   private readonly ILogger? logger;
 
-  public IpHlpApiNeighborDiscoverer(
+  public IpHlpApiNetworkScanner(
     IPNetworkProfile networkProfile,
     IServiceProvider? serviceProvider = null
   )
   {
-    getDiscoveryTargetAddresses = (networkProfile ?? throw new ArgumentNullException(nameof(networkProfile))).GetAddressRange;
+    getScanTargetAddresses = (networkProfile ?? throw new ArgumentNullException(nameof(networkProfile))).GetAddressRange;
 
-    logger = serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger<IpHlpApiNeighborDiscoverer>();
+    logger = serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger<IpHlpApiNetworkScanner>();
   }
 
   void IDisposable.Dispose()
@@ -45,15 +45,15 @@ public sealed class IpHlpApiNeighborDiscoverer : INeighborDiscoverer {
     // nothing to do
   }
 
-  public ValueTask DiscoverAsync(
+  public ValueTask ScanAsync(
     CancellationToken cancellationToken = default
   )
-    => DiscoverAsync(
-      addresses: getDiscoveryTargetAddresses() ?? throw new InvalidOperationException("could not get address range"),
+    => ScanAsync(
+      addresses: getScanTargetAddresses() ?? throw new InvalidOperationException("could not get address range"),
       cancellationToken: cancellationToken
     );
 
-  public async ValueTask DiscoverAsync(
+  public async ValueTask ScanAsync(
     IEnumerable<IPAddress> addresses,
     CancellationToken cancellationToken = default
   )
