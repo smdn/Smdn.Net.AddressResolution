@@ -24,7 +24,7 @@ This library provides interfaces for resolving between IP addresses and MAC addr
   </PropertyGroup>
 
   <PropertyGroup Label="package properties">
-    <PackageTags>ARP;ip-address;mac-address;hardware-address;address-lookup;address-resolution</PackageTags>
+    <PackageTags>ARP;arp-scan;arp-table;ip-address;mac-address;hardware-address;address-lookup;address-resolution</PackageTags>
   </PropertyGroup>
 
   <PropertyGroup Label="StyleCop code analysis">
