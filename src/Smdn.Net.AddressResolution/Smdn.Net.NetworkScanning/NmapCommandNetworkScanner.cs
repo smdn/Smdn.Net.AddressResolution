@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Smdn.Net.NetworkScanning;
 
-public sealed class NmapCommandNetworkScanner : RunCommandNetworkScannerBase {
+public sealed class NmapCommandNetworkScanner : CommandNetworkScanner {
   // ref: https://nmap.org/book/man-briefoptions.html
   //   -sn: Ping Scan - disable port scan
   //   -n: Never do DNS resolution

@@ -18,8 +18,8 @@ using Smdn.OperatingSystem;
 namespace Smdn.Net.NetworkScanning;
 
 [TestFixture]
-public class RunCommandNetworkScannerBaseTests {
-  public class InterceptingProcessFactory : RunCommandNetworkScannerBase.IProcessFactory {
+public class CommandNetworkScannerTests {
+  public class InterceptingProcessFactory : CommandNetworkScanner.IProcessFactory {
     private readonly Action<ProcessStartInfo> actionBeforeCreateProcess;
 
     public InterceptingProcessFactory(
@@ -37,10 +37,10 @@ public class RunCommandNetworkScannerBaseTests {
     }
   }
 
-  private class ConcreteRunCommandNetworkScanner : RunCommandNetworkScannerBase {
+  private class ConcreteCommandNetworkScanner : CommandNetworkScanner {
     public static string FindCommand(string command, bool expectAsAvailable)
     {
-      var comm = RunCommandNetworkScannerBase.FindCommand(command, DefaultCommandPaths);
+      var comm = CommandNetworkScanner.FindCommand(command, DefaultCommandPaths);
 
       Assert.AreEqual(command, comm.Name, nameof(comm.Name));
       Assert.AreEqual(expectAsAvailable, comm.IsAvailable, nameof(comm.IsAvailable));
@@ -48,7 +48,7 @@ public class RunCommandNetworkScannerBaseTests {
       return comm.GetExecutablePathOrThrow();
     }
 
-    public ConcreteRunCommandNetworkScanner(
+    public ConcreteCommandNetworkScanner(
       IServiceProvider? serviceProvider = null
     )
       : base(
@@ -79,7 +79,7 @@ public class RunCommandNetworkScannerBaseTests {
       return;
     }
 
-    var commandExecutablePath = ConcreteRunCommandNetworkScanner.FindCommand(
+    var commandExecutablePath = ConcreteCommandNetworkScanner.FindCommand(
       "nslookup",
       expectAsAvailable: true
     );
@@ -101,20 +101,20 @@ public class RunCommandNetworkScannerBaseTests {
   public void FindCommand_CommandNotAvailable()
   {
     Assert.Throws<NotSupportedException>(() => {
-      ConcreteRunCommandNetworkScanner.FindCommand(
+      ConcreteCommandNetworkScanner.FindCommand(
         "_non.existent.unavailable.command_",
         expectAsAvailable: false
       );
     });
   }
 
-  private class PseudoRunCommandNetworkScanner : RunCommandNetworkScannerBase {
+  private class PseudoCommandNetworkScanner : CommandNetworkScanner {
     private readonly string commandExecutablePath;
     private readonly string? commandArguments;
     private readonly Func<IEnumerable<IPAddress>, string> commandAddressArgumentsGenerator;
     private readonly bool performNetworkScan;
 
-    public PseudoRunCommandNetworkScanner(
+    public PseudoCommandNetworkScanner(
       string commandExecutablePath,
       string? commandArguments,
       Func<IEnumerable<IPAddress>, string> commandAddressArgumentsGenerator,
@@ -193,11 +193,11 @@ public class RunCommandNetworkScannerBaseTests {
 
     var services = new ServiceCollection();
 
-    services.AddSingleton<RunCommandNetworkScannerBase.IProcessFactory>(
+    services.AddSingleton<CommandNetworkScanner.IProcessFactory>(
       new InterceptingProcessFactory(AssertProcessStartInfo)
     );
 
-    using var networkScanner = new PseudoRunCommandNetworkScanner(
+    using var networkScanner = new PseudoCommandNetworkScanner(
       commandExecutablePath: commandExecutablePath,
       commandArguments: commandArguments,
       commandAddressArgumentsGenerator: GenerateAddressesArgument,
@@ -235,11 +235,11 @@ public class RunCommandNetworkScannerBaseTests {
 
     var services = new ServiceCollection();
 
-    services.AddSingleton<RunCommandNetworkScannerBase.IProcessFactory>(
+    services.AddSingleton<CommandNetworkScanner.IProcessFactory>(
       new InterceptingProcessFactory(AssertProcessStartInfo)
     );
 
-    using var networkScanner = new PseudoRunCommandNetworkScanner(
+    using var networkScanner = new PseudoCommandNetworkScanner(
       commandExecutablePath: commandExecutablePath,
       commandArguments: null,
       commandAddressArgumentsGenerator: static _ => throw new NotImplementedException(),
@@ -269,13 +269,13 @@ public class RunCommandNetworkScannerBaseTests {
 
     var services = new ServiceCollection();
 
-    services.AddSingleton<RunCommandNetworkScannerBase.IProcessFactory>(
+    services.AddSingleton<CommandNetworkScanner.IProcessFactory>(
       new InterceptingProcessFactory(
         static _ => Assert.Fail("must not be called")
       )
     );
 
-    using var networkScanner = new PseudoRunCommandNetworkScanner(
+    using var networkScanner = new PseudoCommandNetworkScanner(
       commandExecutablePath: commandExecutablePath,
       commandArguments: commandArguments,
       commandAddressArgumentsGenerator: static _ => string.Empty,

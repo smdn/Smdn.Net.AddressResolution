@@ -22,7 +22,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Smdn.Net.NetworkScanning;
 
-public sealed class ArpScanCommandNetworkScanner : RunCommandNetworkScannerBase {
+public sealed class ArpScanCommandNetworkScanner : CommandNetworkScanner {
   // ref: https://manpages.ubuntu.com/manpages/jammy/man1/arp-scan.1.html
   //   --numeric: IP addresses only, no hostnames.
   //   --quiet: Only display minimal output. No protocol decoding.

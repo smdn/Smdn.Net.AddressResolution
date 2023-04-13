@@ -19,7 +19,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Smdn.Net.NetworkScanning;
 
-public abstract class RunCommandNetworkScannerBase : INetworkScanner {
+public abstract class CommandNetworkScanner : INetworkScanner {
   public interface IProcessFactory {
     Process CreateProcess(ProcessStartInfo processStartInfo);
   }
@@ -126,7 +126,7 @@ public abstract class RunCommandNetworkScannerBase : INetworkScanner {
   private readonly ILogger? logger;
   private readonly IProcessFactory processFactory;
 
-  protected RunCommandNetworkScannerBase(
+  protected CommandNetworkScanner(
     ILogger? logger,
     IServiceProvider? serviceProvider
   )
