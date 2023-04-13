@@ -23,7 +23,7 @@ using static Vanara.PInvoke.Ws2_32;
 
 namespace Smdn.Net.NeighborDiscovery;
 
-public sealed class IpHlpApiNeighborTable : INeighborTable {
+public sealed class IpHlpApiAddressTable : IAddressTable {
   public static bool IsSupported => RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && lazyIsSupported.Value;
 
   private static readonly Lazy<bool> lazyIsSupported = new(
@@ -47,9 +47,9 @@ public sealed class IpHlpApiNeighborTable : INeighborTable {
 
   private readonly ILogger? logger;
 
-  public IpHlpApiNeighborTable(IServiceProvider? serviceProvider = null)
+  public IpHlpApiAddressTable(IServiceProvider? serviceProvider = null)
   {
-    this.logger = serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger<IpHlpApiNeighborTable>();
+    this.logger = serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger<IpHlpApiAddressTable>();
   }
 
   void IDisposable.Dispose()
@@ -57,7 +57,7 @@ public sealed class IpHlpApiNeighborTable : INeighborTable {
     // nothing to do
   }
 
-  public async IAsyncEnumerable<NeighborTableEntry> EnumerateEntriesAsync(
+  public async IAsyncEnumerable<AddressTableEntry> EnumerateEntriesAsync(
     [EnumeratorCancellation] CancellationToken cancellationToken = default
   )
   {
@@ -82,7 +82,7 @@ public sealed class IpHlpApiNeighborTable : INeighborTable {
         ipnetRow2.ReachabilityTime
       );
 
-      if (TryParseNeighborTableEntry(ipnetRow2, out var entry))
+      if (TryParseAddressTableEntry(ipnetRow2, out var entry))
         yield return entry;
     }
 
@@ -116,7 +116,7 @@ public sealed class IpHlpApiNeighborTable : INeighborTable {
     }
   }
 
-  private bool TryParseNeighborTableEntry(MIB_IPNET_ROW2 ipnetRow2, out NeighborTableEntry entry)
+  private bool TryParseAddressTableEntry(MIB_IPNET_ROW2 ipnetRow2, out AddressTableEntry entry)
   {
     entry = default;
 
@@ -164,15 +164,15 @@ public sealed class IpHlpApiNeighborTable : INeighborTable {
         : new(ipnetRow2.PhysicalAddress.AsSpan(0, (int)ipnetRow2.PhysicalAddressLength).ToArray()),
       isPermanent: ipnetRow2.State == NL_NEIGHBOR_STATE.NlnsPermanent,
       state: ipnetRow2.State switch {
-        NL_NEIGHBOR_STATE.NlnsIncomplete => NeighborTableEntryState.Incomplete,
-        NL_NEIGHBOR_STATE.NlnsProbe => NeighborTableEntryState.Probe,
-        NL_NEIGHBOR_STATE.NlnsDelay => NeighborTableEntryState.Delay,
-        NL_NEIGHBOR_STATE.NlnsStale => NeighborTableEntryState.Stale,
-        NL_NEIGHBOR_STATE.NlnsReachable => NeighborTableEntryState.Reachable,
+        NL_NEIGHBOR_STATE.NlnsIncomplete => AddressTableEntryState.Incomplete,
+        NL_NEIGHBOR_STATE.NlnsProbe => AddressTableEntryState.Probe,
+        NL_NEIGHBOR_STATE.NlnsDelay => AddressTableEntryState.Delay,
+        NL_NEIGHBOR_STATE.NlnsStale => AddressTableEntryState.Stale,
+        NL_NEIGHBOR_STATE.NlnsReachable => AddressTableEntryState.Reachable,
 
         NL_NEIGHBOR_STATE.NlnsUnreachable or
         NL_NEIGHBOR_STATE.NlnsPermanent or
-        _ => NeighborTableEntryState.None,
+        _ => AddressTableEntryState.None,
       },
       interfaceId: interfaceId
     );

@@ -22,18 +22,18 @@ namespace Smdn.Net.AddressResolution;
 ///     mechanism (such as the network scan command) for address resolution.
 ///   </para>
 ///   <para>
-///     Any <see cref="INeighborTable"/> can be specified as an implementation that references an address table.
+///     Any <see cref="IAddressTable"/> can be specified as an implementation that references an address table.
 ///     Also any <see cref="INeighborDiscoverer"/> can be specified as an implementation that performs the neighbor discovery.
 ///   </para>
 /// </remarks>
-/// <seealso cref="INeighborTable"/>
+/// <seealso cref="IAddressTable"/>
 /// <seealso cref="INeighborDiscoverer"/>
 public partial class MacAddressResolver : MacAddressResolverBase {
-  private INeighborTable neighborTable;
+  private IAddressTable addressTable;
   private INeighborDiscoverer neighborDiscoverer;
   private readonly NetworkInterface? networkInterface;
 
-  private readonly bool shouldDisposeNeighborTable;
+  private readonly bool shouldDisposeAddressTable;
   private readonly bool shouldDisposeNeighborDiscoverer;
 
   private Stopwatch? timeStampForFullScan;
@@ -147,7 +147,7 @@ public partial class MacAddressResolver : MacAddressResolverBase {
     IServiceProvider? serviceProvider = null
   )
     : this(
-      neighborTable: GetOrCreateNeighborTableImplementation(networkProfile, serviceProvider),
+      addressTable: GetOrCreateAddressTableImplementation(networkProfile, serviceProvider),
       neighborDiscoverer: GetOrCreateNeighborDiscovererImplementation(networkProfile, serviceProvider),
       networkInterface: networkProfile?.NetworkInterface,
       maxParallelCountForRefreshInvalidatedCache: DefaultParallelCountForRefreshInvalidatedCache,
@@ -159,15 +159,15 @@ public partial class MacAddressResolver : MacAddressResolverBase {
   private static ILogger? CreateLogger(IServiceProvider? serviceProvider)
     => serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger<MacAddressResolver>();
 
-  private static (INeighborTable Implementation, bool ShouldDispose) GetOrCreateNeighborTableImplementation(
+  private static (IAddressTable Implementation, bool ShouldDispose) GetOrCreateAddressTableImplementation(
     IPNetworkProfile? networkProfile,
     IServiceProvider? serviceProvider
   )
   {
-    var impl = serviceProvider?.GetService<INeighborTable>();
+    var impl = serviceProvider?.GetService<IAddressTable>();
 
     return impl is null
-      ? (CreateNeighborTable(networkProfile, serviceProvider), true)
+      ? (CreateAddressTable(networkProfile, serviceProvider), true)
       : (impl, false);
   }
 
@@ -186,58 +186,58 @@ public partial class MacAddressResolver : MacAddressResolverBase {
   /// <summary>
   /// Initializes a new instance of the <see cref="MacAddressResolver"/> class.
   /// </summary>
-  /// <param name="neighborTable">
-  ///   An <see cref="INeighborTable"/> that implements a mechanism to refer address table.
-  ///   If <see langword="null" />, attempts to retrieve <see cref="INeighborTable"/> from <paramref name="serviceProvider"/>.
+  /// <param name="addressTable">
+  ///   An <see cref="IAddressTable"/> that implements a mechanism to refer address table.
+  ///   If <see langword="null" />, attempts to retrieve <see cref="IAddressTable"/> from <paramref name="serviceProvider"/>.
   /// </param>
   /// <param name="neighborDiscoverer">
   ///   An <see cref="INeighborDiscoverer"/> that implements a mechanism to perform neighbor discovery.
   ///   If <see langword="null" />, attempts to retrieve <see cref="INeighborDiscoverer"/> from <paramref name="serviceProvider"/>.
   /// </param>
-  /// <param name="shouldDisposeNeighborTable">
-  ///   A value that indicates whether the <see cref="INeighborTable"/> passed from the <paramref name="neighborTable"/> should also be disposed when the instance is disposed.
+  /// <param name="shouldDisposeAddressTable">
+  ///   A value that indicates whether the <see cref="IAddressTable"/> passed from the <paramref name="addressTable"/> should also be disposed when the instance is disposed.
   /// </param>
   /// <param name="shouldDisposeNeighborDiscoverer">
   ///   A value that indicates whether the <see cref="INeighborDiscoverer"/> passed from the <paramref name="neighborDiscoverer"/> should also be disposed when the instance is disposed.
   /// </param>
   /// <param name="networkInterface">
-  ///   A <see cref="NetworkInterface"/> on which the entry should be referenced from the <see cref="INeighborTable"/>.
-  ///   If <see langword="null" />, all entries that can be referenced from the <see cref="INeighborTable"/> are used to address resolution.
+  ///   A <see cref="NetworkInterface"/> on which the entry should be referenced from the <see cref="IAddressTable"/>.
+  ///   If <see langword="null" />, all entries that can be referenced from the <see cref="IAddressTable"/> are used to address resolution.
   /// </param>
   /// <param name="maxParallelCountForRefreshInvalidatedCache">
-  ///   A value that specifies the maximum number of parallel executions allowed when <paramref name="neighborTable"/> updates the invalidated addresses.
+  ///   A value that specifies the maximum number of parallel executions allowed when <paramref name="addressTable"/> updates the invalidated addresses.
   /// </param>
   /// <param name="serviceProvider">
   ///   A <see cref="IServiceProvider"/>.
-  ///   This constructor overload attempts to retrieve the <see cref="INeighborTable"/>, <see cref="INeighborDiscoverer"/>,
+  ///   This constructor overload attempts to retrieve the <see cref="IAddressTable"/>, <see cref="INeighborDiscoverer"/>,
   ///   and <see cref="ILogger"/> if not explicitly specified.
   /// </param>
   /// <exception cref="ArgumentNullException">
-  ///   <para>Both <paramref name="serviceProvider"/> and <paramref name="neighborTable"/> are <see langword="null" />.</para>
+  ///   <para>Both <paramref name="serviceProvider"/> and <paramref name="addressTable"/> are <see langword="null" />.</para>
   ///   <para>Or both <paramref name="serviceProvider"/> and <paramref name="neighborDiscoverer"/> are <see langword="null" />.</para>
   /// </exception>
   /// <exception cref="ArgumentOutOfRangeException">
   ///   <paramref name="maxParallelCountForRefreshInvalidatedCache"/> is zero or negative number.
   /// </exception>
   /// <exception cref="InvalidOperationException">
-  ///   <para><paramref name="neighborTable"/> is <see langword="null" /> and cannot retrieve <see cref="INeighborTable"/> from <paramref name="serviceProvider"/>.</para>
-  ///   <para><paramref name="neighborDiscoverer"/> is <see langword="null" /> and cannot retrieve <see cref="INeighborTable"/> from <paramref name="serviceProvider"/>.</para>
+  ///   <para><paramref name="addressTable"/> is <see langword="null" /> and cannot retrieve <see cref="IAddressTable"/> from <paramref name="serviceProvider"/>.</para>
+  ///   <para><paramref name="neighborDiscoverer"/> is <see langword="null" /> and cannot retrieve <see cref="IAddressTable"/> from <paramref name="serviceProvider"/>.</para>
   /// </exception>
   public MacAddressResolver(
-    INeighborTable? neighborTable,
+    IAddressTable? addressTable,
     INeighborDiscoverer? neighborDiscoverer,
-    bool shouldDisposeNeighborTable = false,
+    bool shouldDisposeAddressTable = false,
     bool shouldDisposeNeighborDiscoverer = false,
     NetworkInterface? networkInterface = null,
     int maxParallelCountForRefreshInvalidatedCache = DefaultParallelCountForRefreshInvalidatedCache,
     IServiceProvider? serviceProvider = null
   )
     : this(
-      neighborTable:
-        neighborTable ??
-        serviceProvider?.GetRequiredService<INeighborTable>() ??
-        throw new ArgumentNullException(nameof(neighborTable)),
-      shouldDisposeNeighborTable: shouldDisposeNeighborTable,
+      addressTable:
+        addressTable ??
+        serviceProvider?.GetRequiredService<IAddressTable>() ??
+        throw new ArgumentNullException(nameof(addressTable)),
+      shouldDisposeAddressTable: shouldDisposeAddressTable,
       neighborDiscoverer:
         neighborDiscoverer ??
         serviceProvider?.GetRequiredService<INeighborDiscoverer>() ??
@@ -251,15 +251,15 @@ public partial class MacAddressResolver : MacAddressResolverBase {
   }
 
   private MacAddressResolver(
-    (INeighborTable Implementation, bool ShouldDispose) neighborTable,
+    (IAddressTable Implementation, bool ShouldDispose) addressTable,
     (INeighborDiscoverer Implementation, bool ShouldDispose) neighborDiscoverer,
     NetworkInterface? networkInterface,
     int maxParallelCountForRefreshInvalidatedCache,
     ILogger? logger
   )
     : this(
-      neighborTable: neighborTable.Implementation,
-      shouldDisposeNeighborTable: neighborTable.ShouldDispose,
+      addressTable: addressTable.Implementation,
+      shouldDisposeAddressTable: addressTable.ShouldDispose,
       neighborDiscoverer: neighborDiscoverer.Implementation,
       shouldDisposeNeighborDiscoverer: neighborDiscoverer.ShouldDispose,
       networkInterface: networkInterface,
@@ -270,8 +270,8 @@ public partial class MacAddressResolver : MacAddressResolverBase {
   }
 
   protected MacAddressResolver(
-    INeighborTable neighborTable,
-    bool shouldDisposeNeighborTable,
+    IAddressTable addressTable,
+    bool shouldDisposeAddressTable,
     INeighborDiscoverer neighborDiscoverer,
     bool shouldDisposeNeighborDiscoverer,
     NetworkInterface? networkInterface,
@@ -285,14 +285,14 @@ public partial class MacAddressResolver : MacAddressResolverBase {
     if (maxParallelCountForRefreshInvalidatedCache <= 0)
       throw new ArgumentOutOfRangeException(message: "must be non-zero positive number", paramName: nameof(maxParallelCountForRefreshInvalidatedCache));
 
-    this.neighborTable = neighborTable ?? throw new ArgumentNullException(nameof(neighborTable));
+    this.addressTable = addressTable ?? throw new ArgumentNullException(nameof(addressTable));
     this.neighborDiscoverer = neighborDiscoverer ?? throw new ArgumentNullException(nameof(neighborDiscoverer));
     this.networkInterface = networkInterface;
 
-    this.shouldDisposeNeighborTable = shouldDisposeNeighborTable;
+    this.shouldDisposeAddressTable = shouldDisposeAddressTable;
     this.shouldDisposeNeighborDiscoverer = shouldDisposeNeighborDiscoverer;
 
-    logger?.LogInformation("INeighborTable: {INeighborTable}", this.neighborTable.GetType().FullName);
+    logger?.LogInformation("IAddressTable: {IAddressTable}", this.addressTable.GetType().FullName);
     logger?.LogInformation("INeighborDiscoverer: {INeighborDiscoverer}", this.neighborDiscoverer.GetType().FullName);
     logger?.LogInformation(
       "NetworkInterface: {NetworkInterfaceId}, IPv4={IPv4}, IPv6={IPv6}",
@@ -312,10 +312,10 @@ public partial class MacAddressResolver : MacAddressResolverBase {
     if (!disposing)
       return;
 
-    if (shouldDisposeNeighborTable)
-      neighborTable?.Dispose();
+    if (shouldDisposeAddressTable)
+      addressTable?.Dispose();
 
-    neighborTable = null!;
+    addressTable = null!;
 
     if (shouldDisposeNeighborDiscoverer)
       neighborDiscoverer?.Dispose();

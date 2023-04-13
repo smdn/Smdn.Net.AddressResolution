@@ -21,7 +21,7 @@ partial class MacAddressResolverTests {
     var discoverer = new PseudoNeighborDiscoverer();
 
     var resolver = new MacAddressResolver(
-      neighborTable: new PseudoNeighborTable(),
+      addressTable: new PseudoAddressTable(),
       neighborDiscoverer: discoverer
     );
 
@@ -48,7 +48,7 @@ partial class MacAddressResolverTests {
     var discoverer = new PseudoNeighborDiscoverer();
 
     var resolver = new MacAddressResolver(
-      neighborTable: new PseudoNeighborTable(),
+      addressTable: new PseudoAddressTable(),
       neighborDiscoverer: discoverer
     );
 
@@ -79,7 +79,7 @@ partial class MacAddressResolverTests {
     var discoverer = new PseudoNeighborDiscoverer();
 
     var resolver = new MacAddressResolver(
-      neighborTable: new PseudoNeighborTable(),
+      addressTable: new PseudoAddressTable(),
       neighborDiscoverer: discoverer
     ) {
       NeighborDiscoveryInterval = neighborDiscoveryInterval,
@@ -104,7 +104,7 @@ partial class MacAddressResolverTests {
 
     var discoverer = new PerformDelayNeighborDiscoverer(delayOnNeighborDiscovery: TimeSpan.FromMilliseconds(100));
     var resolver = new MacAddressResolver(
-      neighborTable: new PseudoNeighborTable(),
+      addressTable: new PseudoAddressTable(),
       neighborDiscoverer: discoverer
     ) {
       NeighborDiscoveryInterval = Timeout.InfiniteTimeSpan,

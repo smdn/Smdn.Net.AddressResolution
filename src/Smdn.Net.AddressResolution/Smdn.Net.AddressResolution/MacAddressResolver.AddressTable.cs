@@ -19,29 +19,29 @@ partial class MacAddressResolver {
 #pragma warning restore IDE0040
 
   /// <summary>
-  /// Enumerates the relevant address table entries from the <see cref="INeighborTable"/> associated with the current instance.
+  /// Enumerates the relevant address table entries from the <see cref="IAddressTable"/> associated with the current instance.
   /// </summary>
   /// <param name="cancellationToken">
   /// The <see cref="CancellationToken" /> to monitor for cancellation requests.
   /// The default value is <see langword="default" />.
   /// </param>
   /// <exception cref="ObjectDisposedException">The instance has been disposed.</exception>
-  /// <seealso cref="INeighborTable"/>
-  /// <seealso cref="NeighborTableEntry"/>
-  public IAsyncEnumerable<NeighborTableEntry> EnumerateNeighborTableEntriesAsync(
+  /// <seealso cref="IAddressTable"/>
+  /// <seealso cref="AddressTableEntry"/>
+  public IAsyncEnumerable<AddressTableEntry> EnumerateAddressTableEntriesAsync(
     CancellationToken cancellationToken = default
   )
-    => EnumerateNeighborTableEntriesAsync(
-      predicate: entry => networkInterface is null || FilterNeighborTableEntryForNetworkInterface(entry),
+    => EnumerateAddressTableEntriesAsync(
+      predicate: entry => networkInterface is null || FilterAddressTableEntryForNetworkInterface(entry),
       cancellationToken: cancellationToken
     );
 
-  /// <inheritdoc cref="EnumerateNeighborTableEntriesAsync(CancellationToken)"/>
+  /// <inheritdoc cref="EnumerateAddressTableEntriesAsync(CancellationToken)"/>
   /// <param name="predicate">
-  /// A <see cref="Predicate{NeighborTableEntry}"/> that filters the entries enumerated from <see cref="INeighborTable"/>.
+  /// A <see cref="Predicate{AddressTableEntry}"/> that filters the entries enumerated from <see cref="IAddressTable"/>.
   /// </param>
-  public IAsyncEnumerable<NeighborTableEntry> EnumerateNeighborTableEntriesAsync(
-    Predicate<NeighborTableEntry> predicate,
+  public IAsyncEnumerable<AddressTableEntry> EnumerateAddressTableEntriesAsync(
+    Predicate<AddressTableEntry> predicate,
     CancellationToken cancellationToken = default
   )
   {
@@ -50,18 +50,18 @@ partial class MacAddressResolver {
 
     ThrowIfDisposed();
 
-    return EnumerateNeighborTableEntriesAsyncCore(
+    return EnumerateAddressTableEntriesAsyncCore(
       predicate: predicate,
       cancellationToken: cancellationToken
     );
   }
 
-  private async IAsyncEnumerable<NeighborTableEntry> EnumerateNeighborTableEntriesAsyncCore(
-    Predicate<NeighborTableEntry> predicate,
+  private async IAsyncEnumerable<AddressTableEntry> EnumerateAddressTableEntriesAsyncCore(
+    Predicate<AddressTableEntry> predicate,
     [EnumeratorCancellation] CancellationToken cancellationToken
   )
   {
-    await foreach (var entry in neighborTable.EnumerateEntriesAsync(
+    await foreach (var entry in addressTable.EnumerateEntriesAsync(
       cancellationToken
     ).ConfigureAwait(false)) {
       cancellationToken.ThrowIfCancellationRequested();
@@ -71,7 +71,7 @@ partial class MacAddressResolver {
     }
   }
 
-  private bool FilterNeighborTableEntryForNetworkInterface(NeighborTableEntry entry)
+  private bool FilterAddressTableEntryForNetworkInterface(AddressTableEntry entry)
   {
 #if DEBUG
     if (networkInterface is null)
@@ -110,7 +110,7 @@ partial class MacAddressResolver {
     return true;
   }
 
-  private bool FilterNeighborTableEntryForAddressResolution(NeighborTableEntry entry)
+  private bool FilterAddressTableEntryForAddressResolution(AddressTableEntry entry)
   {
     var include = true;
 
@@ -121,7 +121,7 @@ partial class MacAddressResolver {
     }
 
     // exclude entries that are irrelevant to or not supported by the network interface
-    if (networkInterface is not null && !FilterNeighborTableEntryForNetworkInterface(entry)) {
+    if (networkInterface is not null && !FilterAddressTableEntryForNetworkInterface(entry)) {
       include = false;
       goto RESULT_DETERMINED;
     }

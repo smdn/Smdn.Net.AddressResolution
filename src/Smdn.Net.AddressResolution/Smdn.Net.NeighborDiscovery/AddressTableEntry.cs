@@ -12,15 +12,15 @@ using System.Runtime.InteropServices;
 namespace Smdn.Net.NeighborDiscovery;
 
 #pragma warning disable CA2231
-public readonly struct NeighborTableEntry : IEquatable<NeighborTableEntry>, IEquatable<IPAddress>, IEquatable<PhysicalAddress> {
+public readonly struct AddressTableEntry : IEquatable<AddressTableEntry>, IEquatable<IPAddress>, IEquatable<PhysicalAddress> {
 #pragma warning restore CA2231
-  public static readonly NeighborTableEntry Empty = default;
+  public static readonly AddressTableEntry Empty = default;
 
-  /// <summary>Gets the <see cref="IEqualityComparer{NeighborTableEntry}"/> that performs the default equality comparison.</summary>
-  public static IEqualityComparer<NeighborTableEntry> DefaultEqualityComparer { get; } = new EqualityComparer(compareExceptState: false);
+  /// <summary>Gets the <see cref="IEqualityComparer{AddressTableEntry}"/> that performs the default equality comparison.</summary>
+  public static IEqualityComparer<AddressTableEntry> DefaultEqualityComparer { get; } = new EqualityComparer(compareExceptState: false);
 
-  /// <summary>Gets the <see cref="IEqualityComparer{NeighborTableEntry}"/> that performs equality comparisons except the value of <see cref="State"/> property.</summary>
-  public static IEqualityComparer<NeighborTableEntry> ExceptStateEqualityComparer { get; } = new EqualityComparer(compareExceptState: true);
+  /// <summary>Gets the <see cref="IEqualityComparer{AddressTableEntry}"/> that performs equality comparisons except the value of <see cref="State"/> property.</summary>
+  public static IEqualityComparer<AddressTableEntry> ExceptStateEqualityComparer { get; } = new EqualityComparer(compareExceptState: true);
 
 #if SYSTEM_DIAGNOSTICS_CODEANALYSIS_MEMBERNOTNULLWHENATTRIBUTE
   [MemberNotNullWhen(false, nameof(IPAddress))]
@@ -32,9 +32,9 @@ public readonly struct NeighborTableEntry : IEquatable<NeighborTableEntry>, IEqu
   public bool IsPermanent { get; }
 
   /// <summary>
-  /// Gets the value of <see cref="NeighborTableEntryState"/> that represents the state of this entry.
+  /// Gets the value of <see cref="AddressTableEntryState"/> that represents the state of this entry.
   /// </summary>
-  public NeighborTableEntryState State { get; }
+  public AddressTableEntryState State { get; }
 
   /// <summary>
   /// Gets the netowrk interface ID corresponding to this entry.
@@ -45,11 +45,11 @@ public readonly struct NeighborTableEntry : IEquatable<NeighborTableEntry>, IEqu
   /// </remarks>
   public string? InterfaceId { get; }
 
-  public NeighborTableEntry(
+  public AddressTableEntry(
     IPAddress ipAddress,
     PhysicalAddress? physicalAddress,
     bool isPermanent,
-    NeighborTableEntryState state,
+    AddressTableEntryState state,
     string? interfaceId
   )
   {
@@ -66,11 +66,11 @@ public readonly struct NeighborTableEntry : IEquatable<NeighborTableEntry>, IEqu
   public override bool Equals(object? obj)
     => obj switch {
       null => false,
-      NeighborTableEntry entry => Equals(entry),
+      AddressTableEntry entry => Equals(entry),
       _ => false,
     };
 
-  public bool Equals(NeighborTableEntry other)
+  public bool Equals(AddressTableEntry other)
     => DefaultEqualityComparer.Equals(this, other);
 
   public bool Equals(IPAddress? other)
@@ -95,7 +95,7 @@ public readonly struct NeighborTableEntry : IEquatable<NeighborTableEntry>, IEqu
   public override string ToString()
     => $"{{IP={IPAddress}, MAC={PhysicalAddress?.ToMacAddressString() ?? "(null)"}, IsPermanent={IsPermanent}, State={State}, Iface={InterfaceId}}}";
 
-  private sealed class EqualityComparer : EqualityComparer<NeighborTableEntry> {
+  private sealed class EqualityComparer : EqualityComparer<AddressTableEntry> {
     // On Windows, NetworkInterface.Id is set to a string representing
     // the GUID of the network interface, but its casing conventions is
     // not specified explicitly, so perform the case-insensitive comparison.
@@ -114,7 +114,7 @@ public readonly struct NeighborTableEntry : IEquatable<NeighborTableEntry>, IEqu
     internal static bool InterfaceIdEquals(string? x, string? y)
       => interfaceIdComparer.Equals(x, y);
 
-    public override bool Equals(NeighborTableEntry x, NeighborTableEntry y)
+    public override bool Equals(AddressTableEntry x, AddressTableEntry y)
       =>
         x.Equals(y.IPAddress) &&
         x.Equals(y.PhysicalAddress) &&
@@ -122,9 +122,9 @@ public readonly struct NeighborTableEntry : IEquatable<NeighborTableEntry>, IEqu
         (compareExceptState || x.State == y.State) &&
         InterfaceIdEquals(x.InterfaceId, y.InterfaceId);
 
-    public override int GetHashCode(NeighborTableEntry obj)
+    public override int GetHashCode(AddressTableEntry obj)
     {
-      static int GetHashCodeForInterfaceId(NeighborTableEntry obj)
+      static int GetHashCodeForInterfaceId(AddressTableEntry obj)
         => obj.InterfaceId is null ? 0 : interfaceIdComparer.GetHashCode(obj.InterfaceId);
 
 #if SYSTEM_HASHCODE

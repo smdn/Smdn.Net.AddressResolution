@@ -70,11 +70,11 @@ public partial class MacAddressResolverTests {
   private static readonly PhysicalAddress TestMacAddress = PhysicalAddress.Parse("00:00:5E:00:53:00");
 
   [Test]
-  public void Ctor_NeighborTable_ArgumentNull()
+  public void Ctor_AddressTable_ArgumentNull()
   {
     Assert.Throws<ArgumentNullException>(
       () => new MacAddressResolver(
-        neighborTable: null,
+        addressTable: null,
         neighborDiscoverer: new PseudoNeighborDiscoverer(),
         serviceProvider: null
       ),
@@ -83,7 +83,7 @@ public partial class MacAddressResolverTests {
 
     Assert.Throws<InvalidOperationException>(
       () => new MacAddressResolver(
-        neighborTable: null,
+        addressTable: null,
         neighborDiscoverer: new PseudoNeighborDiscoverer(),
         serviceProvider: new ServiceCollection().BuildServiceProvider()
       ),
@@ -96,7 +96,7 @@ public partial class MacAddressResolverTests {
   {
     Assert.Throws<ArgumentNullException>(
       () => new MacAddressResolver(
-        neighborTable: new PseudoNeighborTable(),
+        addressTable: new PseudoAddressTable(),
         neighborDiscoverer: null,
         serviceProvider: null
       ),
@@ -105,7 +105,7 @@ public partial class MacAddressResolverTests {
 
     Assert.Throws<InvalidOperationException>(
       () => new MacAddressResolver(
-        neighborTable: new PseudoNeighborTable(),
+        addressTable: new PseudoAddressTable(),
         neighborDiscoverer: null,
         serviceProvider: new ServiceCollection().BuildServiceProvider()
       ),
@@ -119,7 +119,7 @@ public partial class MacAddressResolverTests {
   public void Ctor_MaxParallelCountForRefreshInvalidatedCache_ArgumentOutOfRange(int maxParallelCount)
     => Assert.Throws<ArgumentOutOfRangeException>(
       () => new MacAddressResolver(
-        neighborTable: new PseudoNeighborTable(),
+        addressTable: new PseudoAddressTable(),
         neighborDiscoverer: new PseudoNeighborDiscoverer(),
         maxParallelCountForRefreshInvalidatedCache: maxParallelCount
       )
@@ -145,7 +145,7 @@ public partial class MacAddressResolverTests {
   )
   {
     var resolver = new MacAddressResolver(
-      neighborTable: new PseudoNeighborTable(),
+      addressTable: new PseudoAddressTable(),
       neighborDiscoverer: new PseudoNeighborDiscoverer()
     );
 
@@ -181,7 +181,7 @@ public partial class MacAddressResolverTests {
   )
   {
     var resolver = new MacAddressResolver(
-      neighborTable: new PseudoNeighborTable(),
+      addressTable: new PseudoAddressTable(),
       neighborDiscoverer: new PseudoNeighborDiscoverer()
     );
 
@@ -201,7 +201,7 @@ public partial class MacAddressResolverTests {
   public void HasInvalidated_IPAddressInvalidated()
   {
     var resolver = new MacAddressResolver(
-      neighborTable: new PseudoNeighborTable(),
+      addressTable: new PseudoAddressTable(),
       neighborDiscoverer: new PseudoNeighborDiscoverer()
     );
 
@@ -220,7 +220,7 @@ public partial class MacAddressResolverTests {
   public void HasInvalidated_MacAddressInvalidated()
   {
     var resolver = new MacAddressResolver(
-      neighborTable: new PseudoNeighborTable(),
+      addressTable: new PseudoAddressTable(),
       neighborDiscoverer: new PseudoNeighborDiscoverer()
     );
 
@@ -236,13 +236,13 @@ public partial class MacAddressResolverTests {
   }
 
   [Test]
-  public void Dispose_NeighborTableAndNeighborDiscovererAreSuppliedViaServiceProvider()
+  public void Dispose_AddressTableAndNeighborDiscovererAreSuppliedViaServiceProvider()
   {
-    var neighborTable = new PseudoNeighborTable();
+    var addressTable = new PseudoAddressTable();
     var neighborDiscoverer = new PseudoNeighborDiscoverer();
     var services = new ServiceCollection();
 
-    services.AddSingleton<INeighborTable>(neighborTable);
+    services.AddSingleton<IAddressTable>(addressTable);
     services.AddSingleton<INeighborDiscoverer>(neighborDiscoverer);
 
     var resolver = new MacAddressResolver(
@@ -252,23 +252,23 @@ public partial class MacAddressResolverTests {
 
     resolver.Dispose();
 
-    Assert.IsFalse(neighborTable.IsDisposed, $"{nameof(INeighborTable)} should not be disposed by default.");
+    Assert.IsFalse(addressTable.IsDisposed, $"{nameof(IAddressTable)} should not be disposed by default.");
     Assert.IsFalse(neighborDiscoverer.IsDisposed, $"{nameof(INeighborDiscoverer)} should not be disposed by default.");
   }
 
   [Test]
-  public void Dispose_NeighborTableAndNeighborDiscovererAreSuppliedAsCtorParameter()
+  public void Dispose_AddressTableAndNeighborDiscovererAreSuppliedAsCtorParameter()
   {
-    var neighborTable = new PseudoNeighborTable();
+    var addressTable = new PseudoAddressTable();
     var neighborDiscoverer = new PseudoNeighborDiscoverer();
     var resolver = new MacAddressResolver(
-      neighborTable: neighborTable,
+      addressTable: addressTable,
       neighborDiscoverer: neighborDiscoverer
     );
 
     resolver.Dispose();
 
-    Assert.IsFalse(neighborTable.IsDisposed, $"{nameof(INeighborTable)} should not be disposed by default.");
+    Assert.IsFalse(addressTable.IsDisposed, $"{nameof(IAddressTable)} should not be disposed by default.");
     Assert.IsFalse(neighborDiscoverer.IsDisposed, $"{nameof(INeighborDiscoverer)} should not be disposed by default.");
   }
 
@@ -276,28 +276,28 @@ public partial class MacAddressResolverTests {
   [TestCase(false, true)]
   [TestCase(true, false)]
   [TestCase(false, false)]
-  public void Dispose_ShouldDisposeNeighborTableAndNeighborDiscoverer(
-    bool shouldDisposeNeighborTable,
+  public void Dispose_ShouldDisposeAddressTableAndNeighborDiscoverer(
+    bool shouldDisposeAddressTable,
     bool shouldDisposeNeighborDiscoverer
   )
   {
-    var neighborTable = new PseudoNeighborTable();
+    var addressTable = new PseudoAddressTable();
     var neighborDiscoverer = new PseudoNeighborDiscoverer();
     var resolver = new MacAddressResolver(
-      neighborTable: neighborTable,
-      shouldDisposeNeighborTable: shouldDisposeNeighborTable,
+      addressTable: addressTable,
+      shouldDisposeAddressTable: shouldDisposeAddressTable,
       neighborDiscoverer: neighborDiscoverer,
       shouldDisposeNeighborDiscoverer: shouldDisposeNeighborDiscoverer
     );
 
     resolver.Dispose();
 
-    Assert.AreEqual(neighborTable.IsDisposed, shouldDisposeNeighborTable);
+    Assert.AreEqual(addressTable.IsDisposed, shouldDisposeAddressTable);
     Assert.AreEqual(neighborDiscoverer.IsDisposed, shouldDisposeNeighborDiscoverer);
 
     Assert.DoesNotThrow(() => resolver.Dispose(), "dispose again");
 
-    Assert.AreEqual(neighborTable.IsDisposed, shouldDisposeNeighborTable);
+    Assert.AreEqual(addressTable.IsDisposed, shouldDisposeAddressTable);
     Assert.AreEqual(neighborDiscoverer.IsDisposed, shouldDisposeNeighborDiscoverer);
   }
 }

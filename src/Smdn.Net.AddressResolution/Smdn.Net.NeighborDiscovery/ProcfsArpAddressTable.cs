@@ -21,7 +21,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Smdn.Net.NeighborDiscovery;
 
-public sealed class ProcfsArpNeighborTable : INeighborTable {
+public sealed class ProcfsArpAddressTable : IAddressTable {
   private const string PathToProcNetArp = "/proc/net/arp";
 
   public static bool IsSupported => File.Exists(PathToProcNetArp);
@@ -39,9 +39,9 @@ public sealed class ProcfsArpNeighborTable : INeighborTable {
 
   private readonly ILogger? logger;
 
-  public ProcfsArpNeighborTable(IServiceProvider? serviceProvider = null)
+  public ProcfsArpAddressTable(IServiceProvider? serviceProvider = null)
   {
-    this.logger = serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger<ProcfsArpNeighborTable>();
+    this.logger = serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger<ProcfsArpAddressTable>();
   }
 
   void IDisposable.Dispose()
@@ -49,7 +49,7 @@ public sealed class ProcfsArpNeighborTable : INeighborTable {
     // nothing to do
   }
 
-  public async IAsyncEnumerable<NeighborTableEntry> EnumerateEntriesAsync(
+  public async IAsyncEnumerable<AddressTableEntry> EnumerateEntriesAsync(
     [EnumeratorCancellation] CancellationToken cancellationToken = default
   )
   {
@@ -87,13 +87,13 @@ public sealed class ProcfsArpNeighborTable : INeighborTable {
         ((byte)flags).ToString("X2", provider: null)
       );
 
-      NeighborTableEntryState state = default;
+      AddressTableEntryState state = default;
 
       // TODO: flags translation
       if (flags.HasFlag(Flags.Incomplete))
-        state = NeighborTableEntryState.Incomplete;
+        state = AddressTableEntryState.Incomplete;
       if (flags.HasFlag(Flags.Complete))
-        state = NeighborTableEntryState.Stale;
+        state = AddressTableEntryState.Stale;
 
       var isPermanent = flags.HasFlag(Flags.Permanent);
 

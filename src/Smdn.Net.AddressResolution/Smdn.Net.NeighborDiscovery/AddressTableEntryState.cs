@@ -4,7 +4,7 @@ namespace Smdn.Net.NeighborDiscovery;
 
 // ref: https://www.ietf.org/rfc/rfc2461.txt
 // 7.3.2.  Neighbor Cache Entry States
-public enum NeighborTableEntryState {
+public enum AddressTableEntryState {
   None,
 
   Incomplete,

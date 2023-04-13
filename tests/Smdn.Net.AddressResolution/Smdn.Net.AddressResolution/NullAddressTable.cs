@@ -10,8 +10,8 @@ using Smdn.Net.NeighborDiscovery;
 
 namespace Smdn.Net.AddressResolution;
 
-internal sealed class NullNeighborTable : INeighborTable {
-  public NullNeighborTable()
+internal sealed class NullAddressTable : IAddressTable {
+  public NullAddressTable()
   {
   }
 
@@ -19,6 +19,6 @@ internal sealed class NullNeighborTable : INeighborTable {
   {
   }
 
-  public IAsyncEnumerable<NeighborTableEntry> EnumerateEntriesAsync(CancellationToken cancellationToken)
-    => Array.Empty<NeighborTableEntry>().ToAsyncEnumerable();
+  public IAsyncEnumerable<AddressTableEntry> EnumerateEntriesAsync(CancellationToken cancellationToken)
+    => Array.Empty<AddressTableEntry>().ToAsyncEnumerable();
 }

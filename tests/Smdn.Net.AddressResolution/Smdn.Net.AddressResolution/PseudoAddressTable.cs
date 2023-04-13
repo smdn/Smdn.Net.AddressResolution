@@ -9,11 +9,11 @@ using Smdn.Net.NeighborDiscovery;
 
 namespace Smdn.Net.AddressResolution;
 
-internal sealed class PseudoNeighborTable : INeighborTable {
+internal sealed class PseudoAddressTable : IAddressTable {
   public bool IsDisposed { get; private set; }
 
   public void Dispose() => IsDisposed = true;
 
-  public IAsyncEnumerable<NeighborTableEntry> EnumerateEntriesAsync(CancellationToken cancellationToken)
+  public IAsyncEnumerable<AddressTableEntry> EnumerateEntriesAsync(CancellationToken cancellationToken)
     => throw new NotImplementedException();
 }

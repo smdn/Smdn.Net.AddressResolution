@@ -27,9 +27,9 @@ partial class MacAddressResolver {
 
     cancellationToken.ThrowIfCancellationRequested();
 
-    var selectedEntry = await SelectNeighborTableEntryAsync(
+    var selectedEntry = await SelectAddressTableEntryAsync(
       predicate: entry => {
-        if (!FilterNeighborTableEntryForAddressResolution(entry))
+        if (!FilterAddressTableEntryForAddressResolution(entry))
           return false;
 
         if (!entry.Equals(ipAddress))
@@ -61,9 +61,9 @@ partial class MacAddressResolver {
 
     cancellationToken.ThrowIfCancellationRequested();
 
-    var selectedEntry = await SelectNeighborTableEntryAsync(
+    var selectedEntry = await SelectAddressTableEntryAsync(
       predicate: entry => {
-        if (!FilterNeighborTableEntryForAddressResolution(entry))
+        if (!FilterAddressTableEntryForAddressResolution(entry))
           return false;
 
         if (!entry.Equals(macAddress))
@@ -83,19 +83,19 @@ partial class MacAddressResolver {
     return selectedEntry.IPAddress;
   }
 
-  protected virtual async ValueTask<NeighborTableEntry> SelectNeighborTableEntryAsync(
-    Predicate<NeighborTableEntry> predicate,
+  protected virtual async ValueTask<AddressTableEntry> SelectAddressTableEntryAsync(
+    Predicate<AddressTableEntry> predicate,
     CancellationToken cancellationToken
   )
   {
-    NeighborTableEntry priorCandidate = default;
-    NeighborTableEntry candidate = default;
+    AddressTableEntry priorCandidate = default;
+    AddressTableEntry candidate = default;
 
-    await foreach (var entry in EnumerateNeighborTableEntriesAsyncCore(
+    await foreach (var entry in EnumerateAddressTableEntriesAsyncCore(
       predicate: predicate,
       cancellationToken: cancellationToken
     ).ConfigureAwait(false)) {
-      if (entry.IsPermanent || entry.State == NeighborTableEntryState.Reachable) {
+      if (entry.IsPermanent || entry.State == AddressTableEntryState.Reachable) {
         // prefer permanent or reachable entry
         priorCandidate = entry;
         break;

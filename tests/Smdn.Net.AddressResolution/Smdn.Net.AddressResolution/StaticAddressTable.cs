@@ -10,10 +10,10 @@ using Smdn.Net.NeighborDiscovery;
 
 namespace Smdn.Net.AddressResolution;
 
-internal sealed class StaticNeighborTable : INeighborTable {
-  private readonly IList<NeighborTableEntry> staticEntries;
+internal sealed class StaticAddressTable : IAddressTable {
+  private readonly IList<AddressTableEntry> staticEntries;
 
-  public StaticNeighborTable(IList<NeighborTableEntry> staticEntries)
+  public StaticAddressTable(IList<AddressTableEntry> staticEntries)
   {
     this.staticEntries = staticEntries;
   }
@@ -22,6 +22,6 @@ internal sealed class StaticNeighborTable : INeighborTable {
   {
   }
 
-  public IAsyncEnumerable<NeighborTableEntry> EnumerateEntriesAsync(CancellationToken cancellationToken)
+  public IAsyncEnumerable<AddressTableEntry> EnumerateEntriesAsync(CancellationToken cancellationToken)
     => staticEntries.ToAsyncEnumerable();
 }

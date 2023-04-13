@@ -9,22 +9,22 @@ namespace Smdn.Net.AddressResolution;
 
 public partial class MacAddressResolver : MacAddressResolverBase {
 #pragma warning disable IDE0060
-  private static INeighborTable CreateNeighborTable(
+  private static IAddressTable CreateAddressTable(
     IPNetworkProfile? networkProfile,
     IServiceProvider? serviceProvider
   )
 #pragma warning restore IDE0060
   {
     if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
-      if (IpHlpApiNeighborTable.IsSupported)
-        return new IpHlpApiNeighborTable(serviceProvider);
+      if (IpHlpApiAddressTable.IsSupported)
+        return new IpHlpApiAddressTable(serviceProvider);
     }
     else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
-      if (ProcfsArpNeighborTable.IsSupported)
-        return new ProcfsArpNeighborTable(serviceProvider);
+      if (ProcfsArpAddressTable.IsSupported)
+        return new ProcfsArpAddressTable(serviceProvider);
     }
 
-    throw new PlatformNotSupportedException($"There is no {nameof(INeighborTable)} implementation available to perform neighbor table lookups for this platform currently. Please implement and supply {nameof(INeighborTable)} for this platform.");
+    throw new PlatformNotSupportedException($"There is no {nameof(IAddressTable)} implementation available to perform address table lookups for this platform currently. Please implement and supply {nameof(IAddressTable)} for this platform.");
   }
 
   private static INeighborDiscoverer CreateNeighborDiscoverer(

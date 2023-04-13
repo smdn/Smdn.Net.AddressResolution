@@ -9,10 +9,10 @@ namespace Smdn.Net.NeighborDiscovery;
 /// <summary>
 /// Provides a mechanism for referencing address tables such as ARP table.
 /// </summary>
-public interface INeighborTable : IDisposable {
+public interface IAddressTable : IDisposable {
   /// <summary>
   /// Refers to and enumerates the list of entries from the address table.
   /// </summary>
   /// <param name="cancellationToken">The <see cref="CancellationToken" /> to monitor for cancellation requests.</param>
-  IAsyncEnumerable<NeighborTableEntry> EnumerateEntriesAsync(CancellationToken cancellationToken);
+  IAsyncEnumerable<AddressTableEntry> EnumerateEntriesAsync(CancellationToken cancellationToken);
 }
