@@ -20,10 +20,11 @@ partial class MacAddressResolver {
     CancellationToken cancellationToken
   )
   {
-    cancellationToken.ThrowIfCancellationRequested();
+    if (CanPerformNetworkScan && ShouldPerformFullScanBeforeResolution) {
+      cancellationToken.ThrowIfCancellationRequested();
 
-    if (ShouldPerformFullScanBeforeResolution)
       await RefreshCacheAsyncCore(cancellationToken: cancellationToken).ConfigureAwait(false);
+    }
 
     cancellationToken.ThrowIfCancellationRequested();
 
@@ -54,10 +55,11 @@ partial class MacAddressResolver {
     CancellationToken cancellationToken
   )
   {
-    cancellationToken.ThrowIfCancellationRequested();
+    if (CanPerformNetworkScan && ShouldPerformFullScanBeforeResolution) {
+      cancellationToken.ThrowIfCancellationRequested();
 
-    if (ShouldPerformFullScanBeforeResolution)
       await RefreshCacheAsyncCore(cancellationToken: cancellationToken).ConfigureAwait(false);
+    }
 
     cancellationToken.ThrowIfCancellationRequested();
 

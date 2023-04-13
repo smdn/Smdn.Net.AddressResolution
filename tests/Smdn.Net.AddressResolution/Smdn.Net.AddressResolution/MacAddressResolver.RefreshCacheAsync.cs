@@ -14,6 +14,18 @@ namespace Smdn.Net.AddressResolution;
 
 partial class MacAddressResolverTests {
   [Test]
+  public void RefreshCacheAsync_NoNetworkScannerProvided()
+  {
+    var resolver = new MacAddressResolver(
+      addressTable: new PseudoAddressTable(),
+      networkScanner: null
+    );
+
+    Assert.IsFalse(resolver.CanPerformNetworkScan, nameof(resolver.CanPerformNetworkScan));
+    Assert.ThrowsAsync<InvalidOperationException>(async () => await resolver.RefreshCacheAsync());
+  }
+
+  [Test]
   public void RefreshCacheAsync_AddressInvalidated()
   {
     var scanner = new PseudoNetworkScanner();

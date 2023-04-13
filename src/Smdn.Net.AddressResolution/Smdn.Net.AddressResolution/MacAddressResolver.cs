@@ -31,11 +31,38 @@ namespace Smdn.Net.AddressResolution;
 /// <seealso cref="INetworkScanner"/>
 public partial class MacAddressResolver : MacAddressResolverBase {
   private IAddressTable addressTable;
-  private INetworkScanner networkScanner;
+  private INetworkScanner? networkScanner;
   private readonly NetworkInterface? networkInterface;
 
   private readonly bool shouldDisposeAddressTable;
   private readonly bool shouldDisposeNetworkScanner;
+
+  /// <summary>
+  /// Gets a value indicating whether the instance can perform network scan.
+  /// </summary>
+  /// <remarks>
+  /// <para>
+  /// To perform a network scan, an implementation of <see cref="INetworkScanner" /> must be provided to the constructor parameter.
+  /// </para>
+  /// <para>
+  /// If <see cref="INetworkScanner" /> is not provided to the constructor parameter, i.e., <see langword="null"/> is specified,
+  /// value of <see cref="CanPerformNetworkScan"/> will be <see langword="false"/> and no network scan will be performed.
+  /// </para>
+  /// <para>
+  /// If <see cref="CanPerformNetworkScan"/> is <see langword="false"/>, calling <see cref="RefreshCacheAsync(CancellationToken)" /> or
+  /// <see cref="RefreshInvalidatedCacheAsync(CancellationToken)" /> throws <see cref="InvalidOperationException"/>.
+  /// Also, automatic network scanning by calling of <see cref="ResolveIPAddressToMacAddressAsync(IPAddress, CancellationToken)" /> or
+  /// <see cref="ResolveMacAddressToIPAddressAsync(PhysicalAddress, CancellationToken)" /> will not performed.
+  /// </para>
+  /// </remarks>
+  /// <seealso cref="NetworkScanInterval"/>
+  /// <seealso cref="NetworkScanMinInterval"/>
+  /// <seealso cref="RefreshCacheAsync(CancellationToken)"/>
+  /// <seealso cref="RefreshInvalidatedCacheAsync(CancellationToken)"/>
+  public bool CanPerformNetworkScan => networkScanner is not null;
+
+  private static Exception CreateCanNotPerformNetworkScanException()
+    => new InvalidOperationException($"The instance can not perform network scan. To perform a network scan, specify {nameof(INetworkScanner)} in the constructor.");
 
   private Stopwatch? timeStampForFullScan;
   private TimeSpan networkScanInterval = Timeout.InfiniteTimeSpan;
@@ -54,6 +81,7 @@ public partial class MacAddressResolver : MacAddressResolverBase {
   /// If <see cref="Timeout.InfiniteTimeSpan" /> is specified, the instance does not perform network scan automatically.
   /// </para>
   /// </remarks>
+  /// <seealso cref="CanPerformNetworkScan"/>
   /// <seealso cref="NetworkScanMinInterval"/>
   /// <seealso cref="ResolveIPAddressToMacAddressAsync(IPAddress, CancellationToken)" />
   /// <seealso cref="ResolveMacAddressToIPAddressAsync(PhysicalAddress, CancellationToken)" />
@@ -87,6 +115,7 @@ public partial class MacAddressResolver : MacAddressResolverBase {
   /// If <see cref="TimeSpan.Zero" /> is specified, the instance always performs the network scan as requested.
   /// </para>
   /// </remarks>
+  /// <seealso cref="CanPerformNetworkScan"/>
   /// <seealso cref="NetworkScanInterval"/>
   /// <seealso cref="RefreshCacheAsync(CancellationToken)" />
   /// <seealso cref="ResolveIPAddressToMacAddressAsync(IPAddress, CancellationToken)" />
@@ -225,14 +254,12 @@ public partial class MacAddressResolver : MacAddressResolverBase {
   /// </param>
   /// <exception cref="ArgumentNullException">
   ///   <para>Both <paramref name="serviceProvider"/> and <paramref name="addressTable"/> are <see langword="null" />.</para>
-  ///   <para>Or both <paramref name="serviceProvider"/> and <paramref name="networkScanner"/> are <see langword="null" />.</para>
   /// </exception>
   /// <exception cref="ArgumentOutOfRangeException">
   ///   <paramref name="maxParallelCountForRefreshInvalidatedCache"/> is zero or negative number.
   /// </exception>
   /// <exception cref="InvalidOperationException">
   ///   <para><paramref name="addressTable"/> is <see langword="null" /> and cannot retrieve <see cref="IAddressTable"/> from <paramref name="serviceProvider"/>.</para>
-  ///   <para><paramref name="networkScanner"/> is <see langword="null" /> and cannot retrieve <see cref="IAddressTable"/> from <paramref name="serviceProvider"/>.</para>
   /// </exception>
   public MacAddressResolver(
     IAddressTable? addressTable,
@@ -251,8 +278,7 @@ public partial class MacAddressResolver : MacAddressResolverBase {
       shouldDisposeAddressTable: shouldDisposeAddressTable,
       networkScanner:
         networkScanner ??
-        serviceProvider?.GetRequiredService<INetworkScanner>() ??
-        throw new ArgumentNullException(nameof(networkScanner)),
+        serviceProvider?.GetService<INetworkScanner>(),
       shouldDisposeNetworkScanner: shouldDisposeNetworkScanner,
       networkInterface: networkInterface,
       maxParallelCountForRefreshInvalidatedCache: maxParallelCountForRefreshInvalidatedCache,
@@ -283,7 +309,7 @@ public partial class MacAddressResolver : MacAddressResolverBase {
   protected MacAddressResolver(
     IAddressTable addressTable,
     bool shouldDisposeAddressTable,
-    INetworkScanner networkScanner,
+    INetworkScanner? networkScanner,
     bool shouldDisposeNetworkScanner,
     NetworkInterface? networkInterface,
     int maxParallelCountForRefreshInvalidatedCache,
@@ -297,14 +323,14 @@ public partial class MacAddressResolver : MacAddressResolverBase {
       throw new ArgumentOutOfRangeException(message: "must be non-zero positive number", paramName: nameof(maxParallelCountForRefreshInvalidatedCache));
 
     this.addressTable = addressTable ?? throw new ArgumentNullException(nameof(addressTable));
-    this.networkScanner = networkScanner ?? throw new ArgumentNullException(nameof(networkScanner));
+    this.networkScanner = networkScanner;
     this.networkInterface = networkInterface;
 
     this.shouldDisposeAddressTable = shouldDisposeAddressTable;
     this.shouldDisposeNetworkScanner = shouldDisposeNetworkScanner;
 
     logger?.LogInformation("IAddressTable: {IAddressTable}", this.addressTable.GetType().FullName);
-    logger?.LogInformation("INetworkScanner: {INetworkScanner}", this.networkScanner.GetType().FullName);
+    logger?.LogInformation("INetworkScanner: {INetworkScanner}", this.networkScanner?.GetType()?.FullName ?? "(null)");
     logger?.LogInformation(
       "NetworkInterface: {NetworkInterfaceId}, IPv4={IPv4}, IPv6={IPv6}",
       networkInterface?.Id ?? "(null)",

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.NetworkInformation;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,6 +16,70 @@ using Smdn.Net.NetworkScanning;
 namespace Smdn.Net.AddressResolution;
 
 partial class MacAddressResolverTests {
+  private sealed class InterceptingAddressTable : IAddressTable {
+    private readonly Action actionBeforeEnumerateEntries;
+
+    public InterceptingAddressTable(Action actionBeforeEnumerateEntries)
+    {
+      this.actionBeforeEnumerateEntries = actionBeforeEnumerateEntries;
+    }
+
+    public void Dispose()
+    {
+    }
+
+#pragma warning disable CS1998
+    public async IAsyncEnumerable<AddressTableEntry> EnumerateEntriesAsync(
+      [EnumeratorCancellation] CancellationToken cancellationToken
+    )
+#pragma warning restore CS1998
+    {
+      actionBeforeEnumerateEntries();
+
+      yield break;
+    }
+  }
+
+  [Test]
+  public void ResolveIPAddressToMacAddressAsync_CanNotPerformNetworkScan()
+  {
+    var addressTableEnumerated = false;
+
+    using var resolver = new MacAddressResolver(
+      addressTable: new InterceptingAddressTable(() => addressTableEnumerated = true),
+      networkScanner: null
+    ) {
+      NetworkScanMinInterval = TimeSpan.Zero,
+      NetworkScanInterval = TimeSpan.FromTicks(1),
+    };
+
+    Assert.IsFalse(resolver.CanPerformNetworkScan, nameof(resolver.CanPerformNetworkScan));
+
+    Assert.DoesNotThrowAsync(async () => await resolver.ResolveIPAddressToMacAddressAsync(TestIPAddress));
+
+    Assert.IsTrue(addressTableEnumerated, nameof(addressTableEnumerated));
+  }
+
+  [Test]
+  public void ResolveMacAddressToIPAddressAsync_CanNotPerformNetworkScan()
+  {
+    var addressTableEnumerated = false;
+
+    using var resolver = new MacAddressResolver(
+      addressTable: new InterceptingAddressTable(() => addressTableEnumerated = true),
+      networkScanner: null
+    ) {
+      NetworkScanMinInterval = TimeSpan.Zero,
+      NetworkScanInterval = TimeSpan.FromTicks(1),
+    };
+
+    Assert.IsFalse(resolver.CanPerformNetworkScan, nameof(resolver.CanPerformNetworkScan));
+
+    Assert.DoesNotThrowAsync(async () => await resolver.ResolveMacAddressToIPAddressAsync(TestMacAddress));
+
+    Assert.IsTrue(addressTableEnumerated, nameof(addressTableEnumerated));
+  }
+
   private sealed class InterceptingNetworkScanner : INetworkScanner {
     private readonly Action actionBeforePerformScan;
 

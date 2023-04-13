@@ -95,21 +95,29 @@ public partial class MacAddressResolverTests {
   [Test]
   public void Ctor_NetworkScanner_ArgumentNull()
   {
-    Assert.Throws<ArgumentNullException>(
-      () => new MacAddressResolver(
-        addressTable: new PseudoAddressTable(),
-        networkScanner: null,
-        serviceProvider: null
-      ),
+    Assert.DoesNotThrow(
+      () => {
+        using var resolver = new MacAddressResolver(
+          addressTable: new PseudoAddressTable(),
+          networkScanner: null,
+          serviceProvider: null
+        );
+
+        Assert.IsFalse(resolver.CanPerformNetworkScan, nameof(resolver.CanPerformNetworkScan));
+      },
       "#1"
     );
 
-    Assert.Throws<InvalidOperationException>(
-      () => new MacAddressResolver(
-        addressTable: new PseudoAddressTable(),
-        networkScanner: null,
-        serviceProvider: new ServiceCollection().BuildServiceProvider()
-      ),
+    Assert.DoesNotThrow(
+      () => {
+        using var resolver = new MacAddressResolver(
+          addressTable: new PseudoAddressTable(),
+          networkScanner: null,
+          serviceProvider: new ServiceCollection().BuildServiceProvider()
+        );
+
+        Assert.IsFalse(resolver.CanPerformNetworkScan, nameof(resolver.CanPerformNetworkScan));
+      },
       "#2"
     );
   }
@@ -125,6 +133,61 @@ public partial class MacAddressResolverTests {
         maxParallelCountForRefreshInvalidatedCache: maxParallelCount
       )
     );
+
+  private static System.Collections.IEnumerable YieldTestCases_CanPerformNetworkScan()
+  {
+    yield return new object[] {
+      new MacAddressResolver(
+        addressTable: new PseudoAddressTable(),
+        networkScanner: null,
+        serviceProvider: null
+      ),
+      false,
+      "no INetworkScanner provided by networkScanner parameter"
+    };
+
+    yield return new object[] {
+      new MacAddressResolver(
+        addressTable: new PseudoAddressTable(),
+        networkScanner: null,
+        serviceProvider: new ServiceCollection().BuildServiceProvider()
+      ),
+      false,
+      "no INetworkScanner provided by IServiceProvider"
+    };
+
+    yield return new object[] {
+      new MacAddressResolver(
+        addressTable: new PseudoAddressTable(),
+        networkScanner: new PseudoNetworkScanner(),
+        serviceProvider: null
+      ),
+      true,
+      "INetworkScanner provided by ctor parameter"
+    };
+
+    var services = new ServiceCollection();
+
+    services.AddSingleton<INetworkScanner>(new PseudoNetworkScanner());
+
+    yield return new object[] {
+      new MacAddressResolver(
+        addressTable: new PseudoAddressTable(),
+        networkScanner: null,
+        serviceProvider: services.BuildServiceProvider()
+      ),
+      true,
+      "INetworkScanner provided by IServiceProvider"
+    };
+  }
+
+  [TestCaseSource(nameof(YieldTestCases_CanPerformNetworkScan))]
+  public void CanPerformNetworkScan(MacAddressResolver resolver, bool expected, string message)
+  {
+    Assert.AreEqual(expected, resolver.CanPerformNetworkScan, message);
+
+    resolver.Dispose();
+  }
 
   private static System.Collections.IEnumerable YieldTestCases_NetworkScanInterval()
   {

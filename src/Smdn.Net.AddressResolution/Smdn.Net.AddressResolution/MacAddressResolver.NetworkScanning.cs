@@ -1,5 +1,6 @@
 // SPDX-FileCopyrightText: 2022 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
+using System;
 using System.Diagnostics;
 using System.Net;
 using System.Net.NetworkInformation;
@@ -22,17 +23,28 @@ partial class MacAddressResolver {
   protected override ValueTask RefreshCacheAsyncCore(
     CancellationToken cancellationToken = default
   )
-    => cancellationToken.IsCancellationRequested
-      ?
+  {
+    if (networkScanner is null)
+      throw CreateCanNotPerformNetworkScanException();
+
+    if (cancellationToken.IsCancellationRequested) {
 #if SYSTEM_THREADING_TASKS_VALUETASK_FROMCANCELED
-        ValueTask.FromCanceled(cancellationToken)
+      return ValueTask.FromCanceled(cancellationToken);
 #else
-        ValueTaskShim.FromCanceled(cancellationToken)
+      return ValueTaskShim.FromCanceled(cancellationToken);
 #endif
-      : FullScanAsync(cancellationToken: cancellationToken);
+    }
+
+    return FullScanAsync(cancellationToken: cancellationToken);
+  }
 
   private async ValueTask FullScanAsync(CancellationToken cancellationToken)
   {
+#if DEBUG
+    if (networkScanner is null)
+      throw new InvalidOperationException($"{nameof(networkScanner)} is null");
+#endif
+
     if (!HasFullScanMinIntervalElapsed) {
       Logger?.LogInformation("Network scan was not performed since the minimum perform interval had not elapsed.");
       return;
@@ -48,7 +60,7 @@ partial class MacAddressResolver {
     var sw = Logger is null ? null : Stopwatch.StartNew();
 
     try {
-      await networkScanner.ScanAsync(
+      await networkScanner!.ScanAsync(
         cancellationToken: cancellationToken
       ).ConfigureAwait(false);
 
@@ -68,17 +80,28 @@ partial class MacAddressResolver {
   protected override ValueTask RefreshInvalidatedCacheAsyncCore(
     CancellationToken cancellationToken = default
   )
-    => cancellationToken.IsCancellationRequested
-      ?
+  {
+    if (networkScanner is null)
+      throw CreateCanNotPerformNetworkScanException();
+
+    if (cancellationToken.IsCancellationRequested) {
 #if SYSTEM_THREADING_TASKS_VALUETASK_FROMCANCELED
-        ValueTask.FromCanceled(cancellationToken)
+      return ValueTask.FromCanceled(cancellationToken);
 #else
-        ValueTaskShim.FromCanceled(cancellationToken)
+      return ValueTaskShim.FromCanceled(cancellationToken);
 #endif
-      : PartialScanAsync(cancellationToken: cancellationToken);
+    }
+
+    return PartialScanAsync(cancellationToken: cancellationToken);
+  }
 
   private async ValueTask PartialScanAsync(CancellationToken cancellationToken)
   {
+#if DEBUG
+    if (networkScanner is null)
+      throw new InvalidOperationException($"{nameof(networkScanner)} is null");
+#endif
+
     if (invalidatedIPAddressSet.IsEmpty && invalidatedMacAddressSet.IsEmpty)
       return; // nothing to do
 
@@ -104,7 +127,7 @@ partial class MacAddressResolver {
     try {
       Logger?.LogInformation("Performing address resolution for the invalidated {Count} IP addresses.", invalidatedIPAddresses.Count);
 
-      await networkScanner.ScanAsync(
+      await networkScanner!.ScanAsync(
         addresses: invalidatedIPAddresses,
         cancellationToken: cancellationToken
       ).ConfigureAwait(false);
