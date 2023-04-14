@@ -5,7 +5,6 @@
 #endif
 
 using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 #if SYSTEM_RUNTIME_EXCEPTIONSERVICES_EXCEPTIONDISPATCHINFO_SETCURRENTSTACKTRACE
@@ -24,64 +23,42 @@ using static Vanara.PInvoke.Ws2_32;
 
 namespace Smdn.Net.NetworkScanning;
 
-public sealed class IpHlpApiNetworkScanner : INetworkScanner {
+public sealed class IpHlpApiNetworkScanner : NetworkScanner {
   private static readonly Win32Error ERROR_BAD_NET_NAME = new(0x80070043u);
-
-  private readonly Func<IEnumerable<IPAddress>?> getScanTargetAddresses;
-  private readonly ILogger? logger;
 
   public IpHlpApiNetworkScanner(
     IPNetworkProfile networkProfile,
     IServiceProvider? serviceProvider = null
   )
+    : base(
+      networkProfile: networkProfile,
+      logger: serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger<IpHlpApiNetworkScanner>()
+    )
   {
-    getScanTargetAddresses = (networkProfile ?? throw new ArgumentNullException(nameof(networkProfile))).GetAddressRange;
-
-    logger = serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger<IpHlpApiNetworkScanner>();
   }
 
-  void IDisposable.Dispose()
-  {
-    // nothing to do
-  }
-
-  public ValueTask ScanAsync(
-    CancellationToken cancellationToken = default
-  )
-    => ScanAsync(
-      addresses: getScanTargetAddresses() ?? throw new InvalidOperationException("could not get address range"),
-      cancellationToken: cancellationToken
-    );
-
-  public async ValueTask ScanAsync(
-    IEnumerable<IPAddress> addresses,
+  protected override async ValueTask ScanAsyncCore(
+    IPAddress address,
     CancellationToken cancellationToken = default
   )
   {
-    if (addresses is null)
-      throw new ArgumentNullException(nameof(addresses));
+    var (succeeded, ipnetRow2) = await TryResolveIpNetEntry2Async(address).ConfigureAwait(false);
 
-    foreach (var address in addresses) {
-      cancellationToken.ThrowIfCancellationRequested();
-
-      var (succeeded, ipnetRow2) = await TryResolveIpNetEntry2Async(address).ConfigureAwait(false);
-
-      if (succeeded) {
-        logger?.LogDebug(
-          "ResolveIpNetEntry2 resolved {IPAddress} => {MacAddress}",
-          address,
-          PhysicalAddressExtensions.ToMacAddressString(
-            ipnetRow2.PhysicalAddress,
-            (int)ipnetRow2.PhysicalAddressLength
-          )
-        );
-      }
-      else {
-        logger?.LogDebug(
-          "ResolveIpNetEntry2 could not resolve {IPAddress}",
-          address
-        );
-      }
+    if (succeeded) {
+      Logger?.LogDebug(
+        "ResolveIpNetEntry2 resolved {IPAddress} => {MacAddress}",
+        address,
+        PhysicalAddressExtensions.ToMacAddressString(
+          ipnetRow2.PhysicalAddress,
+          (int)ipnetRow2.PhysicalAddressLength
+        )
+      );
+    }
+    else {
+      Logger?.LogDebug(
+        "ResolveIpNetEntry2 could not resolve {IPAddress}",
+        address
+      );
     }
   }
 
@@ -111,7 +88,7 @@ public sealed class IpHlpApiNetworkScanner : INetworkScanner {
     if (ret.ToHRESULT() == ERROR_BAD_NET_NAME.ToHRESULT())
       return new((false, default));
 
-    logger?.LogWarning("ResolveIpNetEntry2({Address}) {Result}", address, ret.ToString());
+    Logger?.LogWarning("ResolveIpNetEntry2({Address}) {Result}", address, ret.ToString());
 
     var ex = ret.GetException();
 

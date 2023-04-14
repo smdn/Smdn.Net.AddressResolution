@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
 using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Threading;
@@ -12,20 +11,19 @@ using Microsoft.Extensions.Logging;
 
 namespace Smdn.Net.NetworkScanning;
 
-public sealed class PingNetworkScanner : INetworkScanner {
-  private readonly ILogger? logger;
-  private readonly Func<IEnumerable<IPAddress>?> getScanTargetAddresses;
-  private Ping? ping;
+public sealed class PingNetworkScanner : NetworkScanner {
+  private Ping ping;
   private readonly PingOptions pingOptions;
 
   public PingNetworkScanner(
     IPNetworkProfile networkProfile,
     IServiceProvider? serviceProvider = null
   )
+    : base(
+      networkProfile: networkProfile,
+      logger: serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger<PingNetworkScanner>()
+    )
   {
-    getScanTargetAddresses = (networkProfile ?? throw new ArgumentNullException(nameof(networkProfile))).GetAddressRange;
-    logger = serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger<PingNetworkScanner>();
-
     ping = new Ping();
     pingOptions = new() {
       // TODO: TTL
@@ -33,71 +31,44 @@ public sealed class PingNetworkScanner : INetworkScanner {
     };
   }
 
-  public void Dispose()
+  protected override void Dispose(bool disposing)
   {
-    ping?.Dispose();
-    ping = null;
+    if (disposing) {
+      ping?.Dispose();
+      ping = null!;
+    }
+
+    base.Dispose(disposing);
   }
 
-  private void ThrowIfDisposed()
-  {
-    if (ping is null)
-      throw new ObjectDisposedException(GetType().FullName);
-  }
-
-  /*
-   * INetworkScanner
-   */
-  public ValueTask ScanAsync(
-    CancellationToken cancellationToken = default
-  )
-    => ScanAsync(
-      addresses: getScanTargetAddresses() ?? throw new InvalidOperationException("could not get address range"),
-      cancellationToken: cancellationToken
-    );
-
-  public ValueTask ScanAsync(
-    IEnumerable<IPAddress> addresses,
+  protected override async ValueTask ScanAsyncCore(
+    IPAddress address,
     CancellationToken cancellationToken = default
   )
   {
-    if (addresses is null)
-      throw new ArgumentNullException(nameof(addresses));
+    const int timeoutMilliseconds = 100;
 
-    ThrowIfDisposed();
+    try {
+      var reply = await ping!.SendPingAsync(
+        address: address,
+        timeout: timeoutMilliseconds,
+        buffer: Array.Empty<byte>(),
+        options: pingOptions
+      ).ConfigureAwait(false);
 
-    return ScanAsyncCore();
-
-    async ValueTask ScanAsyncCore()
-    {
-      const int timeoutMilliseconds = 100;
-
-      foreach (var address in addresses) {
-        cancellationToken.ThrowIfCancellationRequested();
-
-        try {
-          var reply = await ping!.SendPingAsync(
-            address: address,
-            timeout: timeoutMilliseconds,
-            buffer: Array.Empty<byte>(),
-            options: pingOptions
-          ).ConfigureAwait(false);
-
-          logger?.LogDebug(
-            "{Address}: {Status} ({RoundtripTime} ms)",
-            address,
-            reply.Status,
-            reply.RoundtripTime
-          );
-        }
-        catch (Exception ex) {
-          logger?.LogWarning(
-            exception: ex,
-            "Ping failed: {Address}",
-            address
-          );
-        }
-      }
+      Logger?.LogDebug(
+        "{Address}: {Status} ({RoundtripTime} ms)",
+        address,
+        reply.Status,
+        reply.RoundtripTime
+      );
+    }
+    catch (Exception ex) {
+      Logger?.LogWarning(
+        exception: ex,
+        "Ping failed: {Address}",
+        address
+      );
     }
   }
 }
