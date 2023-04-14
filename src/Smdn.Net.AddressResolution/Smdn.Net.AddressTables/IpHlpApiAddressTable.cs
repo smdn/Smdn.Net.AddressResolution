@@ -10,7 +10,6 @@ using System.Runtime.CompilerServices;
 #if SYSTEM_RUNTIME_EXCEPTIONSERVICES_EXCEPTIONDISPATCHINFO_SETCURRENTSTACKTRACE
 using System.Runtime.ExceptionServices;
 #endif
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -22,8 +21,8 @@ using static Vanara.PInvoke.Ws2_32;
 
 namespace Smdn.Net.AddressTables;
 
-public sealed class IpHlpApiAddressTable : IAddressTable {
-  public static bool IsSupported => RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && lazyIsSupported.Value;
+public sealed class IpHlpApiAddressTable : AddressTable {
+  public static bool IsSupported => lazyIsSupported.Value;
 
   private static readonly Lazy<bool> lazyIsSupported = new(
     valueFactory: static () => {
@@ -44,30 +43,21 @@ public sealed class IpHlpApiAddressTable : IAddressTable {
     isThreadSafe: true
   );
 
-  private readonly ILogger? logger;
-
   public IpHlpApiAddressTable(IServiceProvider? serviceProvider = null)
+    : base(logger: serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger<IpHlpApiAddressTable>())
   {
-    logger = serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger<IpHlpApiAddressTable>();
   }
 
-  void IDisposable.Dispose()
-  {
-    // nothing to do
-  }
-
-  public async IAsyncEnumerable<AddressTableEntry> EnumerateEntriesAsync(
-    [EnumeratorCancellation] CancellationToken cancellationToken = default
+  protected override async IAsyncEnumerable<AddressTableEntry> EnumerateEntriesAsyncCore(
+    [EnumeratorCancellation] CancellationToken cancellationToken
   )
   {
-    cancellationToken.ThrowIfCancellationRequested();
-
     using var table = await GetIpNetTable2Async().ConfigureAwait(false);
 
     foreach (var ipnetRow2 in table.Table) {
       cancellationToken.ThrowIfCancellationRequested();
 
-      logger?.LogTrace(
+      Logger?.LogTrace(
         "MIB_IPNET_ROW2 Address={Address} PhysicalAddress={PhysicalAddress} Flags={Flags} State={State} InterfaceIndex={InterfaceIndex} InterfaceLuid={InterfaceLuid} ReachabilityTime={ReachabilityTime}",
         ipnetRow2.Address,
         PhysicalAddressExtensions.ToMacAddressString(
@@ -90,7 +80,7 @@ public sealed class IpHlpApiAddressTable : IAddressTable {
       var ret = GetIpNetTable2(ADDRESS_FAMILY.AF_UNSPEC, out var table);
 
       if (ret.Failed) {
-        logger?.LogWarning("GetIpNetTable2 {Result}", ret.ToString());
+        Logger?.LogWarning("GetIpNetTable2 {Result}", ret.ToString());
 
         table.Dispose();
 
@@ -132,7 +122,7 @@ public sealed class IpHlpApiAddressTable : IAddressTable {
       interfaceId = interfaceGuid.ToString(format: "B");
     }
     else {
-      logger?.LogWarning("ConvertInterfaceLuidToGuid {Result}", ret.ToString());
+      Logger?.LogWarning("ConvertInterfaceLuidToGuid {Result}", ret.ToString());
 
       interfaceId = null;
     }
@@ -144,7 +134,7 @@ public sealed class IpHlpApiAddressTable : IAddressTable {
     var ret = ConvertInterfaceLuidToName(ipnetRow2.InterfaceLuid, interfaceNameBuffer, NDIS_IF_MAX_STRING_SIZE);
 
     if (ret.Failed) {
-      logger?.LogWarning("ConvertInterfaceLuidToName {Result}", ret.ToString());
+      Logger?.LogWarning("ConvertInterfaceLuidToName {Result}", ret.ToString());
 
       interfaceId = ipnetRow2.InterfaceLuid.ToString();
     }

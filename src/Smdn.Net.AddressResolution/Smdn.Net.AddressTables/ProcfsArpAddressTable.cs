@@ -21,7 +21,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Smdn.Net.AddressTables;
 
-public sealed class ProcfsArpAddressTable : IAddressTable {
+public sealed class ProcfsArpAddressTable : AddressTable {
   private const string PathToProcNetArp = "/proc/net/arp";
 
   public static bool IsSupported => File.Exists(PathToProcNetArp);
@@ -37,23 +37,16 @@ public sealed class ProcfsArpAddressTable : IAddressTable {
     DontPub = 0x40,
   }
 
-  private readonly ILogger? logger;
-
   public ProcfsArpAddressTable(IServiceProvider? serviceProvider = null)
+    : base(serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger<ProcfsArpAddressTable>())
   {
-    logger = serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger<ProcfsArpAddressTable>();
   }
 
-  void IDisposable.Dispose()
-  {
-    // nothing to do
-  }
-
-  public async IAsyncEnumerable<AddressTableEntry> EnumerateEntriesAsync(
-    [EnumeratorCancellation] CancellationToken cancellationToken = default
+  protected override async IAsyncEnumerable<AddressTableEntry> EnumerateEntriesAsyncCore(
+    [EnumeratorCancellation] CancellationToken cancellationToken
   )
   {
-    logger?.LogTrace("Start reading '{PathToProcNetArp}'", PathToProcNetArp);
+    Logger?.LogTrace("Start reading '{PathToProcNetArp}'", PathToProcNetArp);
 
     using var reader = new StreamReader(PathToProcNetArp);
 
@@ -74,11 +67,11 @@ public sealed class ProcfsArpAddressTable : IAddressTable {
         continue; // ignore header line
 
       if (!TryParse(line, out var ipAddress, out var hardwareType, out var flags, out var hardwareAddress, out var device)) {
-        logger?.LogWarning("Failed to parse line: '{Line}'", line);
+        Logger?.LogWarning("Failed to parse line: '{Line}'", line);
         continue;
       }
 
-      logger?.LogTrace(
+      Logger?.LogTrace(
         "IP={IPAddress} HW={HardwareAddress} Type=0x{HardwareType} Device={Device} Flags=0x{Flags}",
         ipAddress,
         hardwareAddress?.ToMacAddressString(),
