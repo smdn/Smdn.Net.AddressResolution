@@ -1,0 +1,27 @@
+<!--
+SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
+SPDX-License-Identifier: MIT
+-->
+<Project InitialTargets="ReplaceSmdnNetAddressResolutionPackageReferencesToProjectReferences">
+  <!-- Replace PackageReference to ProjectReference of the local project -->
+  <Target
+    Name="ReplaceSmdnNetAddressResolutionPackageReferencesToProjectReferences"
+    Condition=" '$(UseLocalProjectInsteadOfPublishedPackage)' == 'true' "
+  >
+    <ItemGroup>
+      <_SmdnNetAddressResolutionReference
+        Include="@(PackageReference)"
+        Condition="$([System.String]::new('%(Identity)').StartsWith('Smdn.Net.AddressResolution'))"
+        ProjectPath="$(MSBuildThisFileDirectory)..\src\%(Identity)\%(Identity).csproj"
+      />
+    </ItemGroup>
+
+    <ItemGroup>
+      <!-- Remove package references to Smdn.Net.AddressResolution.* -->
+      <PackageReference Remove="@(_SmdnNetAddressResolutionReference)" />
+
+      <!-- Include project reference to Smdn.Net.AddressResolution.* -->
+      <ProjectReference Include="%(_SmdnNetAddressResolutionReference.ProjectPath)" />
+    </ItemGroup>
+  </Target>
+</Project>
