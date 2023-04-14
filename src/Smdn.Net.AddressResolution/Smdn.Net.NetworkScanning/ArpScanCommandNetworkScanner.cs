@@ -65,7 +65,7 @@ public sealed class ArpScanCommandNetworkScanner : CommandNetworkScanner {
 
   public ArpScanCommandNetworkScanner(
     IPNetworkProfile? networkProfile,
-    IServiceProvider? serviceProvider
+    IServiceProvider? serviceProvider = null
   )
     : base(
       logger: serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger<ArpScanCommandNetworkScanner>(),

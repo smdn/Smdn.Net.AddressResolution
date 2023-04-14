@@ -20,7 +20,7 @@ public sealed class PingNetworkScanner : NetworkScanner {
     IServiceProvider? serviceProvider = null
   )
     : base(
-      networkProfile: networkProfile,
+      networkProfile: networkProfile ?? throw new ArgumentNullException(nameof(networkProfile)),
       logger: serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger<PingNetworkScanner>()
     )
   {

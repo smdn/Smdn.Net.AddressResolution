@@ -36,13 +36,16 @@ public sealed class NmapCommandNetworkScanner : CommandNetworkScanner {
 
   public NmapCommandNetworkScanner(
     IPNetworkProfile networkProfile,
-    IServiceProvider? serviceProvider
+    IServiceProvider? serviceProvider = null
   )
     : base(
       logger: serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger<NmapCommandNetworkScanner>(),
       serviceProvider: serviceProvider
     )
   {
+    if (networkProfile is null)
+      throw new ArgumentNullException(nameof(networkProfile));
+
     if (networkProfile.NetworkInterface is null)
       nmapCommandCommonOptions = NmapCommandBaseOptions;
     else
