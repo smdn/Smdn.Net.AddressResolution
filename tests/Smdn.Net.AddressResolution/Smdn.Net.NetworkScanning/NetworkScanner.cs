@@ -34,6 +34,24 @@ public class NetworkScannerTests {
     );
 
   [Test]
+  public void Create()
+  {
+    try {
+      Assert.IsNotNull(NetworkScanner.Create(networkProfile: null));
+    }
+    catch (PlatformNotSupportedException) {
+      // possible and expected exception
+    }
+
+    try {
+      Assert.IsNotNull(NetworkScanner.Create(networkProfile: CreatePseudoNetworkProfile()));
+    }
+    catch (PlatformNotSupportedException) {
+      // possible and expected exception
+    }
+  }
+
+  [Test]
   public void Ctor_IPNetworkProfileNull()
     => Assert.Throws<ArgumentNullException>(() => new ConcreteNetworkScanner(networkProfile: null!));
 

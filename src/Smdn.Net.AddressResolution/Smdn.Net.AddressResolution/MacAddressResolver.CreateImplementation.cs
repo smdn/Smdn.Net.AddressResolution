@@ -4,7 +4,6 @@ using System;
 using System.Runtime.InteropServices;
 
 using Smdn.Net.AddressTables;
-using Smdn.Net.NetworkScanning;
 
 namespace Smdn.Net.AddressResolution;
 
@@ -27,35 +26,4 @@ public partial class MacAddressResolver : MacAddressResolverBase {
 
     throw new PlatformNotSupportedException($"There is no {nameof(IAddressTable)} implementation available to perform address table lookups for this platform currently. Please implement and supply {nameof(IAddressTable)} for this platform.");
   }
-
-  private static INetworkScanner CreateNetworkScanner(
-    IPNetworkProfile? networkProfile,
-    IServiceProvider? serviceProvider
-  )
-  {
-    if (NmapCommandNetworkScanner.IsSupported) {
-      return new NmapCommandNetworkScanner(
-        networkProfile: networkProfile ?? throw CreateMandatoryArgumentNullException(typeof(NmapCommandNetworkScanner), nameof(networkProfile)),
-        serviceProvider: serviceProvider
-      );
-    }
-
-    if (ArpScanCommandNetworkScanner.IsSupported) {
-      return new ArpScanCommandNetworkScanner(
-        networkProfile: networkProfile, // nullable
-        serviceProvider: serviceProvider
-      );
-    }
-
-    return new PingNetworkScanner(
-      networkProfile: networkProfile ?? throw CreateMandatoryArgumentNullException(typeof(PingNetworkScanner), nameof(networkProfile)),
-      serviceProvider: serviceProvider
-    );
-  }
-
-  private static Exception CreateMandatoryArgumentNullException(Type type, string paramName)
-    => new InvalidOperationException(
-      message: $"To construct the instance of the type {type.FullName}, the parameter '{paramName}' cannot be null.",
-      innerException: new ArgumentNullException(paramName: paramName)
-    );
 }

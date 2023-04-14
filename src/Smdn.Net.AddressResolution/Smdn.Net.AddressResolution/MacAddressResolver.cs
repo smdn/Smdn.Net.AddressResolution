@@ -219,7 +219,7 @@ public partial class MacAddressResolver : MacAddressResolverBase {
     var impl = serviceProvider?.GetService<INetworkScanner>();
 
     return impl is null
-      ? (CreateNetworkScanner(networkProfile, serviceProvider), true)
+      ? (NetworkScanner.Create(networkProfile, serviceProvider), true)
       : (impl, false);
   }
 

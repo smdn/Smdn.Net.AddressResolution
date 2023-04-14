@@ -16,7 +16,7 @@ partial class MacAddressResolverTests {
         try {
           new MacAddressResolver();
         }
-        catch (InvalidOperationException ex) when (IsMandatoryParameterNullException(ex)) {
+        catch (PlatformNotSupportedException) {
           // expected
         }
       });
@@ -26,7 +26,7 @@ partial class MacAddressResolverTests {
         try {
           new MacAddressResolver();
         }
-        catch (InvalidOperationException ex) when (IsMandatoryParameterNullException(ex)) {
+        catch (PlatformNotSupportedException) {
           // expected
         }
       });
@@ -34,9 +34,5 @@ partial class MacAddressResolverTests {
     else {
       Assert.Throws<PlatformNotSupportedException>(() => new MacAddressResolver());
     }
-
-    static bool IsMandatoryParameterNullException(InvalidOperationException ex)
-      => ex.InnerException is ArgumentNullException exInner &&
-        (exInner.ParamName == "networkProfile" || exInner.ParamName == "serviceProvider");
   }
 }
