@@ -24,7 +24,46 @@ using static Vanara.PInvoke.Ws2_32;
 namespace Smdn.Net.NetworkScanning;
 
 public sealed class IpHlpApiNetworkScanner : NetworkScanner {
+  // ref:
+  //   https://github.com/MicrosoftDocs/win32/blob/docs/desktop-src/wpd_sdk/error-constants.md
+  //   https://www.hresult.info/FACILITY_WIN32/0x80070043
+  //   https://www.hresult.info/FACILITY_WIN32/0x80070057
+  //   https://www.hresult.info/FACILITY_WIN32/0x80070032
   private static readonly Win32Error ERROR_BAD_NET_NAME = new(0x80070043u);
+  private static readonly Win32Error ERROR_INVALID_PARAMETER = new(0x80070057u);
+  private static readonly Win32Error ERROR_NOT_SUPPORTED = new(0x80070032u);
+
+  public static bool IsSupported => lazyIsSupported.Value;
+
+  private static readonly Lazy<bool> lazyIsSupported = new(
+    valueFactory: static () => {
+      try {
+        MIB_IPNET_ROW2 row = default;
+
+        row.Address.Ipv4 = default;
+        row.Address.Ipv6 = default;
+        row.Address.si_family = ADDRESS_FAMILY.AF_UNSPEC;
+
+        var ret = ResolveIpNetEntry2(ref row, SourceAddress: IntPtr.Zero);
+
+        if (ret.Equals(ERROR_INVALID_PARAMETER))
+          return true; // expected HRESULT and can be considered supported
+        if (ret.Equals(ERROR_NOT_SUPPORTED))
+          return false; // expected HRESULT and can be considered not supported
+        if (ret.Succeeded)
+          return true; // unexpected but can be considered supported
+
+        return false; // unexpected, can not determine supported or not
+      }
+      catch (EntryPointNotFoundException) {
+        return false;
+      }
+      catch (DllNotFoundException) {
+        return false;
+      }
+    },
+    isThreadSafe: true
+  );
 
   public IpHlpApiNetworkScanner(
     IPNetworkProfile networkProfile,

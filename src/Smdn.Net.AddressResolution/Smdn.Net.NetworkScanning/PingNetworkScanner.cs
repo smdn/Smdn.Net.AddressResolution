@@ -12,6 +12,8 @@ using Microsoft.Extensions.Logging;
 namespace Smdn.Net.NetworkScanning;
 
 public sealed class PingNetworkScanner : NetworkScanner {
+  public static bool IsSupported => true;
+
   private Ping ping;
   private readonly PingOptions pingOptions;
 
