@@ -9,6 +9,10 @@ namespace Smdn.Net.NetworkScanning;
 [TestFixture]
 public class NmapCommandNetworkScannerTests {
   [Test]
+  public void IsSupported()
+    => Assert.DoesNotThrow(() => Assert.That(NmapCommandNetworkScanner.IsSupported, Is.Not.Null));
+
+  [Test]
   public void Ctor()
     => Assert.Throws<ArgumentNullException>(() => new NmapCommandNetworkScanner(networkProfile: null!));
 }

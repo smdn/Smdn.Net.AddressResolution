@@ -9,6 +9,10 @@ namespace Smdn.Net.NetworkScanning;
 [TestFixture]
 public class IpHlpApiNetworkScannerTests {
   [Test]
+  public void IsSupported()
+    => Assert.DoesNotThrow(() => Assert.That(IpHlpApiNetworkScanner.IsSupported, Is.Not.Null));
+
+  [Test]
   public void Ctor()
     => Assert.Throws<ArgumentNullException>(() => new IpHlpApiNetworkScanner(networkProfile: null!));
 }
