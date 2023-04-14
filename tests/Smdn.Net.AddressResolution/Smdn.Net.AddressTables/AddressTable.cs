@@ -25,6 +25,17 @@ public class AddressTableTests {
   }
 
   [Test]
+  public void Create()
+  {
+    try {
+      Assert.IsNotNull(AddressTable.Create());
+    }
+    catch (PlatformNotSupportedException) {
+      // possible and expected exception
+    }
+  }
+
+  [Test]
   public void Dispose()
   {
     using var table = new ConcreteAddressTable();

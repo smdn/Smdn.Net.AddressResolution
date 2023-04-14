@@ -199,15 +199,17 @@ public partial class MacAddressResolver : MacAddressResolverBase {
   private static ILogger? CreateLogger(IServiceProvider? serviceProvider)
     => serviceProvider?.GetService<ILoggerFactory>()?.CreateLogger<MacAddressResolver>();
 
+#pragma warning disable IDE0060
   private static (IAddressTable Implementation, bool ShouldDispose) GetOrCreateAddressTableImplementation(
-    IPNetworkProfile? networkProfile,
+    IPNetworkProfile? networkProfile, // intended to the posibility to implement address tables that need to specify networks in the future
     IServiceProvider? serviceProvider
   )
+#pragma warning restore IDE0060
   {
     var impl = serviceProvider?.GetService<IAddressTable>();
 
     return impl is null
-      ? (CreateAddressTable(networkProfile, serviceProvider), true)
+      ? (AddressTable.Create(serviceProvider), true)
       : (impl, false);
   }
 
