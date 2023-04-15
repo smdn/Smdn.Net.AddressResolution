@@ -10,7 +10,10 @@ using NUnit.Framework;
 namespace Smdn.Net.NetworkScanning;
 
 [TestFixture]
-public class NetworkScannerTests {
+public class NetworkScannerTests : NetworkScannerTestsBase {
+  protected override INetworkScanner CreateNetworkScanner()
+    => new ConcreteNetworkScanner(CreatePseudoNetworkProfile());
+
   private class ConcreteNetworkScanner : NetworkScanner {
     public ConcreteNetworkScanner(IPNetworkProfile networkProfile)
       : base(networkProfile: networkProfile)
@@ -56,23 +59,15 @@ public class NetworkScannerTests {
     => Assert.Throws<ArgumentNullException>(() => new ConcreteNetworkScanner(networkProfile: null!));
 
   [Test]
-  public void Dispose()
+  public override void Dispose()
   {
+    base.Dispose();
+
     using var scanner = new ConcreteNetworkScanner(CreatePseudoNetworkProfile());
 
     Assert.DoesNotThrow(() => scanner.Dispose());
 
     Assert.Throws<ObjectDisposedException>(() => scanner.GetNetworkProfile());
-
-#pragma warning disable CA2012
-    Assert.Throws<ObjectDisposedException>(() => scanner.ScanAsync());
-    Assert.ThrowsAsync<ObjectDisposedException>(async () => await scanner.ScanAsync());
-
-    Assert.Throws<ObjectDisposedException>(() => scanner.ScanAsync(new[] { IPAddress.Any }));
-    Assert.ThrowsAsync<ObjectDisposedException>(async () => await scanner.ScanAsync(new[] { IPAddress.Any }));
-#pragma warning restore CA2012
-
-    Assert.DoesNotThrow(() => scanner.Dispose(), "dispose again");
   }
 
   [Test]
@@ -86,41 +81,5 @@ public class NetworkScannerTests {
     );
 
     Assert.ThrowsAsync<InvalidOperationException>(async () => await scanner.ScanAsync());
-  }
-
-  [Test]
-  public void ScanAsync_CancellationRequested()
-  {
-    using var scanner = new ConcreteNetworkScanner(CreatePseudoNetworkProfile());
-    using var cts = new CancellationTokenSource();
-
-    cts.Cancel();
-
-    var ex = Assert.CatchAsync(async () => await scanner.ScanAsync(cts.Token));
-
-    Assert.That(ex, Is.InstanceOf<OperationCanceledException>().Or.InstanceOf<TaskCanceledException>());
-  }
-
-  [Test]
-  public void ScanAsync_WithAddresses_AddressesNull()
-  {
-    using var scanner = new ConcreteNetworkScanner(CreatePseudoNetworkProfile());
-
-    Assert.ThrowsAsync<ArgumentNullException>(
-      async () => await scanner.ScanAsync(addresses: null!)
-    );
-  }
-
-  [Test]
-  public void ScanAsync_WithAddresses_CancellationRequested()
-  {
-    using var scanner = new ConcreteNetworkScanner(CreatePseudoNetworkProfile());
-    using var cts = new CancellationTokenSource();
-
-    cts.Cancel();
-
-    var ex = Assert.CatchAsync(async () => await scanner.ScanAsync(new[] { IPAddress.Any }, cts.Token));
-
-    Assert.That(ex, Is.InstanceOf<OperationCanceledException>().Or.InstanceOf<TaskCanceledException>());
   }
 }

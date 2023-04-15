@@ -10,9 +10,11 @@ using NUnit.Framework;
 namespace Smdn.Net.NetworkScanning;
 
 [TestFixture]
-public class NetworkScannerNullObjectTests {
+public class NetworkScannerNullObjectTests : NetworkScannerTestsBase {
+  protected override INetworkScanner CreateNetworkScanner() => NetworkScanner.Null;
+
   [Test]
-  public void Dispose()
+  public override void Dispose()
   {
     Assert.DoesNotThrow(() => NetworkScanner.Null.Dispose());
 
@@ -20,37 +22,5 @@ public class NetworkScannerNullObjectTests {
     Assert.DoesNotThrowAsync(async () => await NetworkScanner.Null.ScanAsync(new[] { IPAddress.Any }, cancellationToken: default));
 
     Assert.DoesNotThrow(() => NetworkScanner.Null.Dispose(), "dispose again");
-  }
-
-  [Test]
-  public void ScanAsync_CancellationRequested()
-  {
-    using var cts = new CancellationTokenSource();
-
-    cts.Cancel();
-
-    var ex = Assert.CatchAsync(async () => await NetworkScanner.Null.ScanAsync(cts.Token));
-
-    Assert.That(ex, Is.InstanceOf<OperationCanceledException>().Or.InstanceOf<TaskCanceledException>());
-  }
-
-  [Test]
-  public void ScanAsync_WithAddresses_AddressesNull()
-  {
-    Assert.ThrowsAsync<ArgumentNullException>(
-      async () => await NetworkScanner.Null.ScanAsync(addresses: null!, cancellationToken: default)
-    );
-  }
-
-  [Test]
-  public void ScanAsync_WithAddresses_CancellationRequested()
-  {
-    using var cts = new CancellationTokenSource();
-
-    cts.Cancel();
-
-    var ex = Assert.CatchAsync(async () => await NetworkScanner.Null.ScanAsync(new[] { IPAddress.Any }, cts.Token));
-
-    Assert.That(ex, Is.InstanceOf<OperationCanceledException>().Or.InstanceOf<TaskCanceledException>());
   }
 }
