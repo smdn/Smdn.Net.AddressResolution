@@ -178,6 +178,14 @@ public abstract class CommandNetworkScanner : INetworkScanner {
     CancellationToken cancellationToken = default
   )
   {
+    if (cancellationToken.IsCancellationRequested) {
+#if SYSTEM_THREADING_TASKS_VALUETASK_FROMCANCELED
+      return ValueTask.FromCanceled(cancellationToken);
+#else
+      return ValueTaskShim.FromCanceled(cancellationToken);
+#endif
+    }
+
     if (GetCommandLineArguments(out var executable, out var args)) {
       return RunCommandAsync(
         commandFileName: executable,
@@ -196,6 +204,14 @@ public abstract class CommandNetworkScanner : INetworkScanner {
     CancellationToken cancellationToken = default
   )
   {
+    if (cancellationToken.IsCancellationRequested) {
+#if SYSTEM_THREADING_TASKS_VALUETASK_FROMCANCELED
+      return ValueTask.FromCanceled(cancellationToken);
+#else
+      return ValueTaskShim.FromCanceled(cancellationToken);
+#endif
+    }
+
     if (GetCommandLineArguments(addresses, out var executable, out var args)) {
       return RunCommandAsync(
         commandFileName: executable,
