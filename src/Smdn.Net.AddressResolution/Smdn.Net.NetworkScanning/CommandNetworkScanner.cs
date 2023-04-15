@@ -1,9 +1,5 @@
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
-#if NET7_0_OR_GREATER
-#define SYSTEM_IO_STREAMREADER_READLINEASYNC_CANCELLATIONTOKEN
-#endif
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -292,7 +288,7 @@ public abstract class CommandNetworkScanner : INetworkScanner {
 
           for (; ; ) {
             var line =
-#if SYSTEM_IO_STREAMREADER_READLINEASYNC_CANCELLATIONTOKEN
+#if SYSTEM_IO_TEXTREADER_READLINEASYNC_CANCELLATIONTOKEN
               await stdio.ReadLineAsync(cancellationToken).ConfigureAwait(false);
 #else
               await stdio.ReadLineAsync().ConfigureAwait(false);

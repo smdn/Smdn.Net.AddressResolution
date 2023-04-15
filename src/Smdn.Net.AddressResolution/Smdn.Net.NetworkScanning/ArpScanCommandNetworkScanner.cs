@@ -1,12 +1,6 @@
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
-#if NET7_0_OR_GREATER
-#define SYSTEM_IO_UNIXFILEMODE
-#define SYSTEM_IO_FILE_GETUNIXFILEMODE
-#endif
-#if NET8_0_OR_GREATER
-#define SYSTEM_ENVORINMENT_ISPRIVILEGEDPROCESS
-#endif
+#undef SYSTEM_ENVORINMENT_ISPRIVILEGEDPROCESS // enable this when .NET 8 GA is released
 
 using System;
 using System.Collections.Generic;

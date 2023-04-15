@@ -1,9 +1,5 @@
 // SPDX-FileCopyrightText: 2022 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
-#if NET7_0_OR_GREATER
-#define SYSTEM_IO_STREAMREADER_READLINEASYNC_CANCELLATIONTOKEN
-#endif
-
 using System;
 using System.Collections.Generic;
 #if NULL_STATE_STATIC_ANALYSIS_ATTRIBUTES
@@ -51,7 +47,7 @@ public sealed class ProcfsArpAddressTable : AddressTable {
     using var reader = new StreamReader(PathToProcNetArp);
 
     for (
-#if SYSTEM_IO_STREAMREADER_READLINEASYNC_CANCELLATIONTOKEN
+#if SYSTEM_IO_TEXTREADER_READLINEASYNC_CANCELLATIONTOKEN
       var line = await reader.ReadLineAsync(cancellationToken).ConfigureAwait(false);
       line is not null;
       line = await reader.ReadLineAsync(cancellationToken).ConfigureAwait(false)

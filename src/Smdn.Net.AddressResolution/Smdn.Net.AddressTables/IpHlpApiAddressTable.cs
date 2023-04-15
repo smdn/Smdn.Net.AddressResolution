@@ -1,9 +1,5 @@
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
-#if NET5_0_OR_GREATER
-#define SYSTEM_RUNTIME_EXCEPTIONSERVICES_EXCEPTIONDISPATCHINFO_SETCURRENTSTACKTRACE
-#endif
-
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;

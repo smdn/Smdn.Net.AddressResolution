@@ -1,9 +1,5 @@
 // SPDX-FileCopyrightText: 2022 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER || NET5_0_OR_GREATER
-#define SYSTEM_STRING_JOIN_CHAR
-#endif
-
 using System;
 using System.Linq;
 using System.Net.NetworkInformation;
