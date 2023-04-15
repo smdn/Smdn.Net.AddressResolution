@@ -24,7 +24,7 @@ partial class MacAddressResolverTests {
     using var resolver = new MacAddressResolver(
       networkInterface: null,
       addressTable: new StaticAddressTable(new[] { default(AddressTableEntry) } ),
-      networkScanner: new NullNetworkScanner()
+      networkScanner: NetworkScanner.Null
     );
 
     resolver.Dispose();
@@ -64,7 +64,7 @@ partial class MacAddressResolverTests {
     using var resolver = new MacAddressResolver(
       networkInterface: null,
       addressTable: new StaticAddressTable(addressTableEntries),
-      networkScanner: new NullNetworkScanner()
+      networkScanner: NetworkScanner.Null
     );
 
     CollectionAssert.AreEqual(
@@ -85,7 +85,7 @@ partial class MacAddressResolverTests {
     using var resolver = new MacAddressResolver(
       networkInterface: new PseudoNetworkInterface("wlan1", supportsIPv4: true, supportsIPv6: true),
       addressTable: new StaticAddressTable(addressTableEntries),
-      networkScanner: new NullNetworkScanner()
+      networkScanner: NetworkScanner.Null
     );
 
     CollectionAssert.AreEqual(
@@ -106,7 +106,7 @@ partial class MacAddressResolverTests {
     using var resolver = new MacAddressResolver(
       networkInterface: new PseudoNetworkInterface("wlan0", supportsIPv4: true, supportsIPv6: true),
       addressTable: new StaticAddressTable(addressTableEntries),
-      networkScanner: new NullNetworkScanner()
+      networkScanner: NetworkScanner.Null
     );
 
     CollectionAssert.AreEqual(
@@ -131,7 +131,7 @@ partial class MacAddressResolverTests {
     using var resolver = new MacAddressResolver(
       networkInterface: new PseudoNetworkInterface(iface, supportsIPv4: true, supportsIPv6: false),
       addressTable: new StaticAddressTable(addressTableEntries),
-      networkScanner: new NullNetworkScanner()
+      networkScanner: NetworkScanner.Null
     );
 
     CollectionAssert.AreEqual(
@@ -154,7 +154,7 @@ partial class MacAddressResolverTests {
     using var resolver = new MacAddressResolver(
       networkInterface: new PseudoNetworkInterface(iface, supportsIPv4: false, supportsIPv6: true),
       addressTable: new StaticAddressTable(addressTableEntries),
-      networkScanner: new NullNetworkScanner()
+      networkScanner: NetworkScanner.Null
     );
 
     CollectionAssert.AreEqual(
@@ -177,7 +177,7 @@ partial class MacAddressResolverTests {
     using var resolver = new MacAddressResolver(
       networkInterface: new PseudoNetworkInterface(iface, supportsIPv4: true, supportsIPv6: true),
       addressTable: new StaticAddressTable(addressTableEntries),
-      networkScanner: new NullNetworkScanner()
+      networkScanner: NetworkScanner.Null
     );
 
     CollectionAssert.AreEqual(
@@ -198,7 +198,7 @@ partial class MacAddressResolverTests {
     using var resolver = new MacAddressResolver(
       networkInterface: iface,
       addressTable: new StaticAddressTable(Array.Empty<AddressTableEntry>()),
-      networkScanner: new NullNetworkScanner()
+      networkScanner: NetworkScanner.Null
     );
 
     CollectionAssert.IsEmpty(
@@ -218,7 +218,7 @@ partial class MacAddressResolverTests {
     using var resolver = new MacAddressResolver(
       networkInterface: null,
       addressTable: new StaticAddressTable(addressTableEntries),
-      networkScanner: new NullNetworkScanner()
+      networkScanner: NetworkScanner.Null
     );
     using var cts = new CancellationTokenSource();
     Predicate<AddressTableEntry> predicate = e => {
@@ -308,7 +308,7 @@ partial class MacAddressResolverTests {
     using var resolver = new MacAddressResolver(
       networkInterface: iface,
       addressTable: new StaticAddressTable(entries),
-      networkScanner: new NullNetworkScanner()
+      networkScanner: NetworkScanner.Null
     );
 
     CollectionAssert.AreEqual(
@@ -324,7 +324,7 @@ partial class MacAddressResolverTests {
     using var resolver = new MacAddressResolver(
       networkInterface: null,
       addressTable: new StaticAddressTable(new[] { default(AddressTableEntry) } ),
-      networkScanner: new NullNetworkScanner()
+      networkScanner: NetworkScanner.Null
     );
 
     Assert.Throws<ArgumentNullException>(() => resolver.EnumerateAddressTableEntriesAsync(predicate: null!));

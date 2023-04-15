@@ -113,7 +113,7 @@ partial class MacAddressResolverTests {
     var performedNetworkScan = false;
 
     using var resolver = new MacAddressResolver(
-      addressTable: new NullAddressTable(),
+      addressTable: AddressTable.Null,
       networkScanner: new InterceptingNetworkScanner(() => performedNetworkScan = true)
     ) {
       NetworkScanMinInterval = TimeSpan.Zero,
@@ -147,7 +147,7 @@ partial class MacAddressResolverTests {
     var performedNetworkScan = false;
 
     using var resolver = new MacAddressResolver(
-      addressTable: new NullAddressTable(),
+      addressTable: AddressTable.Null,
       networkScanner: new InterceptingNetworkScanner(() => performedNetworkScan = true)
     ) {
       NetworkScanMinInterval = TimeSpan.Zero,
@@ -181,7 +181,7 @@ partial class MacAddressResolverTests {
     var performedNetworkScan = false;
 
     using var resolver = new MacAddressResolver(
-      addressTable: new NullAddressTable(),
+      addressTable: AddressTable.Null,
       networkScanner: new InterceptingNetworkScanner(() => performedNetworkScan = true)
     ) {
       NetworkScanMinInterval = TimeSpan.Zero,
@@ -203,7 +203,7 @@ partial class MacAddressResolverTests {
     var performedNetworkScan = false;
 
     using var resolver = new MacAddressResolver(
-      addressTable: new NullAddressTable(),
+      addressTable: AddressTable.Null,
       networkScanner: new InterceptingNetworkScanner(() => performedNetworkScan = true)
     ) {
       NetworkScanMinInterval = TimeSpan.Zero,
@@ -224,7 +224,7 @@ partial class MacAddressResolverTests {
   {
     using var cts = new CancellationTokenSource();
     using var resolver = new MacAddressResolver(
-      addressTable: new NullAddressTable(),
+      addressTable: AddressTable.Null,
       networkScanner: new InterceptingNetworkScanner(() => cts.Cancel())
     ) {
       NetworkScanMinInterval = TimeSpan.Zero,
@@ -243,7 +243,7 @@ partial class MacAddressResolverTests {
   {
     using var cts = new CancellationTokenSource();
     using var resolver = new MacAddressResolver(
-      addressTable: new NullAddressTable(),
+      addressTable: AddressTable.Null,
       networkScanner: new InterceptingNetworkScanner(() => cts.Cancel())
     ) {
       NetworkScanMinInterval = TimeSpan.Zero,
@@ -264,7 +264,7 @@ partial class MacAddressResolverTests {
     => new(
       networkInterface: networkInterfaceId is null ? null : new PseudoNetworkInterface(networkInterfaceId, true, true),
       addressTable: addressTable,
-      networkScanner: new NullNetworkScanner()
+      networkScanner: NetworkScanner.Null
     ) {
       NetworkScanInterval = Timeout.InfiniteTimeSpan,
     };
@@ -272,7 +272,7 @@ partial class MacAddressResolverTests {
   private static System.Collections.IEnumerable YieldTestCases_ResolveAsync_NoCandidatesEnumerated()
   {
     yield return new object[] {
-      new NullAddressTable()
+      AddressTable.Null
     };
 
     yield return new object[] {
