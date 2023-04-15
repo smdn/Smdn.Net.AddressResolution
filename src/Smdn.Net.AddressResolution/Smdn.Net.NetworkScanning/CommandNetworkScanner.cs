@@ -124,7 +124,7 @@ public abstract class CommandNetworkScanner : INetworkScanner {
    * instance members
    */
   private readonly ILogger? logger;
-  private readonly IProcessFactory processFactory;
+  private IProcessFactory processFactory; // if null, it indicates a 'disposed' state.
 
   protected CommandNetworkScanner(
     ILogger? logger,
@@ -143,7 +143,16 @@ public abstract class CommandNetworkScanner : INetworkScanner {
 
   protected virtual void Dispose(bool disposing)
   {
-    // nothing to do in this class
+    if (!disposing)
+      return;
+
+    processFactory = null!;
+  }
+
+  protected void ThrowIfDisposed()
+  {
+    if (processFactory is null)
+      throw new ObjectDisposedException(GetType().FullName);
   }
 
   /// <inheritdoc cref="GetCommandLineArguments(IEnumerable{IPAddress}, out string, out string)" />
@@ -186,6 +195,8 @@ public abstract class CommandNetworkScanner : INetworkScanner {
 #endif
     }
 
+    ThrowIfDisposed();
+
     if (GetCommandLineArguments(out var executable, out var args)) {
       return RunCommandAsync(
         commandFileName: executable,
@@ -211,6 +222,8 @@ public abstract class CommandNetworkScanner : INetworkScanner {
       return ValueTaskShim.FromCanceled(cancellationToken);
 #endif
     }
+
+    ThrowIfDisposed();
 
     if (GetCommandLineArguments(addresses, out var executable, out var args)) {
       return RunCommandAsync(
