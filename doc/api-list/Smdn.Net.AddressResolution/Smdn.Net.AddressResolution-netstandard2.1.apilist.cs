@@ -1,7 +1,7 @@
-// Smdn.Net.AddressResolution.dll (Smdn.Net.AddressResolution-1.0.0-rc1)
+// Smdn.Net.AddressResolution.dll (Smdn.Net.AddressResolution-1.0.0-rc2)
 //   Name: Smdn.Net.AddressResolution
 //   AssemblyVersion: 1.0.0.0
-//   InformationalVersion: 1.0.0-rc1+54f2767c7798db11d76ae3836009b55f701af69f
+//   InformationalVersion: 1.0.0-rc2+3ee5c5d35420506d56f36dcd2bf148727d37aa11
 //   TargetFramework: .NETStandard,Version=v2.1
 //   Configuration: Release
 //   Referenced assemblies:
@@ -55,9 +55,9 @@ namespace Smdn.Net.AddressResolution {
   }
 
   public class MacAddressResolver : MacAddressResolverBase {
-    protected MacAddressResolver(IAddressTable addressTable, bool shouldDisposeAddressTable, INetworkScanner? networkScanner, bool shouldDisposeNetworkScanner, NetworkInterface? networkInterface, int maxParallelCountForRefreshInvalidatedCache, ILogger? logger) {}
+    protected MacAddressResolver(IAddressTable addressTable, bool shouldDisposeAddressTable, INetworkScanner? networkScanner, bool shouldDisposeNetworkScanner, NetworkInterface? networkInterface, int maxParallelCountForRefreshInvalidatedAddresses, ILogger? logger) {}
     public MacAddressResolver() {}
-    public MacAddressResolver(IAddressTable? addressTable, INetworkScanner? networkScanner, bool shouldDisposeAddressTable = false, bool shouldDisposeNetworkScanner = false, NetworkInterface? networkInterface = null, int maxParallelCountForRefreshInvalidatedCache = 3, IServiceProvider? serviceProvider = null) {}
+    public MacAddressResolver(IAddressTable? addressTable, INetworkScanner? networkScanner, bool shouldDisposeAddressTable = false, bool shouldDisposeNetworkScanner = false, NetworkInterface? networkInterface = null, int maxParallelCountForRefreshInvalidatedAddresses = 3, IServiceProvider? serviceProvider = null) {}
     public MacAddressResolver(IPNetworkProfile? networkProfile, IServiceProvider? serviceProvider = null) {}
 
     public bool CanPerformNetworkScan { get; }
@@ -70,8 +70,8 @@ namespace Smdn.Net.AddressResolution {
     public IAsyncEnumerable<AddressTableEntry> EnumerateAddressTableEntriesAsync(Predicate<AddressTableEntry> predicate, CancellationToken cancellationToken = default) {}
     protected override void InvalidateCore(IPAddress ipAddress) {}
     protected override void InvalidateCore(PhysicalAddress macAddress) {}
-    protected override ValueTask RefreshCacheAsyncCore(CancellationToken cancellationToken = default) {}
-    protected override ValueTask RefreshInvalidatedCacheAsyncCore(CancellationToken cancellationToken = default) {}
+    protected override ValueTask RefreshAddressTableAsyncCore(CancellationToken cancellationToken = default) {}
+    protected override ValueTask RefreshInvalidatedAddressesAsyncCore(CancellationToken cancellationToken = default) {}
     protected override async ValueTask<PhysicalAddress?> ResolveIPAddressToMacAddressAsyncCore(IPAddress ipAddress, CancellationToken cancellationToken) {}
     protected override async ValueTask<IPAddress?> ResolveMacAddressToIPAddressAsyncCore(PhysicalAddress macAddress, CancellationToken cancellationToken) {}
     protected virtual async ValueTask<AddressTableEntry> SelectAddressTableEntryAsync(Predicate<AddressTableEntry> predicate, CancellationToken cancellationToken) {}
@@ -96,10 +96,10 @@ namespace Smdn.Net.AddressResolution {
     public void Invalidate(PhysicalAddress macAddress) {}
     protected abstract void InvalidateCore(IPAddress ipAddress);
     protected abstract void InvalidateCore(PhysicalAddress macAddress);
-    public ValueTask RefreshCacheAsync(CancellationToken cancellationToken = default) {}
-    protected virtual ValueTask RefreshCacheAsyncCore(CancellationToken cancellationToken) {}
-    public ValueTask RefreshInvalidatedCacheAsync(CancellationToken cancellationToken = default) {}
-    protected virtual ValueTask RefreshInvalidatedCacheAsyncCore(CancellationToken cancellationToken) {}
+    public ValueTask RefreshAddressTableAsync(CancellationToken cancellationToken = default) {}
+    protected virtual ValueTask RefreshAddressTableAsyncCore(CancellationToken cancellationToken) {}
+    public ValueTask RefreshInvalidatedAddressesAsync(CancellationToken cancellationToken = default) {}
+    protected virtual ValueTask RefreshInvalidatedAddressesAsyncCore(CancellationToken cancellationToken) {}
     public ValueTask<PhysicalAddress?> ResolveIPAddressToMacAddressAsync(IPAddress ipAddress, CancellationToken cancellationToken = default) {}
     protected abstract ValueTask<PhysicalAddress?> ResolveIPAddressToMacAddressAsyncCore(IPAddress ipAddress, CancellationToken cancellationToken);
     public ValueTask<IPAddress?> ResolveMacAddressToIPAddressAsync(PhysicalAddress macAddress, CancellationToken cancellationToken = default) {}
@@ -126,24 +126,38 @@ namespace Smdn.Net.AddressTables {
     Stale = 3,
   }
 
-  public sealed class IpHlpApiAddressTable : IAddressTable {
+  public abstract class AddressTable : IAddressTable {
+    public static IAddressTable Null { get; }
+
+    public static IAddressTable Create(IServiceProvider? serviceProvider = null) {}
+
+    protected AddressTable(ILogger? logger = null) {}
+
+    protected ILogger? Logger { get; }
+
+    protected virtual void Dispose(bool disposing) {}
+    public void Dispose() {}
+    public IAsyncEnumerable<AddressTableEntry> EnumerateEntriesAsync(CancellationToken cancellationToken = default) {}
+    protected abstract IAsyncEnumerable<AddressTableEntry> EnumerateEntriesAsyncCore(CancellationToken cancellationToken);
+    protected void ThrowIfDisposed() {}
+  }
+
+  public sealed class IpHlpApiAddressTable : AddressTable {
     public static bool IsSupported { get; }
 
     public IpHlpApiAddressTable(IServiceProvider? serviceProvider = null) {}
 
-    [AsyncIteratorStateMachine(typeof(IpHlpApiAddressTable.<EnumerateEntriesAsync>d__6))]
-    public IAsyncEnumerable<AddressTableEntry> EnumerateEntriesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default) {}
-    void IDisposable.Dispose() {}
+    [AsyncIteratorStateMachine(typeof(IpHlpApiAddressTable.<EnumerateEntriesAsyncCore>d__4))]
+    protected override IAsyncEnumerable<AddressTableEntry> EnumerateEntriesAsyncCore([EnumeratorCancellation] CancellationToken cancellationToken) {}
   }
 
-  public sealed class ProcfsArpAddressTable : IAddressTable {
+  public sealed class ProcfsArpAddressTable : AddressTable {
     public static bool IsSupported { get; }
 
     public ProcfsArpAddressTable(IServiceProvider? serviceProvider = null) {}
 
-    [AsyncIteratorStateMachine(typeof(ProcfsArpAddressTable.<EnumerateEntriesAsync>d__7))]
-    public IAsyncEnumerable<AddressTableEntry> EnumerateEntriesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default) {}
-    void IDisposable.Dispose() {}
+    [AsyncIteratorStateMachine(typeof(ProcfsArpAddressTable.<EnumerateEntriesAsyncCore>d__5))]
+    protected override IAsyncEnumerable<AddressTableEntry> EnumerateEntriesAsyncCore([EnumeratorCancellation] CancellationToken cancellationToken) {}
   }
 
   public readonly struct AddressTableEntry :
@@ -183,7 +197,7 @@ namespace Smdn.Net.NetworkScanning {
   public sealed class ArpScanCommandNetworkScanner : CommandNetworkScanner {
     public static bool IsSupported { get; }
 
-    public ArpScanCommandNetworkScanner(IPNetworkProfile? networkProfile, IServiceProvider? serviceProvider) {}
+    public ArpScanCommandNetworkScanner(IPNetworkProfile? networkProfile, IServiceProvider? serviceProvider = null) {}
 
     protected override bool GetCommandLineArguments(IEnumerable<IPAddress> addressesToScan, out string executable, out string arguments) {}
     protected override bool GetCommandLineArguments(out string executable, out string arguments) {}
@@ -215,31 +229,51 @@ namespace Smdn.Net.NetworkScanning {
     protected abstract bool GetCommandLineArguments(out string executable, out string? arguments);
     public virtual ValueTask ScanAsync(CancellationToken cancellationToken = default) {}
     public virtual ValueTask ScanAsync(IEnumerable<IPAddress> addresses, CancellationToken cancellationToken = default) {}
+    protected void ThrowIfDisposed() {}
   }
 
-  public sealed class IpHlpApiNetworkScanner : INetworkScanner {
+  public sealed class IpHlpApiNetworkScanner : NetworkScanner {
+    public static bool IsSupported { get; }
+
     public IpHlpApiNetworkScanner(IPNetworkProfile networkProfile, IServiceProvider? serviceProvider = null) {}
 
-    public ValueTask ScanAsync(CancellationToken cancellationToken = default) {}
-    public async ValueTask ScanAsync(IEnumerable<IPAddress> addresses, CancellationToken cancellationToken = default) {}
-    void IDisposable.Dispose() {}
+    protected override async ValueTask ScanAsyncCore(IPAddress address, CancellationToken cancellationToken = default) {}
+  }
+
+  public abstract class NetworkScanner : INetworkScanner {
+    public static INetworkScanner Null { get; }
+
+    public static INetworkScanner Create(IPNetworkProfile? networkProfile, IServiceProvider? serviceProvider = null) {}
+
+    protected NetworkScanner(IPNetworkProfile networkProfile, ILogger? logger = null) {}
+
+    protected ILogger? Logger { get; }
+    protected IPNetworkProfile NetworkProfile { get; }
+
+    protected virtual void Dispose(bool disposing) {}
+    public void Dispose() {}
+    public virtual ValueTask ScanAsync(CancellationToken cancellationToken = default) {}
+    public virtual ValueTask ScanAsync(IEnumerable<IPAddress> addresses, CancellationToken cancellationToken = default) {}
+    protected virtual ValueTask ScanAsyncCore(IPAddress address, CancellationToken cancellationToken) {}
+    protected void ThrowIfDisposed() {}
   }
 
   public sealed class NmapCommandNetworkScanner : CommandNetworkScanner {
     public static bool IsSupported { get; }
 
-    public NmapCommandNetworkScanner(IPNetworkProfile networkProfile, IServiceProvider? serviceProvider) {}
+    public NmapCommandNetworkScanner(IPNetworkProfile networkProfile, IServiceProvider? serviceProvider = null) {}
 
     protected override bool GetCommandLineArguments(IEnumerable<IPAddress> addressesToScan, out string executable, out string arguments) {}
     protected override bool GetCommandLineArguments(out string executable, out string arguments) {}
   }
 
-  public sealed class PingNetworkScanner : INetworkScanner {
+  public sealed class PingNetworkScanner : NetworkScanner {
+    public static bool IsSupported { get; }
+
     public PingNetworkScanner(IPNetworkProfile networkProfile, IServiceProvider? serviceProvider = null) {}
 
-    public void Dispose() {}
-    public ValueTask ScanAsync(CancellationToken cancellationToken = default) {}
-    public ValueTask ScanAsync(IEnumerable<IPAddress> addresses, CancellationToken cancellationToken = default) {}
+    protected override void Dispose(bool disposing) {}
+    protected override async ValueTask ScanAsyncCore(IPAddress address, CancellationToken cancellationToken = default) {}
   }
 }
 // API list generated by Smdn.Reflection.ReverseGenerating.ListApi.MSBuild.Tasks v1.2.1.0.
