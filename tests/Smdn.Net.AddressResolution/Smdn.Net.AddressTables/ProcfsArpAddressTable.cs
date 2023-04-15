@@ -1,5 +1,8 @@
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
+using System.Net;
+using System.Runtime.InteropServices;
+
 using NUnit.Framework;
 
 namespace Smdn.Net.AddressTables;
@@ -13,6 +16,11 @@ public class ProcfsArpAddressTableTests {
   [Test]
   public void EnumerateEntriesAsync()
   {
+    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+      return;
+    if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+      return;
+
     if (!ProcfsArpAddressTable.IsSupported) {
       Assert.Ignore($"{nameof(ProcfsArpAddressTable)} is not supported on this platform.");
       return;
@@ -24,6 +32,11 @@ public class ProcfsArpAddressTableTests {
     Assert.DoesNotThrowAsync(async () => {
       await foreach (var entry in table.EnumerateEntriesAsync()) {
         enumerated = true;
+
+        Assert.AreNotEqual(IPAddress.Any, entry.IPAddress, nameof(entry.IPAddress));
+
+        if (!entry.IsPermanent)
+          Assert.AreNotEqual(AddressTableEntryState.None, entry.State, nameof(entry.State));
       }
     });
 
