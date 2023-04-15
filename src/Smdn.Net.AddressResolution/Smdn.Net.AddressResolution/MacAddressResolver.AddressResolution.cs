@@ -23,7 +23,7 @@ partial class MacAddressResolver {
     if (CanPerformNetworkScan && ShouldPerformFullScanBeforeResolution) {
       cancellationToken.ThrowIfCancellationRequested();
 
-      await RefreshCacheAsyncCore(cancellationToken: cancellationToken).ConfigureAwait(false);
+      await RefreshAddressTableAsyncCore(cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     cancellationToken.ThrowIfCancellationRequested();
@@ -58,7 +58,7 @@ partial class MacAddressResolver {
     if (CanPerformNetworkScan && ShouldPerformFullScanBeforeResolution) {
       cancellationToken.ThrowIfCancellationRequested();
 
-      await RefreshCacheAsyncCore(cancellationToken: cancellationToken).ConfigureAwait(false);
+      await RefreshAddressTableAsyncCore(cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     cancellationToken.ThrowIfCancellationRequested();

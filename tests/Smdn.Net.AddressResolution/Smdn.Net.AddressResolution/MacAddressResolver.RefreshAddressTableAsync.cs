@@ -14,7 +14,7 @@ namespace Smdn.Net.AddressResolution;
 
 partial class MacAddressResolverTests {
   [Test]
-  public void RefreshCacheAsync_NoNetworkScannerProvided()
+  public void RefreshAddressTableAsync_NoNetworkScannerProvided()
   {
     var resolver = new MacAddressResolver(
       addressTable: new PseudoAddressTable(),
@@ -22,11 +22,11 @@ partial class MacAddressResolverTests {
     );
 
     Assert.IsFalse(resolver.CanPerformNetworkScan, nameof(resolver.CanPerformNetworkScan));
-    Assert.ThrowsAsync<InvalidOperationException>(async () => await resolver.RefreshCacheAsync());
+    Assert.ThrowsAsync<InvalidOperationException>(async () => await resolver.RefreshAddressTableAsync());
   }
 
   [Test]
-  public void RefreshCacheAsync_AddressInvalidated()
+  public void RefreshAddressTableAsync_AddressInvalidated()
   {
     var scanner = new PseudoNetworkScanner();
 
@@ -40,7 +40,7 @@ partial class MacAddressResolverTests {
 
     Assert.IsTrue(resolver.HasInvalidated, $"{nameof(resolver.HasInvalidated)} brefore refresh");
 
-    Assert.DoesNotThrowAsync(async () => await resolver.RefreshCacheAsync());
+    Assert.DoesNotThrowAsync(async () => await resolver.RefreshAddressTableAsync());
 
     Assert.IsFalse(resolver.HasInvalidated, $"{nameof(resolver.HasInvalidated)} after refresh");
 
@@ -53,7 +53,7 @@ partial class MacAddressResolverTests {
   }
 
   [Test]
-  public void RefreshCacheAsync_NothingInvalidated()
+  public void RefreshAddressTableAsync_NothingInvalidated()
   {
     var scanner = new PseudoNetworkScanner();
 
@@ -64,7 +64,7 @@ partial class MacAddressResolverTests {
 
     Assert.IsFalse(resolver.HasInvalidated, $"{nameof(resolver.HasInvalidated)} brefore refresh");
 
-    Assert.DoesNotThrowAsync(async () => await resolver.RefreshCacheAsync());
+    Assert.DoesNotThrowAsync(async () => await resolver.RefreshAddressTableAsync());
 
     Assert.IsFalse(resolver.HasInvalidated, $"{nameof(resolver.HasInvalidated)} after refresh");
 
@@ -76,15 +76,15 @@ partial class MacAddressResolverTests {
     );
   }
 
-  private static System.Collections.IEnumerable YieldTestCases_RefreshCacheAsync_NetworkScanIntervalMustNotAffect()
+  private static System.Collections.IEnumerable YieldTestCases_RefreshAddressTableAsync_NetworkScanIntervalMustNotAffect()
   {
     yield return new object[] { TimeSpan.FromTicks(1) };
     yield return new object[] { TimeSpan.MaxValue };
     yield return new object[] { Timeout.InfiniteTimeSpan };
   }
 
-  [TestCaseSource(nameof(YieldTestCases_RefreshCacheAsync_NetworkScanIntervalMustNotAffect))]
-  public void RefreshCacheAsync_NetworkScanIntervalMustNotAffect(TimeSpan networkScanInterval)
+  [TestCaseSource(nameof(YieldTestCases_RefreshAddressTableAsync_NetworkScanIntervalMustNotAffect))]
+  public void RefreshAddressTableAsync_NetworkScanIntervalMustNotAffect(TimeSpan networkScanInterval)
   {
     var scanner = new PseudoNetworkScanner();
 
@@ -96,19 +96,19 @@ partial class MacAddressResolverTests {
       NetworkScanMinInterval = TimeSpan.Zero
     };
 
-    Assert.DoesNotThrowAsync(async () => await resolver.RefreshCacheAsync(), $"{nameof(resolver.RefreshCacheAsync)} #1");
+    Assert.DoesNotThrowAsync(async () => await resolver.RefreshAddressTableAsync(), $"{nameof(resolver.RefreshAddressTableAsync)} #1");
 
     Assert.IsTrue(scanner.FullScanRequested, $"{nameof(scanner.FullScanRequested)} #1");
 
     scanner.Reset();
 
-    Assert.DoesNotThrowAsync(async () => await resolver.RefreshCacheAsync(), $"{nameof(resolver.RefreshCacheAsync)} #2");
+    Assert.DoesNotThrowAsync(async () => await resolver.RefreshAddressTableAsync(), $"{nameof(resolver.RefreshAddressTableAsync)} #2");
 
     Assert.IsTrue(scanner.FullScanRequested, $"{nameof(scanner.FullScanRequested)} #2");
   }
 
   [Test]
-  public async Task RefreshCacheAsync_MustPerformInsideOfMutexCriticalSection()
+  public async Task RefreshAddressTableAsync_MustPerformInsideOfMutexCriticalSection()
   {
     const int numberOfParallelism = 20;
 
@@ -131,7 +131,7 @@ partial class MacAddressResolverTests {
       },
       body: async (i, cancellationToken) => {
         await Task.Delay(TimeSpan.FromMilliseconds(10 * i), cancellationToken);
-        await resolver.RefreshCacheAsync(cancellationToken);
+        await resolver.RefreshAddressTableAsync(cancellationToken);
       }
     );
 

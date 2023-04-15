@@ -49,7 +49,7 @@ public partial class MacAddressResolver : MacAddressResolverBase {
   /// value of <see cref="CanPerformNetworkScan"/> will be <see langword="false"/> and no network scan will be performed.
   /// </para>
   /// <para>
-  /// If <see cref="CanPerformNetworkScan"/> is <see langword="false"/>, calling <see cref="RefreshCacheAsync(CancellationToken)" /> or
+  /// If <see cref="CanPerformNetworkScan"/> is <see langword="false"/>, calling <see cref="RefreshAddressTableAsync(CancellationToken)" /> or
   /// <see cref="RefreshInvalidatedCacheAsync(CancellationToken)" /> throws <see cref="InvalidOperationException"/>.
   /// Also, automatic network scanning by calling of <see cref="ResolveIPAddressToMacAddressAsync(IPAddress, CancellationToken)" /> or
   /// <see cref="ResolveMacAddressToIPAddressAsync(PhysicalAddress, CancellationToken)" /> will not performed.
@@ -57,7 +57,7 @@ public partial class MacAddressResolver : MacAddressResolverBase {
   /// </remarks>
   /// <seealso cref="NetworkScanInterval"/>
   /// <seealso cref="NetworkScanMinInterval"/>
-  /// <seealso cref="RefreshCacheAsync(CancellationToken)"/>
+  /// <seealso cref="RefreshAddressTableAsync(CancellationToken)"/>
   /// <seealso cref="RefreshInvalidatedCacheAsync(CancellationToken)"/>
   public bool CanPerformNetworkScan => networkScanner is not null;
 
@@ -108,7 +108,7 @@ public partial class MacAddressResolver : MacAddressResolverBase {
   /// <para>
   /// The network scan will be performed automatically when the <see cref="ResolveIPAddressToMacAddressAsync(IPAddress, CancellationToken)" /> or
   /// <see cref="ResolveMacAddressToIPAddressAsync(PhysicalAddress, CancellationToken)" /> is called, or explicitly performed by calling the
-  /// <see cref="RefreshCacheAsync(CancellationToken)" />.
+  /// <see cref="RefreshAddressTableAsync(CancellationToken)" />.
   /// </para>
   /// <para>
   /// If <see cref="Timeout.InfiniteTimeSpan" /> is specified, the instance does not perform the network scan.
@@ -117,7 +117,7 @@ public partial class MacAddressResolver : MacAddressResolverBase {
   /// </remarks>
   /// <seealso cref="CanPerformNetworkScan"/>
   /// <seealso cref="NetworkScanInterval"/>
-  /// <seealso cref="RefreshCacheAsync(CancellationToken)" />
+  /// <seealso cref="RefreshAddressTableAsync(CancellationToken)" />
   /// <seealso cref="ResolveIPAddressToMacAddressAsync(IPAddress, CancellationToken)" />
   /// <seealso cref="ResolveMacAddressToIPAddressAsync(PhysicalAddress, CancellationToken)" />
   public TimeSpan NetworkScanMinInterval {

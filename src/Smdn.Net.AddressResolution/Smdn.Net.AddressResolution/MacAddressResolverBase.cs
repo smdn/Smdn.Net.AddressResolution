@@ -298,7 +298,7 @@ public abstract class MacAddressResolverBase :
   /// </remarks>
   /// <param name="cancellationToken">The <see cref="CancellationToken" /> to monitor for cancellation requests. The default value is <see langword="default" />.</param>
   /// <exception cref="ObjectDisposedException">The instance has been disposed.</exception>
-  public ValueTask RefreshCacheAsync(
+  public ValueTask RefreshAddressTableAsync(
     CancellationToken cancellationToken = default
   )
   {
@@ -311,10 +311,10 @@ public abstract class MacAddressResolverBase :
 
     ThrowIfDisposed();
 
-    return RefreshCacheAsyncCore(cancellationToken);
+    return RefreshAddressTableAsyncCore(cancellationToken);
   }
 
-  protected virtual ValueTask RefreshCacheAsyncCore(
+  protected virtual ValueTask RefreshAddressTableAsyncCore(
     CancellationToken cancellationToken
   )
     =>

@@ -20,7 +20,7 @@ partial class MacAddressResolver {
   protected override void InvalidateCore(PhysicalAddress macAddress)
     => invalidatedMacAddressSet.Add(macAddress);
 
-  protected override ValueTask RefreshCacheAsyncCore(
+  protected override ValueTask RefreshAddressTableAsyncCore(
     CancellationToken cancellationToken = default
   )
   {

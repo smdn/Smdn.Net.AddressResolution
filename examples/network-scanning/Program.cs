@@ -73,7 +73,7 @@ resolver.NetworkScanInterval = TimeSpan.FromMinutes(10);
 // skip scanning if it's been less than 30 seconds since the latest scan.
 resolver.NetworkScanMinInterval = TimeSpan.FromSeconds(30);
 
-// RefreshCacheAsync can be used to scan for the entire address range.
+// RefreshAddressTableAsync can be used to scan for the entire address range.
 // This can be used, for example, when you want to update the address
 // table at startup time or before performing address resolution.
-await resolver.RefreshCacheAsync();
+await resolver.RefreshAddressTableAsync();

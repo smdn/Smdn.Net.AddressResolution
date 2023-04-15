@@ -47,8 +47,8 @@ public partial class NullMacAddressResolverTests {
     );
 
     Assert.DoesNotThrowAsync(
-      async () => await resolver.RefreshCacheAsync(),
-      nameof(resolver.RefreshCacheAsync)
+      async () => await resolver.RefreshAddressTableAsync(),
+      nameof(resolver.RefreshAddressTableAsync)
     );
     Assert.DoesNotThrowAsync(
       async () => await resolver.RefreshInvalidatedCacheAsync(),
@@ -96,12 +96,12 @@ public partial class NullMacAddressResolverTests {
   }
 
   [Test]
-  public void RefreshCacheAsync()
+  public void RefreshAddressTableAsync()
   {
     using var resolver = MacAddressResolver.Null;
 
     Assert.DoesNotThrowAsync(
-      async () => await resolver.RefreshCacheAsync()
+      async () => await resolver.RefreshAddressTableAsync()
     );
   }
 

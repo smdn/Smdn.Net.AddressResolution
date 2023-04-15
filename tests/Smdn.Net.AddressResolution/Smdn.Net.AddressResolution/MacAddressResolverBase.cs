@@ -76,12 +76,12 @@ public class MacAddressResolverBaseTests {
     );
 
     Assert.Throws<ObjectDisposedException>(
-      () => resolver.RefreshCacheAsync(),
-      nameof(resolver.RefreshCacheAsync)
+      () => resolver.RefreshAddressTableAsync(),
+      nameof(resolver.RefreshAddressTableAsync)
     );
     Assert.ThrowsAsync<ObjectDisposedException>(
-      async () => await resolver.RefreshCacheAsync(),
-      nameof(resolver.RefreshCacheAsync)
+      async () => await resolver.RefreshAddressTableAsync(),
+      nameof(resolver.RefreshAddressTableAsync)
     );
 
     Assert.Throws<ObjectDisposedException>(
@@ -226,17 +226,17 @@ public class MacAddressResolverBaseTests {
   }
 
   [Test]
-  public void RefreshCacheAsync()
+  public void RefreshAddressTableAsync()
   {
     using var resolver = new ConcreteMacAddressResolver();
 
     Assert.DoesNotThrowAsync(
-      async () => await resolver.RefreshCacheAsync()
+      async () => await resolver.RefreshAddressTableAsync()
     );
   }
 
   [Test]
-  public void RefreshCacheAsync_CancellationRequested()
+  public void RefreshAddressTableAsync_CancellationRequested()
   {
     using var resolver = new ConcreteMacAddressResolver();
     using var cts = new CancellationTokenSource();
@@ -244,7 +244,7 @@ public class MacAddressResolverBaseTests {
     cts.Cancel();
 
     Assert.ThrowsAsync<TaskCanceledException>(
-      async () => await resolver.RefreshCacheAsync(cancellationToken: cts.Token)
+      async () => await resolver.RefreshAddressTableAsync(cancellationToken: cts.Token)
     );
   }
 
