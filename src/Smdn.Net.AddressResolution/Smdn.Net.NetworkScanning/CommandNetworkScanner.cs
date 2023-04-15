@@ -215,6 +215,9 @@ public abstract class CommandNetworkScanner : INetworkScanner {
     CancellationToken cancellationToken = default
   )
   {
+    if (addresses is null)
+      throw new ArgumentNullException(nameof(addresses));
+
     if (cancellationToken.IsCancellationRequested) {
 #if SYSTEM_THREADING_TASKS_VALUETASK_FROMCANCELED
       return ValueTask.FromCanceled(cancellationToken);
