@@ -55,7 +55,7 @@ public class AddressTableTests {
   }
 
   [Test]
-  public void ScanAsync_CancellationRequested()
+  public void EnumerateEntriesAsync_CancellationRequested()
   {
     using var table = new ConcreteAddressTable();
     using var cts = new CancellationTokenSource();
