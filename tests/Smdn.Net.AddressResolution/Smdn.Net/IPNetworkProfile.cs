@@ -1,8 +1,6 @@
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
-#if NET8_0_OR_GREATER
-// #define SYSTEM_NET_IPNETWORK
-#endif
+#undef SYSTEM_NET_IPNETWORK // enable this when .NET 8 GA is released
 
 using System;
 using System.Collections.Generic;
