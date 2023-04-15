@@ -50,7 +50,7 @@ public partial class MacAddressResolver : MacAddressResolverBase {
   /// </para>
   /// <para>
   /// If <see cref="CanPerformNetworkScan"/> is <see langword="false"/>, calling <see cref="RefreshAddressTableAsync(CancellationToken)" /> or
-  /// <see cref="RefreshInvalidatedCacheAsync(CancellationToken)" /> throws <see cref="InvalidOperationException"/>.
+  /// <see cref="RefreshInvalidatedAddressesAsync(CancellationToken)" /> throws <see cref="InvalidOperationException"/>.
   /// Also, automatic network scanning by calling of <see cref="ResolveIPAddressToMacAddressAsync(IPAddress, CancellationToken)" /> or
   /// <see cref="ResolveMacAddressToIPAddressAsync(PhysicalAddress, CancellationToken)" /> will not performed.
   /// </para>
@@ -58,7 +58,7 @@ public partial class MacAddressResolver : MacAddressResolverBase {
   /// <seealso cref="NetworkScanInterval"/>
   /// <seealso cref="NetworkScanMinInterval"/>
   /// <seealso cref="RefreshAddressTableAsync(CancellationToken)"/>
-  /// <seealso cref="RefreshInvalidatedCacheAsync(CancellationToken)"/>
+  /// <seealso cref="RefreshInvalidatedAddressesAsync(CancellationToken)"/>
   public bool CanPerformNetworkScan => networkScanner is not null;
 
   private static Exception CreateCanNotPerformNetworkScanException()
@@ -158,7 +158,7 @@ public partial class MacAddressResolver : MacAddressResolverBase {
   private SemaphoreSlim fullScanMutex = new(initialCount: 1, maxCount: 1);
 
   // semaphore for address resolution (a.k.a partial scan)
-  private const int DefaultParallelCountForRefreshInvalidatedCache = 3;
+  private const int DefaultParallelCountForRefreshInvalidatedAddresses = 3;
   private SemaphoreSlim partialScanSemaphore;
 
   /// <summary>
@@ -190,7 +190,7 @@ public partial class MacAddressResolver : MacAddressResolverBase {
       addressTable: GetOrCreateAddressTableImplementation(networkProfile, serviceProvider),
       networkScanner: GetOrCreateNetworkScannerImplementation(networkProfile, serviceProvider),
       networkInterface: networkProfile?.NetworkInterface,
-      maxParallelCountForRefreshInvalidatedCache: DefaultParallelCountForRefreshInvalidatedCache,
+      maxParallelCountForRefreshInvalidatedAddresses: DefaultParallelCountForRefreshInvalidatedAddresses,
       logger: CreateLogger(serviceProvider)
     )
   {
@@ -246,7 +246,7 @@ public partial class MacAddressResolver : MacAddressResolverBase {
   ///   A <see cref="NetworkInterface"/> on which the entry should be referenced from the <see cref="IAddressTable"/>.
   ///   If <see langword="null" />, all entries that can be referenced from the <see cref="IAddressTable"/> are used to address resolution.
   /// </param>
-  /// <param name="maxParallelCountForRefreshInvalidatedCache">
+  /// <param name="maxParallelCountForRefreshInvalidatedAddresses">
   ///   A value that specifies the maximum number of parallel executions allowed when <paramref name="addressTable"/> updates the invalidated addresses.
   /// </param>
   /// <param name="serviceProvider">
@@ -258,7 +258,7 @@ public partial class MacAddressResolver : MacAddressResolverBase {
   ///   <para>Both <paramref name="serviceProvider"/> and <paramref name="addressTable"/> are <see langword="null" />.</para>
   /// </exception>
   /// <exception cref="ArgumentOutOfRangeException">
-  ///   <paramref name="maxParallelCountForRefreshInvalidatedCache"/> is zero or negative number.
+  ///   <paramref name="maxParallelCountForRefreshInvalidatedAddresses"/> is zero or negative number.
   /// </exception>
   /// <exception cref="InvalidOperationException">
   ///   <para><paramref name="addressTable"/> is <see langword="null" /> and cannot retrieve <see cref="IAddressTable"/> from <paramref name="serviceProvider"/>.</para>
@@ -269,7 +269,7 @@ public partial class MacAddressResolver : MacAddressResolverBase {
     bool shouldDisposeAddressTable = false,
     bool shouldDisposeNetworkScanner = false,
     NetworkInterface? networkInterface = null,
-    int maxParallelCountForRefreshInvalidatedCache = DefaultParallelCountForRefreshInvalidatedCache,
+    int maxParallelCountForRefreshInvalidatedAddresses = DefaultParallelCountForRefreshInvalidatedAddresses,
     IServiceProvider? serviceProvider = null
   )
     : this(
@@ -283,7 +283,7 @@ public partial class MacAddressResolver : MacAddressResolverBase {
         serviceProvider?.GetService<INetworkScanner>(),
       shouldDisposeNetworkScanner: shouldDisposeNetworkScanner,
       networkInterface: networkInterface,
-      maxParallelCountForRefreshInvalidatedCache: maxParallelCountForRefreshInvalidatedCache,
+      maxParallelCountForRefreshInvalidatedAddresses: maxParallelCountForRefreshInvalidatedAddresses,
       logger: CreateLogger(serviceProvider)
     )
   {
@@ -293,7 +293,7 @@ public partial class MacAddressResolver : MacAddressResolverBase {
     (IAddressTable Implementation, bool ShouldDispose) addressTable,
     (INetworkScanner Implementation, bool ShouldDispose) networkScanner,
     NetworkInterface? networkInterface,
-    int maxParallelCountForRefreshInvalidatedCache,
+    int maxParallelCountForRefreshInvalidatedAddresses,
     ILogger? logger
   )
     : this(
@@ -302,7 +302,7 @@ public partial class MacAddressResolver : MacAddressResolverBase {
       networkScanner: networkScanner.Implementation,
       shouldDisposeNetworkScanner: networkScanner.ShouldDispose,
       networkInterface: networkInterface,
-      maxParallelCountForRefreshInvalidatedCache: maxParallelCountForRefreshInvalidatedCache,
+      maxParallelCountForRefreshInvalidatedAddresses: maxParallelCountForRefreshInvalidatedAddresses,
       logger: logger
     )
   {
@@ -314,15 +314,15 @@ public partial class MacAddressResolver : MacAddressResolverBase {
     INetworkScanner? networkScanner,
     bool shouldDisposeNetworkScanner,
     NetworkInterface? networkInterface,
-    int maxParallelCountForRefreshInvalidatedCache,
+    int maxParallelCountForRefreshInvalidatedAddresses,
     ILogger? logger
   )
     : base(
       logger: logger
     )
   {
-    if (maxParallelCountForRefreshInvalidatedCache <= 0)
-      throw new ArgumentOutOfRangeException(message: "must be non-zero positive number", paramName: nameof(maxParallelCountForRefreshInvalidatedCache));
+    if (maxParallelCountForRefreshInvalidatedAddresses <= 0)
+      throw new ArgumentOutOfRangeException(message: "must be non-zero positive number", paramName: nameof(maxParallelCountForRefreshInvalidatedAddresses));
 
     this.addressTable = addressTable ?? throw new ArgumentNullException(nameof(addressTable));
     this.networkScanner = networkScanner;
@@ -341,8 +341,8 @@ public partial class MacAddressResolver : MacAddressResolverBase {
     );
 
     partialScanSemaphore = new(
-      initialCount: maxParallelCountForRefreshInvalidatedCache,
-      maxCount: maxParallelCountForRefreshInvalidatedCache
+      initialCount: maxParallelCountForRefreshInvalidatedAddresses,
+      maxCount: maxParallelCountForRefreshInvalidatedAddresses
     );
   }
 

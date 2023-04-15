@@ -85,12 +85,12 @@ public class MacAddressResolverBaseTests {
     );
 
     Assert.Throws<ObjectDisposedException>(
-      () => resolver.RefreshInvalidatedCacheAsync(),
-      nameof(resolver.RefreshInvalidatedCacheAsync)
+      () => resolver.RefreshInvalidatedAddressesAsync(),
+      nameof(resolver.RefreshInvalidatedAddressesAsync)
     );
     Assert.ThrowsAsync<ObjectDisposedException>(
-      async () => await resolver.RefreshInvalidatedCacheAsync(),
-      nameof(resolver.RefreshInvalidatedCacheAsync)
+      async () => await resolver.RefreshInvalidatedAddressesAsync(),
+      nameof(resolver.RefreshInvalidatedAddressesAsync)
     );
 #pragma warning restore CA2012
   }
@@ -249,17 +249,17 @@ public class MacAddressResolverBaseTests {
   }
 
   [Test]
-  public void RefreshInvalidatedCacheAsync()
+  public void RefreshInvalidatedAddressesAsync()
   {
     using var resolver = new ConcreteMacAddressResolver();
 
     Assert.DoesNotThrowAsync(
-      async () => await resolver.RefreshInvalidatedCacheAsync()
+      async () => await resolver.RefreshInvalidatedAddressesAsync()
     );
   }
 
   [Test]
-  public void RefreshInvalidatedCacheAsync_CancellationRequested()
+  public void RefreshInvalidatedAddressesAsync_CancellationRequested()
   {
     using var resolver = new ConcreteMacAddressResolver();
     using var cts = new CancellationTokenSource();
@@ -267,7 +267,7 @@ public class MacAddressResolverBaseTests {
     cts.Cancel();
 
     Assert.ThrowsAsync<TaskCanceledException>(
-      async () => await resolver.RefreshInvalidatedCacheAsync(cancellationToken: cts.Token)
+      async () => await resolver.RefreshInvalidatedAddressesAsync(cancellationToken: cts.Token)
     );
   }
 }

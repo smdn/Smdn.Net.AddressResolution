@@ -77,7 +77,7 @@ partial class MacAddressResolver {
     }
   }
 
-  protected override ValueTask RefreshInvalidatedCacheAsyncCore(
+  protected override ValueTask RefreshInvalidatedAddressesAsyncCore(
     CancellationToken cancellationToken = default
   )
   {

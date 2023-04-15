@@ -125,12 +125,12 @@ public partial class MacAddressResolverTests {
   [TestCase(0)]
   [TestCase(-1)]
   [TestCase(int.MinValue)]
-  public void Ctor_MaxParallelCountForRefreshInvalidatedCache_ArgumentOutOfRange(int maxParallelCount)
+  public void Ctor_MaxParallelCountForRefreshInvalidatedAddresses_ArgumentOutOfRange(int maxParallelCount)
     => Assert.Throws<ArgumentOutOfRangeException>(
       () => new MacAddressResolver(
         addressTable: new PseudoAddressTable(),
         networkScanner: new PseudoNetworkScanner(),
-        maxParallelCountForRefreshInvalidatedCache: maxParallelCount
+        maxParallelCountForRefreshInvalidatedAddresses: maxParallelCount
       )
     );
 

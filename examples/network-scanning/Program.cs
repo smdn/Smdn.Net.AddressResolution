@@ -48,10 +48,10 @@ if (resolvedAddress == null) {
   resolver.Invalidate(IPAddress.Parse("192.168.2.105"));
 }
 
-// After that, a call to RefreshInvalidatedCacheAsync will perform a network scan
+// After that, a call to RefreshInvalidatedAddressesAsync will perform a network scan
 // target to the invalidated addresses to update the address table cache.
 if (resolver.HasInvalidated) {
-  await resolver.RefreshInvalidatedCacheAsync();
+  await resolver.RefreshInvalidatedAddressesAsync();
 }
 
 // By resolving again, you may be able to get the updated address.
@@ -59,7 +59,7 @@ resolvedAddress = await resolver.ResolveIPAddressToMacAddressAsync(targetIPAddre
 
 Console.WriteLine($"Resolved address: {resolvedAddress?.ToMacAddressString()}");
 
-// Even without explicitly calling RefreshInvalidatedCacheAsync, a network scan can be
+// Even without explicitly calling RefreshInvalidatedAddressesAsync, a network scan can be
 // performed automatically before address resolution by calling
 // ResolveIPAddressToMacAddressAsync or ResolveMacAddressToIPAddressAsync.
 //

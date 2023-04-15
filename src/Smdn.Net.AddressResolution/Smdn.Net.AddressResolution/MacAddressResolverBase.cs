@@ -34,7 +34,7 @@ public abstract class MacAddressResolverBase :
   /// </summary>
   /// <remarks>
   /// <para>
-  /// If <see langword="true" />, updating for the invalidated addresses by invoking <see cref="RefreshInvalidatedCacheAsync(CancellationToken)" />
+  /// If <see langword="true" />, updating for the invalidated addresses by invoking <see cref="RefreshInvalidatedAddressesAsync(CancellationToken)" />
   /// will be triggered by a call to <see cref="ResolveIPAddressToMacAddressAsync(IPAddress, CancellationToken)" /> or
   /// <see cref="ResolveMacAddressToIPAddressAsync(PhysicalAddress, CancellationToken)" />.
   /// </para>
@@ -44,7 +44,7 @@ public abstract class MacAddressResolverBase :
   /// </remarks>
   /// <seealso cref="Invalidate(IPAddress)"/>
   /// <seealso cref="Invalidate(PhysicalAddress)"/>
-  /// <seealso cref="RefreshInvalidatedCacheAsync(CancellationToken)"/>
+  /// <seealso cref="RefreshInvalidatedAddressesAsync(CancellationToken)"/>
   /// <seealso cref="ResolveIPAddressToMacAddressAsync(IPAddress, CancellationToken)"/>
   /// <seealso cref="ResolveMacAddressToIPAddressAsync(PhysicalAddress, CancellationToken)"/>
   public abstract bool HasInvalidated { get; }
@@ -162,11 +162,11 @@ public abstract class MacAddressResolverBase :
   /// </summary>
   /// <remarks>
   /// Invalidated addresses will not be used in subsequent address resolution or will be automatically updated before resolution.
-  /// To explicitly update the invalidated addresses, invoke <see cref="RefreshInvalidatedCacheAsync(CancellationToken)"/>.
+  /// To explicitly update the invalidated addresses, invoke <see cref="RefreshInvalidatedAddressesAsync(CancellationToken)"/>.
   /// </remarks>
   /// <param name="ipAddress">The <see cref="IPAddress"/> to mark as 'invalidated'.</param>
   /// <seealso cref="ResolveIPAddressToMacAddressAsync(IPAddress, CancellationToken)"/>
-  /// <seealso cref="RefreshInvalidatedCacheAsync(CancellationToken)"/>
+  /// <seealso cref="RefreshInvalidatedAddressesAsync(CancellationToken)"/>
   /// <exception cref="ObjectDisposedException">The instance has been disposed.</exception>
   public void Invalidate(IPAddress ipAddress)
   {
@@ -266,11 +266,11 @@ public abstract class MacAddressResolverBase :
   /// </summary>
   /// <remarks>
   /// Invalidated addresses will not be used in subsequent address resolution or will be automatically updated before resolution.
-  /// To explicitly update the invalidated addresses, invoke <see cref="RefreshInvalidatedCacheAsync(CancellationToken)"/>.
+  /// To explicitly update the invalidated addresses, invoke <see cref="RefreshInvalidatedAddressesAsync(CancellationToken)"/>.
   /// </remarks>
   /// <param name="macAddress">The <see cref="PhysicalAddress"/> to mark as 'invalidated'.</param>
   /// <seealso cref="ResolveMacAddressToIPAddressAsync(PhysicalAddress, CancellationToken)"/>
-  /// <seealso cref="RefreshInvalidatedCacheAsync(CancellationToken)"/>
+  /// <seealso cref="RefreshInvalidatedAddressesAsync(CancellationToken)"/>
   /// <exception cref="ObjectDisposedException">The instance has been disposed.</exception>
   public void Invalidate(PhysicalAddress macAddress)
   {
@@ -333,7 +333,7 @@ public abstract class MacAddressResolverBase :
   /// </remarks>
   /// <param name="cancellationToken">The <see cref="CancellationToken" /> to monitor for cancellation requests. The default value is <see langword="default" />.</param>
   /// <exception cref="ObjectDisposedException">The instance has been disposed.</exception>
-  public ValueTask RefreshInvalidatedCacheAsync(
+  public ValueTask RefreshInvalidatedAddressesAsync(
     CancellationToken cancellationToken = default
   )
   {
@@ -346,10 +346,10 @@ public abstract class MacAddressResolverBase :
 
     ThrowIfDisposed();
 
-    return RefreshInvalidatedCacheAsyncCore(cancellationToken);
+    return RefreshInvalidatedAddressesAsyncCore(cancellationToken);
   }
 
-  protected virtual ValueTask RefreshInvalidatedCacheAsyncCore(
+  protected virtual ValueTask RefreshInvalidatedAddressesAsyncCore(
     CancellationToken cancellationToken
   )
     =>

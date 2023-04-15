@@ -14,7 +14,7 @@ namespace Smdn.Net.AddressResolution;
 
 partial class MacAddressResolverTests {
   [Test]
-  public void RefreshInvalidatedCacheAsync_NoNetworkScannerProvided()
+  public void RefreshInvalidatedAddressesAsync_NoNetworkScannerProvided()
   {
     var resolver = new MacAddressResolver(
       addressTable: new PseudoAddressTable(),
@@ -22,11 +22,11 @@ partial class MacAddressResolverTests {
     );
 
     Assert.IsFalse(resolver.CanPerformNetworkScan, nameof(resolver.CanPerformNetworkScan));
-    Assert.ThrowsAsync<InvalidOperationException>(async () => await resolver.RefreshInvalidatedCacheAsync());
+    Assert.ThrowsAsync<InvalidOperationException>(async () => await resolver.RefreshInvalidatedAddressesAsync());
   }
 
   [Test]
-  public void RefreshInvalidatedCacheAsync_MacAddressInvalidated()
+  public void RefreshInvalidatedAddressesAsync_MacAddressInvalidated()
   {
     var scanner = new PseudoNetworkScanner();
 
@@ -39,7 +39,7 @@ partial class MacAddressResolverTests {
 
     Assert.IsTrue(resolver.HasInvalidated, $"{nameof(resolver.HasInvalidated)} brefore refresh");
 
-    Assert.DoesNotThrowAsync(async () => await resolver.RefreshInvalidatedCacheAsync());
+    Assert.DoesNotThrowAsync(async () => await resolver.RefreshInvalidatedAddressesAsync());
 
     Assert.IsFalse(resolver.HasInvalidated, $"{nameof(resolver.HasInvalidated)} after refresh");
 
@@ -52,7 +52,7 @@ partial class MacAddressResolverTests {
   }
 
   [Test]
-  public void RefreshInvalidatedCacheAsync_IPAddressInvalidated()
+  public void RefreshInvalidatedAddressesAsync_IPAddressInvalidated()
   {
     var scanner = new PseudoNetworkScanner();
 
@@ -65,7 +65,7 @@ partial class MacAddressResolverTests {
 
     Assert.IsTrue(resolver.HasInvalidated, $"{nameof(resolver.HasInvalidated)} brefore refresh");
 
-    Assert.DoesNotThrowAsync(async () => await resolver.RefreshInvalidatedCacheAsync());
+    Assert.DoesNotThrowAsync(async () => await resolver.RefreshInvalidatedAddressesAsync());
 
     Assert.IsFalse(resolver.HasInvalidated, $"{nameof(resolver.HasInvalidated)} after refresh");
 
@@ -79,7 +79,7 @@ partial class MacAddressResolverTests {
   }
 
   [Test]
-  public void RefreshInvalidatedCacheAsync_NothingInvalidated()
+  public void RefreshInvalidatedAddressesAsync_NothingInvalidated()
   {
     var scanner = new PseudoNetworkScanner();
 
@@ -90,7 +90,7 @@ partial class MacAddressResolverTests {
 
     Assert.IsFalse(resolver.HasInvalidated, $"{nameof(resolver.HasInvalidated)} brefore refresh");
 
-    Assert.DoesNotThrowAsync(async () => await resolver.RefreshInvalidatedCacheAsync());
+    Assert.DoesNotThrowAsync(async () => await resolver.RefreshInvalidatedAddressesAsync());
 
     Assert.IsFalse(resolver.HasInvalidated, $"{nameof(resolver.HasInvalidated)} after refresh");
 
@@ -103,8 +103,8 @@ partial class MacAddressResolverTests {
   [TestCase(2)]
   [TestCase(5)]
   [TestCase(10)]
-  public async Task RefreshInvalidatedCacheAsync_MustPerformInsideOfSemaphoreCriticalSection(
-    int parallelCountForRefreshInvalidatedCache
+  public async Task RefreshInvalidatedAddressesAsync_MustPerformInsideOfSemaphoreCriticalSection(
+    int parallelCountForRefreshInvalidatedAddresses
   )
   {
     const int numberOfParallelism = 20;
@@ -113,7 +113,7 @@ partial class MacAddressResolverTests {
     var resolver = new MacAddressResolver(
       addressTable: new PseudoAddressTable(),
       networkScanner: scanner,
-      maxParallelCountForRefreshInvalidatedCache: parallelCountForRefreshInvalidatedCache
+      maxParallelCountForRefreshInvalidatedAddresses: parallelCountForRefreshInvalidatedAddresses
     ) {
       NetworkScanInterval = Timeout.InfiniteTimeSpan,
       NetworkScanMinInterval = TimeSpan.Zero
@@ -132,14 +132,14 @@ partial class MacAddressResolverTests {
 
         resolver.Invalidate(TestIPAddress);
 
-        await resolver.RefreshInvalidatedCacheAsync(cancellationToken);
+        await resolver.RefreshInvalidatedAddressesAsync(cancellationToken);
       }
     );
 
     Assert.Greater(scanner.NumberOfTasksPerformed, 1, nameof(scanner.NumberOfTasksPerformed));
     Assert.LessOrEqual(
       scanner.MaxNumberOfTasksPerformedInParallel,
-      parallelCountForRefreshInvalidatedCache,
+      parallelCountForRefreshInvalidatedAddresses,
       nameof(scanner.MaxNumberOfTasksPerformedInParallel)
     );
   }
