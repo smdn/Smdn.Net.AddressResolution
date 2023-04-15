@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Runtime.CompilerServices;
+using System.Threading;
 
 namespace Smdn.Net.AddressTables;
 
