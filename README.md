@@ -79,13 +79,11 @@ To perform a network scan using the commands above, the command must be installe
 These implementations are in the [Smdn.Net.NetworkScanning](src/Smdn.Net.AddressResolution/Smdn.Net.NetworkScanning/) namespace.
 
 # For contributers
-Contributions are welcome! But documentation for contributions is incomplete.
+Contributions are appreciated!
 
-If there's a feature you'd like to add or a bug you'd like to fix, please let me know by sending an Issue or Pull Request.
+If there's a feature you would like to add or a bug you would like to fix, please read [Contribution guidelines](./CONTRIBUTING.md) and create an Issue or Pull Request.
 
-Many English texts are written with the help of machine translation. So, not only modifications to the code, but also correcting English text in documentations or comments in the code are welcome.
-
-IssueやPull Requestを送る際は、可能なら英語が望ましいですが、日本語で構いません。　必要な場合はこちらで修正・補足します。
+IssueやPull Requestを送る際は、[Contribution guidelines](./CONTRIBUTING.md)をご覧頂ください。　可能なら英語が望ましいですが、日本語で構いません。　
 
 # Notice
 This project is licensed under the terms of the [MIT License](./LICENSE.txt).
