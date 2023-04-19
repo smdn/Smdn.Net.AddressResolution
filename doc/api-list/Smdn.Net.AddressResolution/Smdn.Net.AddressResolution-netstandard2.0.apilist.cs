@@ -1,7 +1,7 @@
-// Smdn.Net.AddressResolution.dll (Smdn.Net.AddressResolution-1.0.0-rc2)
+// Smdn.Net.AddressResolution.dll (Smdn.Net.AddressResolution-1.0.0)
 //   Name: Smdn.Net.AddressResolution
 //   AssemblyVersion: 1.0.0.0
-//   InformationalVersion: 1.0.0-rc2+3ee5c5d35420506d56f36dcd2bf148727d37aa11
+//   InformationalVersion: 1.0.0+b2ffdef7b9a768c14df101d2076bc63c12331f73
 //   TargetFramework: .NETStandard,Version=v2.0
 //   Configuration: Release
 //   Referenced assemblies:
