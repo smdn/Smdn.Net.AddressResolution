@@ -47,7 +47,9 @@ See the projects in the [examples](./examples/) directory for more usages.
 
 
 # Implementations and limitations
-As of version 1.0.0.
+The following is as of version 1.0.0.
+
+It has been well tested and confirmed on Linux. It has been tested on other platforms, it is still not enough to confirm that it works fine.
 
 ## IPv4/IPv6
 IPv4 is supported and well tested.
