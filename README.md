@@ -68,7 +68,7 @@ Operations that require administrator privileges, such as flushing the ARP cache
 
 These implementations are in the [Smdn.Net.AddressTables](src/Smdn.Net.AddressResolution/Smdn.Net.AddressTables/) namespace.
 
-## Network scaning
+## Network scanning
 |OS|API/Command|Status|Note|
 |-|-|-|-|
 |Windows|IP Helper API(`IPHLPAPI`)|Supported|-|
