@@ -17,7 +17,10 @@ SPDX-License-Identifier: MIT
   <PropertyGroup Label="assembly attributes">
     <Description>
 <![CDATA[A network address resolution library for .NET.
-This library provides interfaces for resolving between IP addresses and MAC addresses, also provides implementations of address resolution using the ARP table provided by each platform.
+
+This library provides APIs for resolving between IP addresses and MAC addresses, mainly the `MacAddressResolver` class in the `Smdn.Net.AddressResolution` namespace.
+
+This library also provides a functionality for referencing the system's address table such as the ARP table (`Smdn.Net.AddressTables` namespace), and a network scan functionality to refresh the address cache mainly using the installed commands (`Smdn.Net.NetworkScanning` namespace).
 ]]>
     </Description>
     <CopyrightYear>2022</CopyrightYear>
@@ -25,6 +28,7 @@ This library provides interfaces for resolving between IP addresses and MAC addr
 
   <PropertyGroup Label="package properties">
     <PackageTags>ARP;arp-scan;arp-table;ip-address;mac-address;hardware-address;address-lookup;address-resolution</PackageTags>
+    <GenerateNupkgReadmeFileDependsOnTargets>$(GenerateNupkgReadmeFileDependsOnTargets);GenerateReadmeFileContent</GenerateNupkgReadmeFileDependsOnTargets>
   </PropertyGroup>
 
   <PropertyGroup Label="StyleCop code analysis">
@@ -47,5 +51,21 @@ This library provides interfaces for resolving between IP addresses and MAC addr
       CopyToOutputDirectory="None"
     />
   </ItemGroup>
+
+  <Target Name="GenerateReadmeFileContent">
+    <PropertyGroup>
+      <PackageReadmeFileContent><![CDATA[# $(AssemblyName)-$(InformationalVersion)
+$(Description)
+
+## Usage
+```cs
+$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)..\..\examples\mac-address-resolution-basic\Program.cs'))
+```
+
+## Contributing
+This project welcomes contributions, feedback and suggestions. You can contribute to this project by submitting [Issues]($(RepositoryUrl)/issues/) or [Pull Requests]($(RepositoryUrl)/pulls/) on the [GitHub repository]($(RepositoryUrl)).
+]]></PackageReadmeFileContent>
+    </PropertyGroup>
+  </Target>
 
 </Project>
