@@ -38,4 +38,14 @@ This library provides interfaces for resolving between IP addresses and MAC addr
     <PackageReference Include="Vanara.PInvoke.IpHlpApi" Version="3.4.13" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Third party notice -->
+    <None
+      Include="$(MSBuildThisFileDirectory)..\..\ThirdPartyNotices.md"
+      Pack="true"
+      PackagePath="ThirdPartyNotices.md"
+      CopyToOutputDirectory="None"
+    />
+  </ItemGroup>
+
 </Project>
