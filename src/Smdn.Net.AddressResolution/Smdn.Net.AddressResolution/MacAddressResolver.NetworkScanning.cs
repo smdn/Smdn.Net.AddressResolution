@@ -1,5 +1,8 @@
 // SPDX-FileCopyrightText: 2022 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
+#if DEBUG
+using System;
+#endif
 using System.Diagnostics;
 using System.Net;
 using System.Net.NetworkInformation;
