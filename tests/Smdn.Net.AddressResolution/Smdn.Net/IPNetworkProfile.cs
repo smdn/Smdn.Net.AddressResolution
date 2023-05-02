@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.NetworkInformation;
 
 using NUnit.Framework;
 
@@ -266,6 +267,48 @@ public partial class IPNetworkProfileTests {
     Assert.IsNotNull(addresses, nameof(addresses));
     CollectionAssert.IsNotEmpty(addresses, nameof(addresses));
   }
+
+  [Test]
+  public void CreateFromNetworkInterface_String_ArgumentNull()
+    => Assert.Throws<ArgumentNullException>(
+      () => IPNetworkProfile.CreateFromNetworkInterface(id: (string)null!)
+    );
+
+  [Test]
+  public void CreateFromNetworkInterface_String()
+    => Assert.Throws<InvalidOperationException>(
+      () => IPNetworkProfile.CreateFromNetworkInterface(id: "<!non-existent-network-interface-id!>")
+    );
+
+  [Test]
+  public void CreateFromNetworkInterface_Guid()
+    => Assert.Throws<InvalidOperationException>(
+      () => IPNetworkProfile.CreateFromNetworkInterface(id: Guid.Empty)
+    );
+
+  [Test]
+  public void CreateFromNetworkInterface_PhysicalAddress_ArgumentNull()
+    => Assert.Throws<ArgumentNullException>(
+      () => IPNetworkProfile.CreateFromNetworkInterface(physicalAddress: null!)
+    );
+
+  [Test]
+  public void CreateFromNetworkInterface_PhysicalAddress()
+    => Assert.Throws<InvalidOperationException>(
+      () => IPNetworkProfile.CreateFromNetworkInterface(physicalAddress: PhysicalAddress.Parse("00:00:5E:00:53:00"))
+    );
+
+  [Test]
+  public void CreateFromNetworkInterfaceName_ArgumentNull()
+    => Assert.Throws<ArgumentNullException>(
+      () => IPNetworkProfile.CreateFromNetworkInterfaceName(name: null!)
+    );
+
+  [Test]
+  public void CreateFromNetworkInterfaceName()
+    => Assert.Throws<InvalidOperationException>(
+      () => IPNetworkProfile.CreateFromNetworkInterfaceName(name: "<!non-existent-network-interface-name!>")
+    );
 
   [Test]
   public void Create_FromAddressRangeGenerator()

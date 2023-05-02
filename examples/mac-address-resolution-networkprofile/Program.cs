@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 using System;
 using System.Net;
+using System.Net.NetworkInformation;
 using Smdn.Net;
 using Smdn.Net.AddressResolution;
 
@@ -13,14 +14,22 @@ using Smdn.Net.AddressResolution;
 // If the argument is omitted, the first available NetworkInterface is automatically selected.
 var defaultNetworkProfile = IPNetworkProfile.Create();
 
-// You can select NetworkInterface by using Predicate<NetworkInterface> as follows:
-var networkProfile = IPNetworkProfile.Create(
-  static iface =>
-    iface.Id == "wlan0" // Select by network device ID (for Unix-like OS)
-    // iface.Id == "{00000000-0000-0000-0000-000000000000}" // Select by network device GUID (for Windows)
-);
+// You can select a specific NetworkInterface by its physical address, ID or name.
+// If any NetworkInterface cannot be selected, an InvalidOperationException is thrown.
 
-// If a network interface cannot be selected, an InvalidOperationException is thrown.
+// Select by network device's physical address (platform independed)
+IPNetworkProfile.CreateFromNetworkInterface(physicalAddress: PhysicalAddress.Parse("00:00:5E:00:53:00"));
+// Select by network device GUID (for Windows OS)
+IPNetworkProfile.CreateFromNetworkInterface(id: Guid.Parse("00000000-0000-0000-0000-000000000000"));
+// Select by network device ID (for Unix-like OS)
+IPNetworkProfile.CreateFromNetworkInterface(id: "wlan0");
+// Select by network device name (names are platform-specific)
+IPNetworkProfile.CreateFromNetworkInterfaceName(name: "name");
+
+// For more specific conditions, you can use Predicate<NetworkInterface> as follows:
+var networkProfile = IPNetworkProfile.Create(
+  static iface => iface.Id == "wlan0" && 100_000_000_000 <= iface.Speed
+);
 
 Console.WriteLine($"Selected NetworkInterface: {networkProfile.NetworkInterface!.Id}");
 
