@@ -32,7 +32,7 @@ using Smdn.Net.AddressResolution;
 using var resolver = new MacAddressResolver(IPNetworkProfile.Create());
 
 // Resolve MAC address corresponding to the IP address.
-var targetIPAddress = IPAddress.Parse("192.168.2.1");
+var targetIPAddress = IPAddress.Parse("192.0.2.1");
 var resolvedMacAddress = await resolver.ResolveIPAddressToMacAddressAsync(targetIPAddress);
 ```
 

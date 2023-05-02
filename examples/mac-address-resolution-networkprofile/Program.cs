@@ -27,4 +27,4 @@ Console.WriteLine($"Selected NetworkInterface: {networkProfile.NetworkInterface!
 // Create a MacAddressResolver for the specific network profile.
 using var resolver = new MacAddressResolver(networkProfile);
 
-await resolver.ResolveIPAddressToMacAddressAsync(IPAddress.Parse("192.168.2.1"));
+await resolver.ResolveIPAddressToMacAddressAsync(IPAddress.Parse("192.0.2.1"));

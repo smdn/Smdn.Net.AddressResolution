@@ -102,8 +102,8 @@ public sealed class ProcfsArpAddressTable : AddressTable {
 
   // [/proc/net/arp]
   // IP address       HW type     Flags       HW address            Mask     Device
-  // 192.168.0.1      0x1         0x0         00:00:00:00:00:00     *        eth0
-  // 192.168.0.2      0x1         0x0         00:00:00:00:00:00     *        eth0
+  // 192.0.2.1        0x1         0x0         00:00:00:00:00:00     *        eth0
+  // 192.0.2.2        0x1         0x0         00:00:00:00:00:00     *        eth0
   // :                :           :           :                     :        :
   private static bool TryParse(
     string arpTableEntryLine,

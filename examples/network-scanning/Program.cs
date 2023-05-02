@@ -19,10 +19,10 @@ services
       .AddFilter(static level => LogLevel.Debug <= level)
   );
 
-// Create IPNetworkProfile with address range of 192.168.2.100-192.168.2.119.
+// Create IPNetworkProfile with address range of 192.0.2.100-192.0.2.119.
 // When MacAddressResolver performs a network scan, this address range will be scanned.
 static IEnumerable<IPAddress> GenerateDHCPPoolAddresses()
-  => Enumerable.Range(100, 20).Select(n => IPAddress.Parse($"192.168.2.{n}"));
+  => Enumerable.Range(100, 20).Select(n => IPAddress.Parse($"192.0.2.{n}"));
 
 var networkProfile = IPNetworkProfile.Create(
   addressRangeGenerator: GenerateDHCPPoolAddresses
@@ -35,7 +35,7 @@ using var resolver = new MacAddressResolver(
 );
 
 // Resolve IP address to MAC address.
-var targetIPAddress = IPAddress.Parse("192.168.2.105");
+var targetIPAddress = IPAddress.Parse("192.0.2.105");
 
 var resolvedAddress = await resolver.ResolveIPAddressToMacAddressAsync(targetIPAddress);
 
@@ -45,7 +45,7 @@ Console.WriteLine($"Resolved address: {resolvedAddress?.ToMacAddressString()}");
 // At this time, if the address is unresolvable, unreachable or expired,
 // you can mark the address as 'invalid'.
 if (resolvedAddress == null) {
-  resolver.Invalidate(IPAddress.Parse("192.168.2.105"));
+  resolver.Invalidate(IPAddress.Parse("192.0.2.105"));
 }
 
 // After that, a call to RefreshInvalidatedAddressesAsync will perform a network scan

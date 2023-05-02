@@ -31,7 +31,7 @@ public class NetworkScannerTests : NetworkScannerTestsBase {
 
   private static IPNetworkProfile CreatePseudoNetworkProfile()
     => IPNetworkProfile.Create(
-      baseAddress: IPAddress.Parse("192.168.2.0"),
+      baseAddress: IPAddress.Parse("192.0.2.0"),
       subnetMask: IPAddress.Parse("255.255.255.0"),
       networkInterface: new PseudoNetworkInterface("wlan0")
     );

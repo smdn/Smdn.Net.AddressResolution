@@ -278,7 +278,7 @@ partial class MacAddressResolverTests {
     yield return new object[] {
       new StaticAddressTable(
         new AddressTableEntry[] {
-          new(IPAddress.Parse("192.168.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-00"), false, AddressTableEntryState.None, "wlan0"),
+          new(IPAddress.Parse("192.0.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-00"), false, AddressTableEntryState.None, "wlan0"),
         }
       )
     };
@@ -289,7 +289,7 @@ partial class MacAddressResolverTests {
   {
     using var resolver = CreateNullNetworkScannerMacAddressResolver(addressTable);
 
-    Assert.IsNull(await resolver.ResolveIPAddressToMacAddressAsync(IPAddress.Parse("192.168.2.255")));
+    Assert.IsNull(await resolver.ResolveIPAddressToMacAddressAsync(IPAddress.Parse("192.0.2.255")));
   }
 
   [TestCaseSource(nameof(YieldTestCases_ResolveAsync_NoCandidatesEnumerated))]
@@ -305,8 +305,8 @@ partial class MacAddressResolverTests {
     yield return new object[] {
       new StaticAddressTable(
         new AddressTableEntry[] {
-          new(IPAddress.Parse("192.168.2.1"), PhysicalAddress.Parse("00-00-00-00-00-00"), false, AddressTableEntryState.None, "wlan0"),
-          new(IPAddress.Parse("192.168.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-00"), false, AddressTableEntryState.None, "wlan0"),
+          new(IPAddress.Parse("192.0.2.1"), PhysicalAddress.Parse("00-00-00-00-00-00"), false, AddressTableEntryState.None, "wlan0"),
+          new(IPAddress.Parse("192.0.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-00"), false, AddressTableEntryState.None, "wlan0"),
         }
       )
     };
@@ -314,8 +314,8 @@ partial class MacAddressResolverTests {
     yield return new object[] {
       new StaticAddressTable(
         new AddressTableEntry[] {
-          new(IPAddress.Parse("192.168.2.1"), null, true, AddressTableEntryState.None, "wlan0"),
-          new(IPAddress.Parse("192.168.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-00"), false, AddressTableEntryState.None, "wlan0"),
+          new(IPAddress.Parse("192.0.2.1"), null, true, AddressTableEntryState.None, "wlan0"),
+          new(IPAddress.Parse("192.0.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-00"), false, AddressTableEntryState.None, "wlan0"),
         }
       )
     };
@@ -328,7 +328,7 @@ partial class MacAddressResolverTests {
 
     Assert.AreEqual(
       PhysicalAddress.Parse("00-00-5E-00-53-00"),
-      await resolver.ResolveIPAddressToMacAddressAsync(IPAddress.Parse("192.168.2.0"))
+      await resolver.ResolveIPAddressToMacAddressAsync(IPAddress.Parse("192.0.2.0"))
     );
   }
 
@@ -338,7 +338,7 @@ partial class MacAddressResolverTests {
     using var resolver = CreateNullNetworkScannerMacAddressResolver(addressTable);
 
     Assert.AreEqual(
-      IPAddress.Parse("192.168.2.0"),
+      IPAddress.Parse("192.0.2.0"),
       await resolver.ResolveMacAddressToIPAddressAsync(PhysicalAddress.Parse("00-00-5E-00-53-00"))
     );
   }
@@ -348,12 +348,12 @@ partial class MacAddressResolverTests {
     yield return new object[] {
       new StaticAddressTable(
         new AddressTableEntry[] {
-          new(IPAddress.Parse("192.168.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-00"), false, AddressTableEntryState.None, "wlan0"),
-          new(IPAddress.Parse("192.168.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-01"), false, AddressTableEntryState.None, "wlan0"),
+          new(IPAddress.Parse("192.0.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-00"), false, AddressTableEntryState.None, "wlan0"),
+          new(IPAddress.Parse("192.0.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-01"), false, AddressTableEntryState.None, "wlan0"),
         }
       ),
       new[] { PhysicalAddress.Parse("00-00-5E-00-53-01") },
-      IPAddress.Parse("192.168.2.0"),
+      IPAddress.Parse("192.0.2.0"),
       PhysicalAddress.Parse("00-00-5E-00-53-00"),
       "case1"
     };
@@ -361,15 +361,15 @@ partial class MacAddressResolverTests {
     yield return new object[] {
       new StaticAddressTable(
         new AddressTableEntry[] {
-          new(IPAddress.Parse("192.168.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-00"), false, AddressTableEntryState.None, "wlan0"),
-          new(IPAddress.Parse("192.168.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-01"), false, AddressTableEntryState.None, "wlan0"),
+          new(IPAddress.Parse("192.0.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-00"), false, AddressTableEntryState.None, "wlan0"),
+          new(IPAddress.Parse("192.0.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-01"), false, AddressTableEntryState.None, "wlan0"),
         }
       ),
       new[] {
         PhysicalAddress.Parse("00-00-5E-00-53-00"),
         PhysicalAddress.Parse("00-00-5E-00-53-01"),
       },
-      IPAddress.Parse("192.168.2.0"),
+      IPAddress.Parse("192.0.2.0"),
       null!,
       "case2"
     };
@@ -377,11 +377,11 @@ partial class MacAddressResolverTests {
     yield return new object[] {
       new StaticAddressTable(
         new AddressTableEntry[] {
-          new(IPAddress.Parse("192.168.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-00"), false, AddressTableEntryState.None, "wlan0"),
+          new(IPAddress.Parse("192.0.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-00"), false, AddressTableEntryState.None, "wlan0"),
         }
       ),
       new[] { PhysicalAddress.Parse("00-00-5E-00-53-00") },
-      IPAddress.Parse("192.168.2.0"),
+      IPAddress.Parse("192.0.2.0"),
       null!,
       "case3"
     };
@@ -414,26 +414,26 @@ partial class MacAddressResolverTests {
     yield return new object[] {
       new StaticAddressTable(
         new AddressTableEntry[] {
-          new(IPAddress.Parse("192.168.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-00"), false, AddressTableEntryState.None, "wlan0"),
-          new(IPAddress.Parse("192.168.2.1"), PhysicalAddress.Parse("00-00-5E-00-53-00"), false, AddressTableEntryState.None, "wlan0"),
+          new(IPAddress.Parse("192.0.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-00"), false, AddressTableEntryState.None, "wlan0"),
+          new(IPAddress.Parse("192.0.2.1"), PhysicalAddress.Parse("00-00-5E-00-53-00"), false, AddressTableEntryState.None, "wlan0"),
         }
       ),
-      new[] { IPAddress.Parse("192.168.2.1") },
+      new[] { IPAddress.Parse("192.0.2.1") },
       PhysicalAddress.Parse("00-00-5E-00-53-00"),
-      IPAddress.Parse("192.168.2.0"),
+      IPAddress.Parse("192.0.2.0"),
       "case1"
     };
 
     yield return new object[] {
       new StaticAddressTable(
         new AddressTableEntry[] {
-          new(IPAddress.Parse("192.168.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-00"), false, AddressTableEntryState.None, "wlan0"),
-          new(IPAddress.Parse("192.168.2.1"), PhysicalAddress.Parse("00-00-5E-00-53-00"), false, AddressTableEntryState.None, "wlan0"),
+          new(IPAddress.Parse("192.0.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-00"), false, AddressTableEntryState.None, "wlan0"),
+          new(IPAddress.Parse("192.0.2.1"), PhysicalAddress.Parse("00-00-5E-00-53-00"), false, AddressTableEntryState.None, "wlan0"),
         }
       ),
       new[] {
-        IPAddress.Parse("192.168.2.0"),
-        IPAddress.Parse("192.168.2.1"),
+        IPAddress.Parse("192.0.2.0"),
+        IPAddress.Parse("192.0.2.1"),
       },
       PhysicalAddress.Parse("00-00-5E-00-53-00"),
       null!,
@@ -443,10 +443,10 @@ partial class MacAddressResolverTests {
     yield return new object[] {
       new StaticAddressTable(
         new AddressTableEntry[] {
-          new(IPAddress.Parse("192.168.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-00"), false, AddressTableEntryState.None, "wlan0"),
+          new(IPAddress.Parse("192.0.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-00"), false, AddressTableEntryState.None, "wlan0"),
         }
       ),
-      new[] { IPAddress.Parse("192.168.2.0") },
+      new[] { IPAddress.Parse("192.0.2.0") },
       PhysicalAddress.Parse("00-00-5E-00-53-00"),
       null!,
       "case3"
@@ -481,27 +481,27 @@ partial class MacAddressResolverTests {
       "wlan1",
       new StaticAddressTable(
         new AddressTableEntry[] {
-          new(IPAddress.Parse("192.168.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-00"), false, AddressTableEntryState.None, "wlan0"),
-          new(IPAddress.Parse("192.168.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-01"), false, AddressTableEntryState.None, "wlan1"),
-          new(IPAddress.Parse("192.168.2.1"), PhysicalAddress.Parse("00-00-5E-00-53-00"), false, AddressTableEntryState.None, "wlan1"),
+          new(IPAddress.Parse("192.0.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-00"), false, AddressTableEntryState.None, "wlan0"),
+          new(IPAddress.Parse("192.0.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-01"), false, AddressTableEntryState.None, "wlan1"),
+          new(IPAddress.Parse("192.0.2.1"), PhysicalAddress.Parse("00-00-5E-00-53-00"), false, AddressTableEntryState.None, "wlan1"),
         }
       ),
-      new AddressTableEntry(IPAddress.Parse("192.168.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-00"), false, AddressTableEntryState.None, null),
-      new AddressTableEntry(IPAddress.Parse("192.168.2.1"), PhysicalAddress.Parse("00-00-5E-00-53-01"), false, AddressTableEntryState.None, "wlan1"),
+      new AddressTableEntry(IPAddress.Parse("192.0.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-00"), false, AddressTableEntryState.None, null),
+      new AddressTableEntry(IPAddress.Parse("192.0.2.1"), PhysicalAddress.Parse("00-00-5E-00-53-01"), false, AddressTableEntryState.None, "wlan1"),
     };
 
     yield return new object[] {
       null!,
       new StaticAddressTable(
         new AddressTableEntry[] {
-          new(IPAddress.Parse("192.168.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-01"), false, AddressTableEntryState.None, "wlan1"),
-          new(IPAddress.Parse("192.168.2.1"), PhysicalAddress.Parse("00-00-5E-00-53-00"), false, AddressTableEntryState.None, "wlan1"),
-          new(IPAddress.Parse("192.168.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-00"), false, AddressTableEntryState.None, "wlan0"),
+          new(IPAddress.Parse("192.0.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-01"), false, AddressTableEntryState.None, "wlan1"),
+          new(IPAddress.Parse("192.0.2.1"), PhysicalAddress.Parse("00-00-5E-00-53-00"), false, AddressTableEntryState.None, "wlan1"),
+          new(IPAddress.Parse("192.0.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-00"), false, AddressTableEntryState.None, "wlan0"),
         }
       ),
-      new AddressTableEntry(IPAddress.Parse("192.168.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-00"), false, AddressTableEntryState.None, null),
+      new AddressTableEntry(IPAddress.Parse("192.0.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-00"), false, AddressTableEntryState.None, null),
       // last entry must be selected
-      new AddressTableEntry(IPAddress.Parse("192.168.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-00"), false, AddressTableEntryState.None, "wlan0"),
+      new AddressTableEntry(IPAddress.Parse("192.0.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-00"), false, AddressTableEntryState.None, "wlan0"),
     };
   }
 
@@ -542,14 +542,14 @@ partial class MacAddressResolverTests {
     yield return new object[] {
       new StaticAddressTable(
         new AddressTableEntry[] {
-          new(IPAddress.Parse("192.168.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-FF"), true, AddressTableEntryState.None, null),
-          new(IPAddress.Parse("192.168.2.255"), PhysicalAddress.Parse("00-00-5E-00-53-00"), true, AddressTableEntryState.None, null),
-          new(IPAddress.Parse("192.168.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-01"), false, AddressTableEntryState.None, null),
-          new(IPAddress.Parse("192.168.2.1"), PhysicalAddress.Parse("00-00-5E-00-53-00"), false, AddressTableEntryState.None, null),
+          new(IPAddress.Parse("192.0.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-FF"), true, AddressTableEntryState.None, null),
+          new(IPAddress.Parse("192.0.2.255"), PhysicalAddress.Parse("00-00-5E-00-53-00"), true, AddressTableEntryState.None, null),
+          new(IPAddress.Parse("192.0.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-01"), false, AddressTableEntryState.None, null),
+          new(IPAddress.Parse("192.0.2.1"), PhysicalAddress.Parse("00-00-5E-00-53-00"), false, AddressTableEntryState.None, null),
         }
       ),
-      new AddressTableEntry(IPAddress.Parse("192.168.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-00"), false, AddressTableEntryState.None, null),
-      new AddressTableEntry(IPAddress.Parse("192.168.2.255"), PhysicalAddress.Parse("00-00-5E-00-53-FF"), true, AddressTableEntryState.None, null),
+      new AddressTableEntry(IPAddress.Parse("192.0.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-00"), false, AddressTableEntryState.None, null),
+      new AddressTableEntry(IPAddress.Parse("192.0.2.255"), PhysicalAddress.Parse("00-00-5E-00-53-FF"), true, AddressTableEntryState.None, null),
     };
   }
 
@@ -588,14 +588,14 @@ partial class MacAddressResolverTests {
     yield return new object[] {
       new StaticAddressTable(
         new AddressTableEntry[] {
-          new(IPAddress.Parse("192.168.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-FF"), false, AddressTableEntryState.Reachable, null),
-          new(IPAddress.Parse("192.168.2.255"), PhysicalAddress.Parse("00-00-5E-00-53-00"), false, AddressTableEntryState.Reachable, null),
-          new(IPAddress.Parse("192.168.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-01"), false, AddressTableEntryState.Stale, null),
-          new(IPAddress.Parse("192.168.2.1"), PhysicalAddress.Parse("00-00-5E-00-53-00"), false, AddressTableEntryState.Stale, null),
+          new(IPAddress.Parse("192.0.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-FF"), false, AddressTableEntryState.Reachable, null),
+          new(IPAddress.Parse("192.0.2.255"), PhysicalAddress.Parse("00-00-5E-00-53-00"), false, AddressTableEntryState.Reachable, null),
+          new(IPAddress.Parse("192.0.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-01"), false, AddressTableEntryState.Stale, null),
+          new(IPAddress.Parse("192.0.2.1"), PhysicalAddress.Parse("00-00-5E-00-53-00"), false, AddressTableEntryState.Stale, null),
         }
       ),
-      new AddressTableEntry(IPAddress.Parse("192.168.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-00"), false, AddressTableEntryState.None, null),
-      new AddressTableEntry(IPAddress.Parse("192.168.2.255"), PhysicalAddress.Parse("00-00-5E-00-53-FF"), false, AddressTableEntryState.Reachable, null),
+      new AddressTableEntry(IPAddress.Parse("192.0.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-00"), false, AddressTableEntryState.None, null),
+      new AddressTableEntry(IPAddress.Parse("192.0.2.255"), PhysicalAddress.Parse("00-00-5E-00-53-FF"), false, AddressTableEntryState.Reachable, null),
     };
   }
 

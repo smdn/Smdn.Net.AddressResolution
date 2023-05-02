@@ -56,9 +56,9 @@ partial class MacAddressResolverTests {
   public async Task EnumerateAddressTableEntriesAsync_NetworkInterfaceNotSpecified()
   {
     var addressTableEntries = new AddressTableEntry[] {
-      new(IPAddress.Parse("192.168.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-00"), true, AddressTableEntryState.None, "wlan0"),
-      new(IPAddress.Parse("192.168.2.1"), PhysicalAddress.Parse("00-00-5E-00-53-01"), true, AddressTableEntryState.None, "wlan1"),
-      new(IPAddress.Parse("192.168.2.2"), PhysicalAddress.Parse("00-00-5E-00-53-02"), true, AddressTableEntryState.None, "wlan2")
+      new(IPAddress.Parse("192.0.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-00"), true, AddressTableEntryState.None, "wlan0"),
+      new(IPAddress.Parse("192.0.2.1"), PhysicalAddress.Parse("00-00-5E-00-53-01"), true, AddressTableEntryState.None, "wlan1"),
+      new(IPAddress.Parse("192.0.2.2"), PhysicalAddress.Parse("00-00-5E-00-53-02"), true, AddressTableEntryState.None, "wlan2")
     };
 
     using var resolver = new MacAddressResolver(
@@ -77,9 +77,9 @@ partial class MacAddressResolverTests {
   public async Task EnumerateAddressTableEntriesAsync_NetworkInterfaceSpecified()
   {
     var addressTableEntries = new AddressTableEntry[] {
-      new(IPAddress.Parse("192.168.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-00"), true, AddressTableEntryState.None, "wlan0"),
-      new(IPAddress.Parse("192.168.2.1"), PhysicalAddress.Parse("00-00-5E-00-53-01"), true, AddressTableEntryState.None, "wlan1"),
-      new(IPAddress.Parse("192.168.2.2"), PhysicalAddress.Parse("00-00-5E-00-53-02"), true, AddressTableEntryState.None, "wlan2")
+      new(IPAddress.Parse("192.0.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-00"), true, AddressTableEntryState.None, "wlan0"),
+      new(IPAddress.Parse("192.0.2.1"), PhysicalAddress.Parse("00-00-5E-00-53-01"), true, AddressTableEntryState.None, "wlan1"),
+      new(IPAddress.Parse("192.0.2.2"), PhysicalAddress.Parse("00-00-5E-00-53-02"), true, AddressTableEntryState.None, "wlan2")
     };
 
     using var resolver = new MacAddressResolver(
@@ -98,9 +98,9 @@ partial class MacAddressResolverTests {
   public async Task EnumerateAddressTableEntriesAsync_NetworkInterfaceSpecified_CaseSensitivityOfInterfaceId()
   {
     var addressTableEntries = new AddressTableEntry[] {
-      new(IPAddress.Parse("192.168.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-00"), true, AddressTableEntryState.None, "wlan0"),
-      new(IPAddress.Parse("192.168.2.1"), PhysicalAddress.Parse("00-00-5E-00-53-01"), true, AddressTableEntryState.None, "WLan0"),
-      new(IPAddress.Parse("192.168.2.2"), PhysicalAddress.Parse("00-00-5E-00-53-02"), true, AddressTableEntryState.None, "WLAN0")
+      new(IPAddress.Parse("192.0.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-00"), true, AddressTableEntryState.None, "wlan0"),
+      new(IPAddress.Parse("192.0.2.1"), PhysicalAddress.Parse("00-00-5E-00-53-01"), true, AddressTableEntryState.None, "WLan0"),
+      new(IPAddress.Parse("192.0.2.2"), PhysicalAddress.Parse("00-00-5E-00-53-02"), true, AddressTableEntryState.None, "WLAN0")
     };
 
     using var resolver = new MacAddressResolver(
@@ -123,7 +123,7 @@ partial class MacAddressResolverTests {
     const string iface = "wlan0";
 
     var addressTableEntries = new AddressTableEntry[] {
-      new(IPAddress.Parse("192.168.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-00"), true, AddressTableEntryState.None, iface),
+      new(IPAddress.Parse("192.0.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-00"), true, AddressTableEntryState.None, iface),
       new(IPAddress.Parse("2001:db8::1"), PhysicalAddress.Parse("00-00-5E-00-53-01"), true, AddressTableEntryState.None, iface),
       new(IPAddress.Parse("2001:db8::2"), PhysicalAddress.Parse("00-00-5E-00-53-02"), true, AddressTableEntryState.None, iface)
     };
@@ -146,7 +146,7 @@ partial class MacAddressResolverTests {
     const string iface = "wlan0";
 
     var addressTableEntries = new AddressTableEntry[] {
-      new(IPAddress.Parse("192.168.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-00"), true, AddressTableEntryState.None, iface),
+      new(IPAddress.Parse("192.0.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-00"), true, AddressTableEntryState.None, iface),
       new(IPAddress.Parse("2001:db8::1"), PhysicalAddress.Parse("00-00-5E-00-53-01"), true, AddressTableEntryState.None, iface),
       new(IPAddress.Parse("2001:db8::2"), PhysicalAddress.Parse("00-00-5E-00-53-02"), true, AddressTableEntryState.None, iface)
     };
@@ -169,7 +169,7 @@ partial class MacAddressResolverTests {
     const string iface = "wlan0";
 
     var addressTableEntries = new AddressTableEntry[] {
-      new(IPAddress.Parse("192.168.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-00"), true, AddressTableEntryState.None, iface),
+      new(IPAddress.Parse("192.0.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-00"), true, AddressTableEntryState.None, iface),
       new(IPAddress.Parse("2001:db8::1"), PhysicalAddress.Parse("00-00-5E-00-53-01"), true, AddressTableEntryState.None, iface),
       new(IPAddress.Parse("2001:db8::2"), PhysicalAddress.Parse("00-00-5E-00-53-02"), true, AddressTableEntryState.None, iface)
     };
@@ -210,9 +210,9 @@ partial class MacAddressResolverTests {
   public void EnumerateAddressTableEntriesAsync_CancellationRequested()
   {
     var addressTableEntries = new AddressTableEntry[] {
-      new(IPAddress.Parse("192.168.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-00"), true, AddressTableEntryState.None, "wlan0"),
-      new(IPAddress.Parse("192.168.2.1"), PhysicalAddress.Parse("00-00-5E-00-53-01"), true, AddressTableEntryState.None, "wlan1"),
-      new(IPAddress.Parse("192.168.2.2"), PhysicalAddress.Parse("00-00-5E-00-53-02"), true, AddressTableEntryState.None, "wlan2")
+      new(IPAddress.Parse("192.0.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-00"), true, AddressTableEntryState.None, "wlan0"),
+      new(IPAddress.Parse("192.0.2.1"), PhysicalAddress.Parse("00-00-5E-00-53-01"), true, AddressTableEntryState.None, "wlan1"),
+      new(IPAddress.Parse("192.0.2.2"), PhysicalAddress.Parse("00-00-5E-00-53-02"), true, AddressTableEntryState.None, "wlan2")
     };
 
     using var resolver = new MacAddressResolver(
@@ -245,7 +245,7 @@ partial class MacAddressResolverTests {
 
   private static System.Collections.IEnumerable YieldTestCases_EnumerateAddressTableEntriesAsync_Predicate()
   {
-    var entry0 = new AddressTableEntry(IPAddress.Parse("192.168.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-00"), true, AddressTableEntryState.None, "wlan0");
+    var entry0 = new AddressTableEntry(IPAddress.Parse("192.0.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-00"), true, AddressTableEntryState.None, "wlan0");
     var entry1 = new AddressTableEntry(IPAddress.Parse("2001:db8::1"), PhysicalAddress.Parse("00-00-5E-00-53-01"), false, AddressTableEntryState.Reachable, "wlan1");
     var entry2 = new AddressTableEntry(IPAddress.Parse("2001:db8::2"), PhysicalAddress.Parse("00-00-5E-00-53-02"), false, AddressTableEntryState.Delay, "wlan2");
     var entries = new[] {
