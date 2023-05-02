@@ -15,22 +15,22 @@ public interface IAddressResolver<TAddress, TResolvedAddress>
   where TResolvedAddress : notnull
 {
   /// <summary>
-  /// Resolves from a address of <see cref="TAddress"/> to its corresponding address of <see cref="TResolvedAddress"/>.
+  /// Resolves from a address of <typeparamref name="TAddress"/> to its corresponding address of <typeparamref name="TResolvedAddress"/>.
   /// </summary>
-  /// <param name="address">The address of <see cref="TAddress" /> to be resolved.</param>
+  /// <param name="address">The address of <typeparamref name="TAddress" /> to be resolved.</param>
   /// <param name="cancellationToken">The <see cref="CancellationToken" /> to monitor for cancellation requests.</param>
   /// <returns>
-  /// A <see cref="ValueTask{TResolvedAddress?}"/> representing the result of address resolution.
-  /// If the address is successfully resolved, <see cref="TResolvedAddress"/> representing the resolved address is set. If not, <see langword="null" /> is set.
+  /// A <see cref="ValueTask{TResolvedAddress}"/> representing the result of address resolution.
+  /// If the address is successfully resolved, <typeparamref name="TResolvedAddress"/> representing the resolved address is set. If not, <see langword="null" /> is set.
   /// </returns>
   /// <seealso cref="Invalidate(TAddress)"/>
   ValueTask<TResolvedAddress?> ResolveAsync(TAddress address, CancellationToken cancellationToken);
 
   /// <summary>
-  /// Marks the <paramref name="address"/> as 'invalidated', for example, if the resolved <see cref="TResolvedAddress"/>
+  /// Marks the <paramref name="address"/> as 'invalidated', for example, if the resolved <typeparamref name="TResolvedAddress"/>
   /// corresponding to the <paramref name="address"/> is unreachable or expired.
   /// </summary>
-  /// <param name="address">The <see cref="TAddress"/> to mark as 'invalidated'.</param>
+  /// <param name="address">The <typeparamref name="TAddress"/> to mark as 'invalidated'.</param>
   /// <seealso cref="ResolveAsync(TAddress, CancellationToken)"/>
   void Invalidate(TAddress address);
 }

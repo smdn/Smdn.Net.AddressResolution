@@ -40,6 +40,10 @@ partial class MacAddressResolver {
   /// <param name="predicate">
   /// A <see cref="Predicate{AddressTableEntry}"/> that filters the entries enumerated from <see cref="IAddressTable"/>.
   /// </param>
+  /// <param name="cancellationToken">
+  /// The <see cref="CancellationToken" /> to monitor for cancellation requests.
+  /// The default value is <see langword="default" />.
+  /// </param>
   public IAsyncEnumerable<AddressTableEntry> EnumerateAddressTableEntriesAsync(
     Predicate<AddressTableEntry> predicate,
     CancellationToken cancellationToken = default

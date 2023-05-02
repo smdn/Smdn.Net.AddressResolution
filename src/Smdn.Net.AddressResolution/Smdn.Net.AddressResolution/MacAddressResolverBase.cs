@@ -108,7 +108,7 @@ public abstract class MacAddressResolverBase :
   /// <param name="ipAddress">The <see cref="IPAddress" /> to be resolved.</param>
   /// <param name="cancellationToken">The <see cref="CancellationToken" /> to monitor for cancellation requests. The default value is <see langword="default" />.</param>
   /// <returns>
-  /// A <see cref="ValueTask{PhysicalAddress?}"/> representing the result of address resolution.
+  /// A <see cref="ValueTask{PhysicalAddress}"/> representing the result of address resolution.
   /// If the address is successfully resolved, <see cref="PhysicalAddress"/> representing the resolved address is set. If not, <see langword="null" /> is set.
   /// </returns>
   /// <seealso cref="Invalidate(IPAddress)"/>
@@ -205,7 +205,7 @@ public abstract class MacAddressResolverBase :
   /// <param name="macAddress">The <see cref="PhysicalAddress" /> to be resolved.</param>
   /// <param name="cancellationToken">The <see cref="CancellationToken" /> to monitor for cancellation requests. The default value is <see langword="default" />.</param>
   /// <returns>
-  /// A <see cref="ValueTask{IPAddress?}"/> representing the result of address resolution.
+  /// A <see cref="ValueTask{IPAddress}"/> representing the result of address resolution.
   /// If the address is successfully resolved, <see cref="IPAddress"/> representing the resolved address is set. If not, <see langword="null" /> is set.
   /// </returns>
   /// <seealso cref="Invalidate(PhysicalAddress)"/>
