@@ -7,6 +7,14 @@ using System.Net.NetworkInformation;
 
 namespace Smdn.Net;
 
+/// <summary>Defines the target network interface and/or the network address range.</summary>
+/// <remarks>
+/// <see cref="Smdn.Net.AddressResolution.MacAddressResolver"/> uses <see cref="IPNetworkProfile"/> to specify a
+/// range of network addresses when performing address resolution and network scanning,
+/// as well as the target network interface to be scanned.
+/// </remarks>
+/// <seealso cref="Smdn.Net.AddressResolution.MacAddressResolver"/>
+/// <seealso cref="Smdn.Net.NetworkScanning.NetworkScanner"/>
 public abstract partial class IPNetworkProfile {
   private static Exception CreateIPv6FeatureNotImplemented()
     => new NotImplementedException("IPv6 is not supported yet. Please contribute to the implementation of the feature.");
