@@ -1,7 +1,7 @@
-// Smdn.Net.AddressResolution.dll (Smdn.Net.AddressResolution-1.0.0)
+// Smdn.Net.AddressResolution.dll (Smdn.Net.AddressResolution-1.0.1)
 //   Name: Smdn.Net.AddressResolution
-//   AssemblyVersion: 1.0.0.0
-//   InformationalVersion: 1.0.0+b2ffdef7b9a768c14df101d2076bc63c12331f73
+//   AssemblyVersion: 1.0.1.0
+//   InformationalVersion: 1.0.1+12cda679d681acbeb81dac8a0cb03dbf6a3a0a3d
 //   TargetFramework: .NETCoreApp,Version=v6.0
 //   Configuration: Release
 //   Referenced assemblies:
@@ -49,6 +49,10 @@ namespace Smdn.Net {
     public static IPNetworkProfile Create(IPAddress baseAddress, int prefixLength, NetworkInterface? networkInterface = null) {}
     public static IPNetworkProfile Create(NetworkInterface networkInterface) {}
     public static IPNetworkProfile Create(Predicate<NetworkInterface> predicateForNetworkInterface) {}
+    public static IPNetworkProfile CreateFromNetworkInterface(Guid id) {}
+    public static IPNetworkProfile CreateFromNetworkInterface(PhysicalAddress physicalAddress) {}
+    public static IPNetworkProfile CreateFromNetworkInterface(string id) {}
+    public static IPNetworkProfile CreateFromNetworkInterfaceName(string name) {}
 
     protected IPNetworkProfile(NetworkInterface? networkInterface) {}
 
