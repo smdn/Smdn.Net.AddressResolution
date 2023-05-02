@@ -40,7 +40,7 @@ Many English texts are written with the help of machine translation. We would li
 
 
 ### Sponsor this project / プロジェクトの支援
-This project is open source and its artifacts are free. To continue and sustain development, please consider supporting with [GitHub sponsors](https://github.com/sponsors/smdn?frequency=one-time).
+This project is open source and its artifacts are free. To continue and sustain development, please consider supporting through [GitHub sponsors](https://github.com/sponsors/smdn?frequency=one-time).
 
 
 ### Other Contributions / その他
