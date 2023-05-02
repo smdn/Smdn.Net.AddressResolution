@@ -11,7 +11,9 @@ SPDX-License-Identifier: MIT
     <VersionSuffix></VersionSuffix>
     <PackageValidationBaselineVersion>1.0.0</PackageValidationBaselineVersion>
     <Nullable>enable</Nullable>
-    <NoWarn>CA1848</NoWarn> <!-- use the LoggerMessage delegates instead -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>CA1848;$(NoWarn)</NoWarn> <!-- use the LoggerMessage delegates instead -->
+    <NoWarn>CS1591;$(NoWarn)</NoWarn> <!-- CS1591: Missing XML comment for publicly visible type or member 'Type_or_Member' -->
   </PropertyGroup>
 
   <PropertyGroup Label="assembly attributes">
