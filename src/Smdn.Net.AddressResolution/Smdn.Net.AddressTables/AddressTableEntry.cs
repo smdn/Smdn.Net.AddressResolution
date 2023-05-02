@@ -7,7 +7,6 @@ using System.Diagnostics.CodeAnalysis;
 #endif
 using System.Net;
 using System.Net.NetworkInformation;
-using System.Runtime.InteropServices;
 
 namespace Smdn.Net.AddressTables;
 
@@ -96,14 +95,6 @@ public readonly struct AddressTableEntry : IEquatable<AddressTableEntry>, IEquat
     => $"{{IP={IPAddress}, MAC={PhysicalAddress?.ToMacAddressString() ?? "(null)"}, IsPermanent={IsPermanent}, State={State}, Iface={InterfaceId}}}";
 
   private sealed class EqualityComparer : EqualityComparer<AddressTableEntry> {
-    // On Windows, NetworkInterface.Id is set to a string representing
-    // the GUID of the network interface, but its casing conventions is
-    // not specified explicitly, so perform the case-insensitive comparison.
-    private static readonly StringComparer interfaceIdComparer =
-      RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-        ? StringComparer.OrdinalIgnoreCase
-        : StringComparer.Ordinal;
-
     private readonly bool compareExceptState;
 
     public EqualityComparer(bool compareExceptState)
@@ -112,7 +103,7 @@ public readonly struct AddressTableEntry : IEquatable<AddressTableEntry>, IEquat
     }
 
     internal static bool InterfaceIdEquals(string? x, string? y)
-      => interfaceIdComparer.Equals(x, y);
+      => NetworkInterfaceIdComparer.Comparer.Equals(x, y);
 
     public override bool Equals(AddressTableEntry x, AddressTableEntry y)
       =>
@@ -125,7 +116,7 @@ public readonly struct AddressTableEntry : IEquatable<AddressTableEntry>, IEquat
     public override int GetHashCode(AddressTableEntry obj)
     {
       static int GetHashCodeForInterfaceId(AddressTableEntry obj)
-        => obj.InterfaceId is null ? 0 : interfaceIdComparer.GetHashCode(obj.InterfaceId);
+        => obj.InterfaceId is null ? 0 : NetworkInterfaceIdComparer.Comparer.GetHashCode(obj.InterfaceId);
 
 #if SYSTEM_HASHCODE
       return HashCode.Combine(
