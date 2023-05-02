@@ -63,7 +63,7 @@ $([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)..\..\examples\mac-a
 ```
 
 ## Contributing
-This project welcomes contributions, feedback and suggestions. You can contribute to this project by submitting [Issues]($(RepositoryUrl)/issues/) or [Pull Requests]($(RepositoryUrl)/pulls/) on the [GitHub repository]($(RepositoryUrl)).
+This project welcomes contributions, feedbacks and suggestions. You can contribute to this project by submitting [Issues]($(RepositoryUrl)/issues/new/choose) or [Pull Requests]($(RepositoryUrl)/pulls/) on the [GitHub repository]($(RepositoryUrl)).
 ]]></PackageReadmeFileContent>
     </PropertyGroup>
   </Target>
