@@ -96,7 +96,7 @@ public abstract partial class NetworkScanner : INetworkScanner {
       foreach (var address in addresses) {
         cancellationToken.ThrowIfCancellationRequested();
 
-        await ScanAsyncCore(address, cancellationToken);
+        await ScanAsyncCore(address, cancellationToken).ConfigureAwait(false);
       }
     }
   }
