@@ -316,6 +316,7 @@ public abstract class CommandNetworkScanner : INetworkScanner {
         );
       }
     }
+#pragma warning disable CA1031
     catch (Exception ex) {
       logger?.LogError(
         ex,
@@ -324,5 +325,6 @@ public abstract class CommandNetworkScanner : INetworkScanner {
         commandProcessStartInfo.Arguments
       );
     }
+#pragma warning restore CA1031
   }
 }

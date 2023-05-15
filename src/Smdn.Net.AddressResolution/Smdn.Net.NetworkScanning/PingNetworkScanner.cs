@@ -65,6 +65,7 @@ public sealed class PingNetworkScanner : NetworkScanner {
         reply.RoundtripTime
       );
     }
+#pragma warning disable CA1031
     catch (Exception ex) {
       Logger?.LogWarning(
         exception: ex,
@@ -72,5 +73,6 @@ public sealed class PingNetworkScanner : NetworkScanner {
         address
       );
     }
+#pragma warning restore CA1031
   }
 }
