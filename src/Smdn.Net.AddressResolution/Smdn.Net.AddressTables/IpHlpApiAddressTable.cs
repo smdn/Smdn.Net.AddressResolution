@@ -73,7 +73,9 @@ public sealed class IpHlpApiAddressTable : AddressTable {
 
     ValueTask<MIB_IPNET_TABLE2> GetIpNetTable2Async()
     {
+#pragma warning disable CA2000
       var ret = GetIpNetTable2(ADDRESS_FAMILY.AF_UNSPEC, out var table);
+#pragma warning restore CA2000
 
       if (ret.Failed) {
         Logger?.LogWarning("GetIpNetTable2 {Result}", ret.ToString());
