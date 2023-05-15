@@ -90,6 +90,9 @@ partial class MacAddressResolver {
     CancellationToken cancellationToken
   )
   {
+    if (predicate is null)
+      throw new ArgumentNullException(nameof(predicate));
+
     AddressTableEntry priorCandidate = default;
     AddressTableEntry candidate = default;
 
