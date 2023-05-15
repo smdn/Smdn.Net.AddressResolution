@@ -88,6 +88,7 @@ public abstract class MacAddressResolverBase :
   /*
    * IPAddress -> PhysicalAddress
    */
+#pragma warning disable CA1033
   ValueTask<PhysicalAddress?> IAddressResolver<IPAddress, PhysicalAddress>.ResolveAsync(
     IPAddress address,
     CancellationToken cancellationToken
@@ -101,6 +102,7 @@ public abstract class MacAddressResolverBase :
     IPAddress address
   )
     => Invalidate(ipAddress: address);
+#pragma warning restore CA1033
 
   /// <summary>
   /// Resolves from an IP address to its corresponding MAC address.
@@ -185,6 +187,7 @@ public abstract class MacAddressResolverBase :
   /*
    * PhysicalAddress -> IPAddress
    */
+#pragma warning disable CA1033
   ValueTask<IPAddress?> IAddressResolver<PhysicalAddress, IPAddress>.ResolveAsync(
     PhysicalAddress address,
     CancellationToken cancellationToken
@@ -198,6 +201,7 @@ public abstract class MacAddressResolverBase :
     PhysicalAddress address
   )
     => Invalidate(macAddress: address);
+#pragma warning restore CA1033
 
   /// <summary>
   /// Resolves from a MAC address to its corresponding IP address.
