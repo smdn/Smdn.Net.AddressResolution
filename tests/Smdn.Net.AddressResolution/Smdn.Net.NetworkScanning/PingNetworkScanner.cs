@@ -18,7 +18,7 @@ public class PingNetworkScannerTests : NetworkScannerTestsBase {
 
   [Test]
   public void IsSupported()
-    => Assert.IsTrue(PingNetworkScanner.IsSupported, $"{nameof(PingNetworkScanner.IsSupported)} must be always true");
+    => Assert.That(PingNetworkScanner.IsSupported, Is.True, $"{nameof(PingNetworkScanner.IsSupported)} must be always true");
 
   [Test]
   public void Ctor()

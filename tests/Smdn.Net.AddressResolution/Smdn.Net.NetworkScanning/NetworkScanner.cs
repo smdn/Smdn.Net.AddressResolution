@@ -40,14 +40,14 @@ public class NetworkScannerTests : NetworkScannerTestsBase {
   public void Create()
   {
     try {
-      Assert.IsNotNull(NetworkScanner.Create(networkProfile: null));
+      Assert.That(NetworkScanner.Create(networkProfile: null), Is.Not.Null);
     }
     catch (PlatformNotSupportedException) {
       // possible and expected exception
     }
 
     try {
-      Assert.IsNotNull(NetworkScanner.Create(networkProfile: CreatePseudoNetworkProfile()));
+      Assert.That(NetworkScanner.Create(networkProfile: CreatePseudoNetworkProfile()), Is.Not.Null);
     }
     catch (PlatformNotSupportedException) {
       // possible and expected exception

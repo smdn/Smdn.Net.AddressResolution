@@ -103,7 +103,7 @@ public partial class MacAddressResolverTests {
           serviceProvider: null
         );
 
-        Assert.IsFalse(resolver.CanPerformNetworkScan, nameof(resolver.CanPerformNetworkScan));
+        Assert.That(resolver.CanPerformNetworkScan, Is.False, nameof(resolver.CanPerformNetworkScan));
       },
       "#1"
     );
@@ -116,7 +116,7 @@ public partial class MacAddressResolverTests {
           serviceProvider: new ServiceCollection().BuildServiceProvider()
         );
 
-        Assert.IsFalse(resolver.CanPerformNetworkScan, nameof(resolver.CanPerformNetworkScan));
+        Assert.That(resolver.CanPerformNetworkScan, Is.False, nameof(resolver.CanPerformNetworkScan));
       },
       "#2"
     );
@@ -184,7 +184,7 @@ public partial class MacAddressResolverTests {
   [TestCaseSource(nameof(YieldTestCases_CanPerformNetworkScan))]
   public void CanPerformNetworkScan(MacAddressResolver resolver, bool expected, string message)
   {
-    Assert.AreEqual(expected, resolver.CanPerformNetworkScan, message);
+    Assert.That(resolver.CanPerformNetworkScan, Is.EqualTo(expected), message);
 
     resolver.Dispose();
   }
@@ -215,13 +215,13 @@ public partial class MacAddressResolverTests {
 
     if (typeOfExpectedException is null) {
       Assert.DoesNotThrow(() => resolver.NetworkScanInterval = networkScanInterval);
-      Assert.AreEqual(networkScanInterval, resolver.NetworkScanInterval, nameof(resolver.NetworkScanInterval));
+      Assert.That(resolver.NetworkScanInterval, Is.EqualTo(networkScanInterval), nameof(resolver.NetworkScanInterval));
     }
     else {
       var initialNetworkScanInterval = resolver.NetworkScanInterval;
 
       Assert.Throws(typeOfExpectedException, () => resolver.NetworkScanInterval = networkScanInterval);
-      Assert.AreEqual(initialNetworkScanInterval, resolver.NetworkScanInterval, nameof(resolver.NetworkScanInterval));
+      Assert.That(resolver.NetworkScanInterval, Is.EqualTo(initialNetworkScanInterval), nameof(resolver.NetworkScanInterval));
     }
   }
 
@@ -251,13 +251,13 @@ public partial class MacAddressResolverTests {
 
     if (typeOfExpectedException is null) {
       Assert.DoesNotThrow(() => resolver.NetworkScanMinInterval = networkScanMinInterval);
-      Assert.AreEqual(networkScanMinInterval, resolver.NetworkScanMinInterval, nameof(resolver.NetworkScanMinInterval));
+      Assert.That(resolver.NetworkScanMinInterval, Is.EqualTo(networkScanMinInterval), nameof(resolver.NetworkScanMinInterval));
     }
     else {
       var initialNetworkScanMinInterval = resolver.NetworkScanMinInterval;
 
       Assert.Throws(typeOfExpectedException, () => resolver.NetworkScanMinInterval = networkScanMinInterval);
-      Assert.AreEqual(initialNetworkScanMinInterval, resolver.NetworkScanMinInterval, nameof(resolver.NetworkScanMinInterval));
+      Assert.That(resolver.NetworkScanMinInterval, Is.EqualTo(initialNetworkScanMinInterval), nameof(resolver.NetworkScanMinInterval));
     }
   }
 
@@ -269,15 +269,15 @@ public partial class MacAddressResolverTests {
       networkScanner: new PseudoNetworkScanner()
     );
 
-    Assert.IsFalse(resolver.HasInvalidated, "initial state");
+    Assert.That(resolver.HasInvalidated, Is.False, "initial state");
 
     resolver.Invalidate(TestIPAddress);
 
-    Assert.IsTrue(resolver.HasInvalidated, "after invalidate IP address");
+    Assert.That(resolver.HasInvalidated, Is.True, "after invalidate IP address");
 
     resolver.Invalidate(TestMacAddress);
 
-    Assert.IsTrue(resolver.HasInvalidated, "after invalidate MAC address");
+    Assert.That(resolver.HasInvalidated, Is.True, "after invalidate MAC address");
   }
 
   [Test]
@@ -288,15 +288,15 @@ public partial class MacAddressResolverTests {
       networkScanner: new PseudoNetworkScanner()
     );
 
-    Assert.IsFalse(resolver.HasInvalidated, "initial state");
+    Assert.That(resolver.HasInvalidated, Is.False, "initial state");
 
     resolver.Invalidate(TestMacAddress);
 
-    Assert.IsTrue(resolver.HasInvalidated, "after invalidate MAC address");
+    Assert.That(resolver.HasInvalidated, Is.True, "after invalidate MAC address");
 
     resolver.Invalidate(TestIPAddress);
 
-    Assert.IsTrue(resolver.HasInvalidated, "after invalidate IP address");
+    Assert.That(resolver.HasInvalidated, Is.True, "after invalidate IP address");
   }
 
   [Test]
@@ -316,8 +316,8 @@ public partial class MacAddressResolverTests {
 
     resolver.Dispose();
 
-    Assert.IsFalse(addressTable.IsDisposed, $"{nameof(IAddressTable)} should not be disposed by default.");
-    Assert.IsFalse(networkScanner.IsDisposed, $"{nameof(INetworkScanner)} should not be disposed by default.");
+    Assert.That(addressTable.IsDisposed, Is.False, $"{nameof(IAddressTable)} should not be disposed by default.");
+    Assert.That(networkScanner.IsDisposed, Is.False, $"{nameof(INetworkScanner)} should not be disposed by default.");
   }
 
   [Test]
@@ -332,8 +332,8 @@ public partial class MacAddressResolverTests {
 
     resolver.Dispose();
 
-    Assert.IsFalse(addressTable.IsDisposed, $"{nameof(IAddressTable)} should not be disposed by default.");
-    Assert.IsFalse(networkScanner.IsDisposed, $"{nameof(INetworkScanner)} should not be disposed by default.");
+    Assert.That(addressTable.IsDisposed, Is.False, $"{nameof(IAddressTable)} should not be disposed by default.");
+    Assert.That(networkScanner.IsDisposed, Is.False, $"{nameof(INetworkScanner)} should not be disposed by default.");
   }
 
   [TestCase(true, true)]
@@ -356,12 +356,12 @@ public partial class MacAddressResolverTests {
 
     resolver.Dispose();
 
-    Assert.AreEqual(addressTable.IsDisposed, shouldDisposeAddressTable);
-    Assert.AreEqual(networkScanner.IsDisposed, shouldDisposeNetworkScanner);
+    Assert.That(shouldDisposeAddressTable, Is.EqualTo(addressTable.IsDisposed));
+    Assert.That(shouldDisposeNetworkScanner, Is.EqualTo(networkScanner.IsDisposed));
 
     Assert.DoesNotThrow(() => resolver.Dispose(), "dispose again");
 
-    Assert.AreEqual(addressTable.IsDisposed, shouldDisposeAddressTable);
-    Assert.AreEqual(networkScanner.IsDisposed, shouldDisposeNetworkScanner);
+    Assert.That(shouldDisposeAddressTable, Is.EqualTo(addressTable.IsDisposed));
+    Assert.That(shouldDisposeNetworkScanner, Is.EqualTo(networkScanner.IsDisposed));
   }
 }

@@ -21,7 +21,7 @@ partial class MacAddressResolverTests {
       networkScanner: null
     );
 
-    Assert.IsFalse(resolver.CanPerformNetworkScan, nameof(resolver.CanPerformNetworkScan));
+    Assert.That(resolver.CanPerformNetworkScan, Is.False, nameof(resolver.CanPerformNetworkScan));
     Assert.ThrowsAsync<InvalidOperationException>(async () => await resolver.RefreshInvalidatedAddressesAsync());
   }
 
@@ -37,18 +37,15 @@ partial class MacAddressResolverTests {
 
     resolver.Invalidate(TestMacAddress);
 
-    Assert.IsTrue(resolver.HasInvalidated, $"{nameof(resolver.HasInvalidated)} brefore refresh");
+    Assert.That(resolver.HasInvalidated, Is.True, $"{nameof(resolver.HasInvalidated)} brefore refresh");
 
     Assert.DoesNotThrowAsync(async () => await resolver.RefreshInvalidatedAddressesAsync());
 
-    Assert.IsFalse(resolver.HasInvalidated, $"{nameof(resolver.HasInvalidated)} after refresh");
+    Assert.That(resolver.HasInvalidated, Is.False, $"{nameof(resolver.HasInvalidated)} after refresh");
 
-    Assert.IsTrue(scanner.FullScanRequested, nameof(scanner.FullScanRequested));
-    Assert.IsFalse(scanner.PartialScanRequested, nameof(scanner.PartialScanRequested));
-    CollectionAssert.IsEmpty(
-      scanner.ScanRequestedAddresses,
-      nameof(scanner.ScanRequestedAddresses)
-    );
+    Assert.That(scanner.FullScanRequested, Is.True, nameof(scanner.FullScanRequested));
+    Assert.That(scanner.PartialScanRequested, Is.False, nameof(scanner.PartialScanRequested));
+    Assert.That(scanner.ScanRequestedAddresses, Is.Empty, nameof(scanner.ScanRequestedAddresses));
   }
 
   [Test]
@@ -63,17 +60,16 @@ partial class MacAddressResolverTests {
 
     resolver.Invalidate(TestIPAddress);
 
-    Assert.IsTrue(resolver.HasInvalidated, $"{nameof(resolver.HasInvalidated)} brefore refresh");
+    Assert.That(resolver.HasInvalidated, Is.True, $"{nameof(resolver.HasInvalidated)} brefore refresh");
 
     Assert.DoesNotThrowAsync(async () => await resolver.RefreshInvalidatedAddressesAsync());
 
-    Assert.IsFalse(resolver.HasInvalidated, $"{nameof(resolver.HasInvalidated)} after refresh");
+    Assert.That(resolver.HasInvalidated, Is.False, $"{nameof(resolver.HasInvalidated)} after refresh");
 
-    Assert.IsFalse(scanner.FullScanRequested, nameof(scanner.FullScanRequested));
-    Assert.IsTrue(scanner.PartialScanRequested, nameof(scanner.PartialScanRequested));
-    CollectionAssert.AreEqual(
-      new[] { TestIPAddress },
-      scanner.ScanRequestedAddresses,
+    Assert.That(scanner.FullScanRequested, Is.False, nameof(scanner.FullScanRequested));
+    Assert.That(scanner.PartialScanRequested, Is.True, nameof(scanner.PartialScanRequested));
+    Assert.That(
+      scanner.ScanRequestedAddresses, Is.EqualTo(new[] { TestIPAddress }).AsCollection,
       nameof(scanner.ScanRequestedAddresses)
     );
   }
@@ -88,15 +84,15 @@ partial class MacAddressResolverTests {
       networkScanner: scanner
     );
 
-    Assert.IsFalse(resolver.HasInvalidated, $"{nameof(resolver.HasInvalidated)} brefore refresh");
+    Assert.That(resolver.HasInvalidated, Is.False, $"{nameof(resolver.HasInvalidated)} brefore refresh");
 
     Assert.DoesNotThrowAsync(async () => await resolver.RefreshInvalidatedAddressesAsync());
 
-    Assert.IsFalse(resolver.HasInvalidated, $"{nameof(resolver.HasInvalidated)} after refresh");
+    Assert.That(resolver.HasInvalidated, Is.False, $"{nameof(resolver.HasInvalidated)} after refresh");
 
-    Assert.IsFalse(scanner.FullScanRequested, nameof(scanner.FullScanRequested));
-    Assert.IsFalse(scanner.PartialScanRequested, nameof(scanner.PartialScanRequested));
-    CollectionAssert.IsEmpty(scanner.ScanRequestedAddresses, nameof(scanner.ScanRequestedAddresses));
+    Assert.That(scanner.FullScanRequested, Is.False, nameof(scanner.FullScanRequested));
+    Assert.That(scanner.PartialScanRequested, Is.False, nameof(scanner.PartialScanRequested));
+    Assert.That(scanner.ScanRequestedAddresses, Is.Empty, nameof(scanner.ScanRequestedAddresses));
   }
 
   [TestCase(1)]
@@ -136,10 +132,10 @@ partial class MacAddressResolverTests {
       }
     );
 
-    Assert.Greater(scanner.NumberOfTasksPerformed, 1, nameof(scanner.NumberOfTasksPerformed));
-    Assert.LessOrEqual(
+    Assert.That(scanner.NumberOfTasksPerformed, Is.GreaterThan(1), nameof(scanner.NumberOfTasksPerformed));
+    Assert.That(
       scanner.MaxNumberOfTasksPerformedInParallel,
-      parallelCountForRefreshInvalidatedAddresses,
+      Is.LessThanOrEqualTo(parallelCountForRefreshInvalidatedAddresses),
       nameof(scanner.MaxNumberOfTasksPerformedInParallel)
     );
   }

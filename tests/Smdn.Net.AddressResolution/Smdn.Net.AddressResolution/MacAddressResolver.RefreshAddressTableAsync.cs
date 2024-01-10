@@ -21,7 +21,7 @@ partial class MacAddressResolverTests {
       networkScanner: null
     );
 
-    Assert.IsFalse(resolver.CanPerformNetworkScan, nameof(resolver.CanPerformNetworkScan));
+    Assert.That(resolver.CanPerformNetworkScan, Is.False, nameof(resolver.CanPerformNetworkScan));
     Assert.ThrowsAsync<InvalidOperationException>(async () => await resolver.RefreshAddressTableAsync());
   }
 
@@ -38,18 +38,15 @@ partial class MacAddressResolverTests {
     resolver.Invalidate(TestIPAddress);
     resolver.Invalidate(TestMacAddress);
 
-    Assert.IsTrue(resolver.HasInvalidated, $"{nameof(resolver.HasInvalidated)} brefore refresh");
+    Assert.That(resolver.HasInvalidated, Is.True, $"{nameof(resolver.HasInvalidated)} brefore refresh");
 
     Assert.DoesNotThrowAsync(async () => await resolver.RefreshAddressTableAsync());
 
-    Assert.IsFalse(resolver.HasInvalidated, $"{nameof(resolver.HasInvalidated)} after refresh");
+    Assert.That(resolver.HasInvalidated, Is.False, $"{nameof(resolver.HasInvalidated)} after refresh");
 
-    Assert.IsTrue(scanner.FullScanRequested, nameof(scanner.FullScanRequested));
-    Assert.IsFalse(scanner.PartialScanRequested, nameof(scanner.PartialScanRequested));
-    CollectionAssert.IsEmpty(
-      scanner.ScanRequestedAddresses,
-      nameof(scanner.ScanRequestedAddresses)
-    );
+    Assert.That(scanner.FullScanRequested, Is.True, nameof(scanner.FullScanRequested));
+    Assert.That(scanner.PartialScanRequested, Is.False, nameof(scanner.PartialScanRequested));
+    Assert.That(scanner.ScanRequestedAddresses, Is.Empty, nameof(scanner.ScanRequestedAddresses));
   }
 
   [Test]
@@ -62,16 +59,16 @@ partial class MacAddressResolverTests {
       networkScanner: scanner
     );
 
-    Assert.IsFalse(resolver.HasInvalidated, $"{nameof(resolver.HasInvalidated)} brefore refresh");
+    Assert.That(resolver.HasInvalidated, Is.False, $"{nameof(resolver.HasInvalidated)} brefore refresh");
 
     Assert.DoesNotThrowAsync(async () => await resolver.RefreshAddressTableAsync());
 
-    Assert.IsFalse(resolver.HasInvalidated, $"{nameof(resolver.HasInvalidated)} after refresh");
+    Assert.That(resolver.HasInvalidated, Is.False, $"{nameof(resolver.HasInvalidated)} after refresh");
 
-    Assert.IsTrue(scanner.FullScanRequested, nameof(scanner.FullScanRequested));
-    Assert.IsFalse(scanner.PartialScanRequested, nameof(scanner.PartialScanRequested));
-    CollectionAssert.IsEmpty(
-      scanner.ScanRequestedAddresses,
+    Assert.That(scanner.FullScanRequested, Is.True, nameof(scanner.FullScanRequested));
+    Assert.That(scanner.PartialScanRequested, Is.False, nameof(scanner.PartialScanRequested));
+    Assert.That(
+      scanner.ScanRequestedAddresses, Is.Empty,
       nameof(scanner.ScanRequestedAddresses)
     );
   }
@@ -98,13 +95,13 @@ partial class MacAddressResolverTests {
 
     Assert.DoesNotThrowAsync(async () => await resolver.RefreshAddressTableAsync(), $"{nameof(resolver.RefreshAddressTableAsync)} #1");
 
-    Assert.IsTrue(scanner.FullScanRequested, $"{nameof(scanner.FullScanRequested)} #1");
+    Assert.That(scanner.FullScanRequested, Is.True, $"{nameof(scanner.FullScanRequested)} #1");
 
     scanner.Reset();
 
     Assert.DoesNotThrowAsync(async () => await resolver.RefreshAddressTableAsync(), $"{nameof(resolver.RefreshAddressTableAsync)} #2");
 
-    Assert.IsTrue(scanner.FullScanRequested, $"{nameof(scanner.FullScanRequested)} #2");
+    Assert.That(scanner.FullScanRequested, Is.True, $"{nameof(scanner.FullScanRequested)} #2");
   }
 
   [Test]
@@ -135,7 +132,7 @@ partial class MacAddressResolverTests {
       }
     );
 
-    Assert.AreEqual(1, scanner.MaxNumberOfTasksPerformedInParallel, nameof(scanner.MaxNumberOfTasksPerformedInParallel));
-    Assert.Greater(scanner.NumberOfTasksPerformed, 1, nameof(scanner.NumberOfTasksPerformed));
+    Assert.That(scanner.MaxNumberOfTasksPerformedInParallel, Is.EqualTo(1), nameof(scanner.MaxNumberOfTasksPerformedInParallel));
+    Assert.That(scanner.NumberOfTasksPerformed, Is.GreaterThan(1), nameof(scanner.NumberOfTasksPerformed));
   }
 }

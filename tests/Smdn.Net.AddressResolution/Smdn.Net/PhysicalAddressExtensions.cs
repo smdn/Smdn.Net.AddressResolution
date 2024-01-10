@@ -13,7 +13,7 @@ public partial class PhysicalAddressExtensionsTests {
 
   [Test]
   public static void ToMacAddressString()
-    => Assert.AreEqual("00:00:5E:00:53:00", TestMacAddress.ToMacAddressString());
+    => Assert.That(TestMacAddress.ToMacAddressString(), Is.EqualTo("00:00:5E:00:53:00"));
 
   [Test]
   public static void ToMacAddressString_ArgumentNull(
@@ -29,5 +29,5 @@ public partial class PhysicalAddressExtensionsTests {
   [TestCase('-', "00-00-5E-00-53-00")]
   [TestCase('\0', "00005E005300")]
   public static void ToMacAddressString(char delimiter, string expected)
-    => Assert.AreEqual(expected, TestMacAddress.ToMacAddressString(delimiter: delimiter));
+    => Assert.That(TestMacAddress.ToMacAddressString(delimiter: delimiter), Is.EqualTo(expected));
 }

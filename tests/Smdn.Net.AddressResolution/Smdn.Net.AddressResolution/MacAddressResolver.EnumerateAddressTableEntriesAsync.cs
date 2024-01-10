@@ -67,9 +67,9 @@ partial class MacAddressResolverTests {
       networkScanner: NetworkScanner.Null
     );
 
-    CollectionAssert.AreEqual(
-      addressTableEntries,
-      await resolver.EnumerateAddressTableEntriesAsync().ToListAsync()
+    Assert.That(
+      await resolver.EnumerateAddressTableEntriesAsync().ToListAsync(),
+      Is.EqualTo(addressTableEntries).AsCollection
     );
   }
 
@@ -88,9 +88,9 @@ partial class MacAddressResolverTests {
       networkScanner: NetworkScanner.Null
     );
 
-    CollectionAssert.AreEqual(
-      addressTableEntries.Skip(1).Take(1),
-      await resolver.EnumerateAddressTableEntriesAsync().ToListAsync()
+    Assert.That(
+      await resolver.EnumerateAddressTableEntriesAsync().ToListAsync(),
+      Is.EqualTo(addressTableEntries.Skip(1).Take(1)).AsCollection
     );
   }
 
@@ -109,11 +109,12 @@ partial class MacAddressResolverTests {
       networkScanner: NetworkScanner.Null
     );
 
-    CollectionAssert.AreEqual(
-      RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+    Assert.That(
+      await resolver.EnumerateAddressTableEntriesAsync().ToListAsync(),
+      Is.EqualTo(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
         ? addressTableEntries
-        : addressTableEntries.Take(1),
-      await resolver.EnumerateAddressTableEntriesAsync().ToListAsync()
+        : addressTableEntries.Take(1)
+      ).AsCollection
     );
   }
 
@@ -134,9 +135,9 @@ partial class MacAddressResolverTests {
       networkScanner: NetworkScanner.Null
     );
 
-    CollectionAssert.AreEqual(
-      addressTableEntries.Where(static entry => entry.IPAddress!.AddressFamily == AddressFamily.InterNetwork),
-      await resolver.EnumerateAddressTableEntriesAsync().ToListAsync()
+    Assert.That(
+      await resolver.EnumerateAddressTableEntriesAsync().ToListAsync(),
+      Is.EqualTo(addressTableEntries.Where(static entry => entry.IPAddress!.AddressFamily == AddressFamily.InterNetwork)).AsCollection
     );
   }
 
@@ -157,9 +158,9 @@ partial class MacAddressResolverTests {
       networkScanner: NetworkScanner.Null
     );
 
-    CollectionAssert.AreEqual(
-      addressTableEntries.Where(static entry => entry.IPAddress!.AddressFamily == AddressFamily.InterNetworkV6),
-      await resolver.EnumerateAddressTableEntriesAsync().ToListAsync()
+    Assert.That(
+      await resolver.EnumerateAddressTableEntriesAsync().ToListAsync(),
+      Is.EqualTo(addressTableEntries.Where(static entry => entry.IPAddress!.AddressFamily == AddressFamily.InterNetworkV6)).AsCollection
     );
   }
 
@@ -180,9 +181,9 @@ partial class MacAddressResolverTests {
       networkScanner: NetworkScanner.Null
     );
 
-    CollectionAssert.AreEqual(
-      addressTableEntries,
-      await resolver.EnumerateAddressTableEntriesAsync().ToListAsync()
+    Assert.That(
+      await resolver.EnumerateAddressTableEntriesAsync().ToListAsync(),
+      Is.EqualTo(addressTableEntries).AsCollection
     );
   }
 
@@ -201,8 +202,9 @@ partial class MacAddressResolverTests {
       networkScanner: NetworkScanner.Null
     );
 
-    CollectionAssert.IsEmpty(
-      await resolver.EnumerateAddressTableEntriesAsync().ToListAsync()
+    Assert.That(
+      await resolver.EnumerateAddressTableEntriesAsync().ToListAsync(),
+      Is.Empty
     );
   }
 
@@ -222,7 +224,7 @@ partial class MacAddressResolverTests {
     );
     using var cts = new CancellationTokenSource();
     Predicate<AddressTableEntry> predicate = e => {
-      Assert.IsFalse(cts.IsCancellationRequested);
+      Assert.That(cts.IsCancellationRequested, Is.False);
 
       if (e.InterfaceId == "wlan0")
         cts.Cancel();
@@ -240,7 +242,7 @@ partial class MacAddressResolverTests {
     );
 
     Assert.That(ex, Is.InstanceOf<OperationCanceledException>().Or.InstanceOf<TaskCanceledException>());
-    Assert.AreEqual(1, count, nameof(count));
+    Assert.That(count, Is.EqualTo(1), nameof(count));
   }
 
   private static System.Collections.IEnumerable YieldTestCases_EnumerateAddressTableEntriesAsync_Predicate()
@@ -311,9 +313,9 @@ partial class MacAddressResolverTests {
       networkScanner: NetworkScanner.Null
     );
 
-    CollectionAssert.AreEqual(
-      expected,
+    Assert.That(
       await resolver.EnumerateAddressTableEntriesAsync(predicate: predicate).ToListAsync(),
+      Is.EqualTo(expected).AsCollection,
       message
     );
   }

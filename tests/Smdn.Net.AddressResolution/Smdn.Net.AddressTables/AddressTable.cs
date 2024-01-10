@@ -28,7 +28,7 @@ public class AddressTableTests {
   public void Create()
   {
     try {
-      Assert.IsNotNull(AddressTable.Create());
+      Assert.That(AddressTable.Create(), Is.Not.Null);
     }
     catch (PlatformNotSupportedException) {
       // possible and expected exception

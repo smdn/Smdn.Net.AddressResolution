@@ -19,16 +19,16 @@ public class AddressTableEntryTests {
   {
     var entry = default(AddressTableEntry);
 
-    Assert.IsTrue(entry.IsEmpty, nameof(entry.IsEmpty));
-    Assert.IsNull(entry.IPAddress, nameof(entry.IPAddress));
-    Assert.IsNull(entry.PhysicalAddress, nameof(entry.PhysicalAddress));
-    Assert.IsFalse(entry.IsPermanent, nameof(entry.IsPermanent));
-    Assert.AreEqual(default(AddressTableEntryState), entry.State, nameof(entry.State));
-    Assert.IsNull(entry.InterfaceId, nameof(entry.InterfaceId));
+    Assert.That(entry.IsEmpty, Is.True, nameof(entry.IsEmpty));
+    Assert.That(entry.IPAddress, Is.Null, nameof(entry.IPAddress));
+    Assert.That(entry.PhysicalAddress, Is.Null, nameof(entry.PhysicalAddress));
+    Assert.That(entry.IsPermanent, Is.False, nameof(entry.IsPermanent));
+    Assert.That(entry.State, Is.EqualTo(default(AddressTableEntryState)), nameof(entry.State));
+    Assert.That(entry.InterfaceId, Is.Null, nameof(entry.InterfaceId));
 
-    Assert.IsTrue(entry.Equals(AddressTableEntry.Empty), "equals to AddressTableEntry.Empty");
-    Assert.IsTrue(entry.Equals((IPAddress?)null), "equals to (IPAddress)null");
-    Assert.IsTrue(entry.Equals((PhysicalAddress?)null), "equals to (PhysicalAddress)null");
+    Assert.That(entry.Equals(AddressTableEntry.Empty), Is.True, "equals to AddressTableEntry.Empty");
+    Assert.That(entry.Equals((IPAddress?)null), Is.True, "equals to (IPAddress)null");
+    Assert.That(entry.Equals((PhysicalAddress?)null), Is.True, "equals to (PhysicalAddress)null");
 
     Assert.DoesNotThrow(() => entry.ToString());
     Assert.DoesNotThrow(() => entry.GetHashCode());
@@ -37,17 +37,18 @@ public class AddressTableEntryTests {
   [Test]
   public void IsEmpty()
   {
-    Assert.IsTrue(default(AddressTableEntry).IsEmpty);
-    Assert.IsTrue(AddressTableEntry.Empty.IsEmpty);
+    Assert.That(default(AddressTableEntry).IsEmpty, Is.True);
+    Assert.That(AddressTableEntry.Empty.IsEmpty, Is.True);
 
-    Assert.IsFalse(
+    Assert.That(
       new AddressTableEntry(
         ipAddress: TestIPAddress,
         physicalAddress: null,
         isPermanent: true,
         state: AddressTableEntryState.None,
         interfaceId: null
-      ).IsEmpty
+      ).IsEmpty,
+      Is.False
     );
   }
 
@@ -208,8 +209,8 @@ public class AddressTableEntryTests {
   [TestCaseSource(nameof(YieldTestCases_Equals))]
   public void Equals(bool areEqual, AddressTableEntry x, AddressTableEntry y, string? message)
   {
-    Assert.AreEqual(areEqual, x.Equals(y), $"{message}: {x} {(areEqual ? "==" : "!=")} {y}");
-    Assert.AreEqual(areEqual, y.Equals(x), $"{message}: {y} {(areEqual ? "==" : "!=")} {x}");
+    Assert.That(x.Equals(y), Is.EqualTo(areEqual), $"{message}: {x} {(areEqual ? "==" : "!=")} {y}");
+    Assert.That(y.Equals(x), Is.EqualTo(areEqual), $"{message}: {y} {(areEqual ? "==" : "!=")} {x}");
   }
 
   [TestCaseSource(nameof(YieldTestCases_Equals))]
@@ -219,16 +220,16 @@ public class AddressTableEntryTests {
     var hashCodeY = y.GetHashCode();
 
     if (areEqual)
-      Assert.AreEqual(hashCodeX, hashCodeY, $"{message}: HashCode {x} == {y}");
+      Assert.That(hashCodeY, Is.EqualTo(hashCodeX), $"{message}: HashCode {x} == {y}");
     else
-      Assert.AreNotEqual(hashCodeX, hashCodeY, $"{message}: HashCode {x} != {y}");
+      Assert.That(hashCodeY, Is.Not.EqualTo(hashCodeX), $"{message}: HashCode {x} != {y}");
   }
 
   [TestCaseSource(nameof(YieldTestCases_Equals))]
   public void DefaultEqualityComparer_Equals(bool areEqual, AddressTableEntry x, AddressTableEntry y, string? message)
   {
-    Assert.AreEqual(areEqual, AddressTableEntry.DefaultEqualityComparer.Equals(x, y), $"{message}: {x} {(areEqual ? "==" : "!=")} {y}");
-    Assert.AreEqual(areEqual, AddressTableEntry.DefaultEqualityComparer.Equals(y, x), $"{message}: {y} {(areEqual ? "==" : "!=")} {x}");
+    Assert.That(AddressTableEntry.DefaultEqualityComparer.Equals(x, y), Is.EqualTo(areEqual), $"{message}: {x} {(areEqual ? "==" : "!=")} {y}");
+    Assert.That(AddressTableEntry.DefaultEqualityComparer.Equals(y, x), Is.EqualTo(areEqual), $"{message}: {y} {(areEqual ? "==" : "!=")} {x}");
   }
 
   [TestCaseSource(nameof(YieldTestCases_Equals))]
@@ -238,16 +239,16 @@ public class AddressTableEntryTests {
     var hashCodeY = AddressTableEntry.DefaultEqualityComparer.GetHashCode(y);
 
     if (areEqual)
-      Assert.AreEqual(hashCodeX, hashCodeY, $"{message}: HashCode {x} == {y}");
+      Assert.That(hashCodeY, Is.EqualTo(hashCodeX), $"{message}: HashCode {x} == {y}");
     else
-      Assert.AreNotEqual(hashCodeX, hashCodeY, $"{message}: HashCode {x} != {y}");
+      Assert.That(hashCodeY, Is.Not.EqualTo(hashCodeX), $"{message}: HashCode {x} != {y}");
   }
 
   [TestCaseSource(nameof(YieldTestCases_Equals_ExceptState))]
   public void ExceptStateEqualityComparer_Equals(bool areEqual, AddressTableEntry x, AddressTableEntry y, string? message)
   {
-    Assert.AreEqual(areEqual, AddressTableEntry.ExceptStateEqualityComparer.Equals(x, y), $"{message}: {x} {(areEqual ? "==" : "!=")} {y}");
-    Assert.AreEqual(areEqual, AddressTableEntry.ExceptStateEqualityComparer.Equals(y, x), $"{message}: {y} {(areEqual ? "==" : "!=")} {x}");
+    Assert.That(AddressTableEntry.ExceptStateEqualityComparer.Equals(x, y), Is.EqualTo(areEqual), $"{message}: {x} {(areEqual ? "==" : "!=")} {y}");
+    Assert.That(AddressTableEntry.ExceptStateEqualityComparer.Equals(y, x), Is.EqualTo(areEqual), $"{message}: {y} {(areEqual ? "==" : "!=")} {x}");
   }
 
   [TestCaseSource(nameof(YieldTestCases_Equals_ExceptState))]
@@ -257,9 +258,9 @@ public class AddressTableEntryTests {
     var hashCodeY = AddressTableEntry.ExceptStateEqualityComparer.GetHashCode(y);
 
     if (areEqual)
-      Assert.AreEqual(hashCodeX, hashCodeY, $"{message}: HashCode {x} == {y}");
+      Assert.That(hashCodeY, Is.EqualTo(hashCodeX), $"{message}: HashCode {x} == {y}");
     else
-      Assert.AreNotEqual(hashCodeX, hashCodeY, $"{message}: HashCode {x} != {y}");
+      Assert.That(hashCodeY, Is.Not.EqualTo(hashCodeX), $"{message}: HashCode {x} != {y}");
   }
 
   private static System.Collections.IEnumerable YieldTestCases_Equals_Object()
@@ -330,7 +331,7 @@ public class AddressTableEntryTests {
 
   [TestCaseSource(nameof(YieldTestCases_Equals_Object))]
   public void Equals_Object(bool expected, AddressTableEntry entry, object obj)
-    => Assert.AreEqual(expected, entry.Equals(obj), $"{entry} {(expected ? "==" : "!=")} {obj}");
+    => Assert.That(entry.Equals(obj), Is.EqualTo(expected), $"{entry} {(expected ? "==" : "!=")} {obj}");
 
   [Test]
   public void Equals_IPAddress()
@@ -343,10 +344,10 @@ public class AddressTableEntryTests {
       interfaceId: null
     );
 
-    Assert.IsFalse(entry.Equals((IPAddress?)null), "#1");
-    Assert.IsFalse(entry.Equals(IPAddress.Any), "#2");
-    Assert.IsTrue(entry.Equals(entry.IPAddress), "#3");
-    Assert.IsTrue(entry.Equals(IPAddress.Parse(entry.IPAddress!.ToString())), "#4");
+    Assert.That(entry.Equals((IPAddress?)null), Is.False, "#1");
+    Assert.That(entry.Equals(IPAddress.Any), Is.False, "#2");
+    Assert.That(entry.Equals(entry.IPAddress), Is.True, "#3");
+    Assert.That(entry.Equals(IPAddress.Parse(entry.IPAddress!.ToString())), Is.True, "#4");
   }
 
   [Test]
@@ -360,9 +361,9 @@ public class AddressTableEntryTests {
       interfaceId: null
     );
 
-    Assert.IsTrue(entry.Equals((PhysicalAddress?)null), "#1");
-    Assert.IsFalse(entry.Equals(PhysicalAddress.None), "#2");
-    Assert.IsFalse(entry.Equals(TestMacAddress), "#3");
+    Assert.That(entry.Equals((PhysicalAddress?)null), Is.True, "#1");
+    Assert.That(entry.Equals(PhysicalAddress.None), Is.False, "#2");
+    Assert.That(entry.Equals(TestMacAddress), Is.False, "#3");
   }
 
   [Test]
@@ -376,10 +377,10 @@ public class AddressTableEntryTests {
       interfaceId: null
     );
 
-    Assert.IsFalse(entry.Equals((PhysicalAddress?)null), "#1");
-    Assert.IsFalse(entry.Equals(PhysicalAddress.None), "#2");
-    Assert.IsTrue(entry.Equals(entry.PhysicalAddress), "#3");
-    Assert.IsTrue(entry.Equals(PhysicalAddress.Parse(entry.PhysicalAddress!.ToMacAddressString())), "#4");
+    Assert.That(entry.Equals((PhysicalAddress?)null), Is.False, "#1");
+    Assert.That(entry.Equals(PhysicalAddress.None), Is.False, "#2");
+    Assert.That(entry.Equals(entry.PhysicalAddress), Is.True, "#3");
+    Assert.That(entry.Equals(PhysicalAddress.Parse(entry.PhysicalAddress!.ToMacAddressString())), Is.True, "#4");
   }
 
   private static System.Collections.IEnumerable YieldTestCases_ToString()
@@ -420,7 +421,7 @@ public class AddressTableEntryTests {
 
     var str = entry.ToString();
 
-    Assert.IsNotNull(str);
-    Assert.IsNotEmpty(str);
+    Assert.That(str, Is.Not.Null);
+    Assert.That(str, Is.Not.Empty);
   }
 }

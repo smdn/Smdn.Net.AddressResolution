@@ -42,8 +42,8 @@ public class CommandNetworkScannerTests {
     {
       var comm = CommandNetworkScanner.FindCommand(command, DefaultCommandPaths);
 
-      Assert.AreEqual(command, comm.Name, nameof(comm.Name));
-      Assert.AreEqual(expectAsAvailable, comm.IsAvailable, nameof(comm.IsAvailable));
+      Assert.That(comm.Name, Is.EqualTo(command), nameof(comm.Name));
+      Assert.That(comm.IsAvailable, Is.EqualTo(expectAsAvailable), nameof(comm.IsAvailable));
 
       return comm.GetExecutablePathOrThrow();
     }
@@ -87,14 +87,14 @@ public class CommandNetworkScannerTests {
     FileAssert.Exists(commandExecutablePath);
 
     if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-      StringAssert.AreEqualIgnoringCase(commandExecutablePath, pathToNsLookup);
+      Assert.That(pathToNsLookup, Is.EqualTo(commandExecutablePath).IgnoreCase);
     else
-      Assert.AreEqual(commandExecutablePath, pathToNsLookup);
+      Assert.That(pathToNsLookup, Is.EqualTo(commandExecutablePath));
 
     if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-      StringAssert.EndsWith(".exe", commandExecutablePath);
+      Assert.That(commandExecutablePath, Does.EndWith(".exe"));
     else
-      StringAssert.DoesNotEndWith(".exe", commandExecutablePath);
+      Assert.That(commandExecutablePath, Does.Not.EndWith(".exe"));
   }
 
   [Test]
@@ -174,18 +174,18 @@ public class CommandNetworkScannerTests {
 
     void AssertProcessStartInfo(ProcessStartInfo psi)
     {
-      Assert.AreEqual(commandExecutablePath, psi.FileName, nameof(psi.FileName));
+      Assert.That(psi.FileName, Is.EqualTo(commandExecutablePath), nameof(psi.FileName));
 
       var expectedArguments = withAddressesParameter
         ? commandArguments +" " + GenerateAddressesArgument(addresses)
         : commandArguments;
 
-      Assert.AreEqual(expectedArguments, psi.Arguments, nameof(psi.Arguments));
+      Assert.That(psi.Arguments, Is.EqualTo(expectedArguments), nameof(psi.Arguments));
 
-      Assert.IsTrue(psi.RedirectStandardOutput, nameof(psi.RedirectStandardOutput));
-      Assert.IsTrue(psi.RedirectStandardError, nameof(psi.RedirectStandardError));
+      Assert.That(psi.RedirectStandardOutput, Is.True, nameof(psi.RedirectStandardOutput));
+      Assert.That(psi.RedirectStandardError, Is.True, nameof(psi.RedirectStandardError));
 
-      Assert.IsFalse(psi.UseShellExecute, nameof(psi.UseShellExecute));
+      Assert.That(psi.UseShellExecute, Is.False, nameof(psi.UseShellExecute));
 
       // cancel the subsequent process starting
       cts.Cancel();
@@ -226,8 +226,8 @@ public class CommandNetworkScannerTests {
 
     void AssertProcessStartInfo(ProcessStartInfo psi)
     {
-      Assert.AreEqual(commandExecutablePath, psi.FileName, nameof(psi.FileName));
-      Assert.AreEqual(string.Empty, psi.Arguments, nameof(psi.Arguments));
+      Assert.That(psi.FileName, Is.EqualTo(commandExecutablePath), nameof(psi.FileName));
+      Assert.That(psi.Arguments, Is.EqualTo(string.Empty), nameof(psi.Arguments));
 
       // cancel the subsequent process starting
       cts.Cancel();

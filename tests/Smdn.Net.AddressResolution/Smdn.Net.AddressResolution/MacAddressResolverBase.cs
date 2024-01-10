@@ -181,7 +181,7 @@ public class MacAddressResolverBaseTests {
   {
     using var resolver = new ConcreteMacAddressResolver();
 
-    Assert.IsNull(await resolver.ResolveMacAddressToIPAddressAsync(macAddress: AllZeroMacAddress));
+    Assert.That(await resolver.ResolveMacAddressToIPAddressAsync(macAddress: AllZeroMacAddress), Is.Null);
   }
 
   [Test]

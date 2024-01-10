@@ -24,7 +24,7 @@ public partial class NullMacAddressResolverTests {
     // object must not be disposed
 
     Assert.DoesNotThrow(
-      () => Assert.IsFalse(resolver.HasInvalidated),
+      () => Assert.That(resolver.HasInvalidated, Is.False),
       nameof(resolver.HasInvalidated)
     );
 
@@ -59,8 +59,8 @@ public partial class NullMacAddressResolverTests {
   [Test]
   public void HasInvalidated()
   {
-    Assert.IsFalse(MacAddressResolver.Null.HasInvalidated, nameof(MacAddressResolver.Null.HasInvalidated));
-    Assert.IsFalse(MacAddressResolver.Null.HasInvalidated, nameof(MacAddressResolver.Null.HasInvalidated) + " must always be false");
+    Assert.That(MacAddressResolver.Null.HasInvalidated, Is.False, nameof(MacAddressResolver.Null.HasInvalidated));
+    Assert.That(MacAddressResolver.Null.HasInvalidated, Is.False, nameof(MacAddressResolver.Null.HasInvalidated) + " must always be false");
   }
 
   [Test]
@@ -68,7 +68,7 @@ public partial class NullMacAddressResolverTests {
   {
     using var resolver = MacAddressResolver.Null;
 
-    Assert.IsNull(await resolver.ResolveIPAddressToMacAddressAsync(ipAddress: TestIPAddress));
+    Assert.That(await resolver.ResolveIPAddressToMacAddressAsync(ipAddress: TestIPAddress), Is.Null);
   }
 
   [Test]
@@ -76,7 +76,7 @@ public partial class NullMacAddressResolverTests {
   {
     using var resolver = MacAddressResolver.Null;
 
-    Assert.IsNull(await resolver.ResolveMacAddressToIPAddressAsync(macAddress: TestMacAddress));
+    Assert.That(await resolver.ResolveMacAddressToIPAddressAsync(macAddress: TestMacAddress), Is.Null);
   }
 
   [Test]

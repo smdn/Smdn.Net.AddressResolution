@@ -33,13 +33,13 @@ public class ProcfsArpAddressTableTests {
       await foreach (var entry in table.EnumerateEntriesAsync()) {
         enumerated = true;
 
-        Assert.AreNotEqual(IPAddress.Any, entry.IPAddress, nameof(entry.IPAddress));
+        Assert.That(entry.IPAddress, Is.Not.EqualTo(IPAddress.Any), nameof(entry.IPAddress));
 
         if (!entry.IsPermanent)
-          Assert.AreNotEqual(AddressTableEntryState.None, entry.State, nameof(entry.State));
+          Assert.That(entry.State, Is.Not.EqualTo(AddressTableEntryState.None), nameof(entry.State));
       }
     });
 
-    Assert.IsTrue(enumerated, "expect one or more entries enumerated");
+    Assert.That(enumerated, Is.True, "expect one or more entries enumerated");
   }
 }
