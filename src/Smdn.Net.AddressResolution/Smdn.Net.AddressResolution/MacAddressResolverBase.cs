@@ -13,11 +13,13 @@ namespace Smdn.Net.AddressResolution;
 /// <summary>
 /// Provides an abstract mechanism for the mutual address resolution between IP addresses and corresponding MAC addresses.
 /// </summary>
+#pragma warning disable IDE0055
 public abstract class MacAddressResolverBase :
   IDisposable,
   IAddressResolver<PhysicalAddress, IPAddress>,
   IAddressResolver<IPAddress, PhysicalAddress>
 {
+#pragma warning restore IDE0055
   protected static PhysicalAddress AllZeroMacAddress => PhysicalAddressExtensions.AllZeroMacAddress;
 
   /// <summary>

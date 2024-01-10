@@ -10,10 +10,12 @@ namespace Smdn.Net.AddressResolution;
 /// </summary>
 /// <typeparam name="TAddress">The address type to be resolved to the corresponding address type <typeparamref name="TResolvedAddress"/>.</typeparam>
 /// <typeparam name="TResolvedAddress">The address type that is resolved from and corresponds to the address type <typeparamref name="TAddress"/>.</typeparam>
+#pragma warning disable IDE0055
 public interface IAddressResolver<TAddress, TResolvedAddress>
   where TAddress : notnull
   where TResolvedAddress : notnull
 {
+#pragma warning restore IDE0055
   /// <summary>
   /// Resolves from a address of <typeparamref name="TAddress"/> to its corresponding address of <typeparamref name="TResolvedAddress"/>.
   /// </summary>

@@ -9,9 +9,7 @@ partial class MacAddressResolver {
 #pragma warning restore IDE0040
   private readonly struct None { }
 
-  private sealed class ConcurrentSet<T> : ConcurrentDictionary<T, None>
-    where T : notnull
-  {
+  private sealed class ConcurrentSet<T> : ConcurrentDictionary<T, None> where T : notnull {
     public ConcurrentSet()
     {
     }
