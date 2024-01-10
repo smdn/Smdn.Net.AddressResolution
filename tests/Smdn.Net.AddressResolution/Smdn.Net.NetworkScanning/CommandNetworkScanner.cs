@@ -84,7 +84,7 @@ public class CommandNetworkScannerTests {
       expectAsAvailable: true
     );
 
-    FileAssert.Exists(commandExecutablePath);
+    Assert.That(File.Exists(commandExecutablePath), Is.True);
 
     if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
       Assert.That(pathToNsLookup, Is.EqualTo(commandExecutablePath).IgnoreCase);
