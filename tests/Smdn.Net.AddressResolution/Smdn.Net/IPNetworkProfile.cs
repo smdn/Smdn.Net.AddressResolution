@@ -326,7 +326,7 @@ public partial class IPNetworkProfileTests {
 
     Assert.IsNotNull(addresses, nameof(addresses));
     CollectionAssert.IsNotEmpty(addresses, nameof(addresses));
-    Assert.AreEqual(addresses!.Count, count, nameof(addresses.Count));
+    Assert.AreEqual(count, addresses!.Count, nameof(addresses.Count));
   }
 
   [Test]

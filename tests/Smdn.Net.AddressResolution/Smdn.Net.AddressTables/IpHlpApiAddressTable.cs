@@ -11,7 +11,7 @@ namespace Smdn.Net.AddressTables;
 public class IpHlpApiAddressTableTests {
   [Test]
   public void IsSupported()
-    => Assert.DoesNotThrow(() => Assert.That(IpHlpApiAddressTable.IsSupported, Is.Not.Null));
+    => Assert.DoesNotThrow(() => Assert.That(IpHlpApiAddressTable.IsSupported, Is.True.Or.False));
 
   [Test]
   public void EnumerateEntriesAsync()

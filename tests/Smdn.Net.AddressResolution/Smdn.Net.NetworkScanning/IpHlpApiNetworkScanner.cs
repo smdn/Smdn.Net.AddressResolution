@@ -18,7 +18,7 @@ public class IpHlpApiNetworkScannerTests : NetworkScannerTestsBase {
 
   [Test]
   public void IsSupported()
-    => Assert.DoesNotThrow(() => Assert.That(IpHlpApiNetworkScanner.IsSupported, Is.Not.Null));
+    => Assert.DoesNotThrow(() => Assert.That(IpHlpApiNetworkScanner.IsSupported, Is.True.Or.False));
 
   [Test]
   public void Ctor()

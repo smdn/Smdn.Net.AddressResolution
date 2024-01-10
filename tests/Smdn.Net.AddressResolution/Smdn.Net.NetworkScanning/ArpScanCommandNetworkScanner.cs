@@ -17,7 +17,7 @@ public class ArpScanCommandNetworkScannerTests : NetworkScannerTestsBase {
 
   [Test]
   public void IsSupported()
-    => Assert.DoesNotThrow(() => Assert.That(ArpScanCommandNetworkScanner.IsSupported, Is.Not.Null));
+    => Assert.DoesNotThrow(() => Assert.That(ArpScanCommandNetworkScanner.IsSupported, Is.True.Or.False));
 
   [Test]
   public void Ctor()

@@ -18,7 +18,7 @@ public class NmapCommandNetworkScannerTests : NetworkScannerTestsBase {
 
   [Test]
   public void IsSupported()
-    => Assert.DoesNotThrow(() => Assert.That(NmapCommandNetworkScanner.IsSupported, Is.Not.Null));
+    => Assert.DoesNotThrow(() => Assert.That(NmapCommandNetworkScanner.IsSupported, Is.True.Or.False));
 
   [Test]
   public void Ctor()

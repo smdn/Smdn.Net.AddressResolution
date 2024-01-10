@@ -11,7 +11,7 @@ namespace Smdn.Net.AddressTables;
 public class ProcfsArpAddressTableTests {
   [Test]
   public void IsSupported()
-    => Assert.DoesNotThrow(() => Assert.That(ProcfsArpAddressTable.IsSupported, Is.Not.Null));
+    => Assert.DoesNotThrow(() => Assert.That(ProcfsArpAddressTable.IsSupported, Is.True.Or.False));
 
   [Test]
   public void EnumerateEntriesAsync()
