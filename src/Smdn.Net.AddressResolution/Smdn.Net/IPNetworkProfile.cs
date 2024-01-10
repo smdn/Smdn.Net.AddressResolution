@@ -16,11 +16,11 @@ namespace Smdn.Net;
 /// <seealso cref="Smdn.Net.AddressResolution.MacAddressResolver"/>
 /// <seealso cref="Smdn.Net.NetworkScanning.NetworkScanner"/>
 public abstract partial class IPNetworkProfile {
-  private static Exception CreateIPv6FeatureNotImplemented()
-    => new NotImplementedException("IPv6 is not supported yet. Please contribute to the implementation of the feature.");
+  private static NotImplementedException CreateIPv6FeatureNotImplemented()
+    => new("IPv6 is not supported yet. Please contribute to the implementation of the feature.");
 
-  private static Exception CreateNonIPAddressFamilyNotSupported()
-    => new NotSupportedException("Addresses other than IPv4 and IPv6 are not supported.");
+  private static NotSupportedException CreateNonIPAddressFamilyNotSupported()
+    => new("Addresses other than IPv4 and IPv6 are not supported.");
 
   public NetworkInterface? NetworkInterface { get; }
 

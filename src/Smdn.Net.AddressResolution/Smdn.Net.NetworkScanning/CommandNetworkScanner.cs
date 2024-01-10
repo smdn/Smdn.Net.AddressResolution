@@ -34,7 +34,9 @@ public abstract class CommandNetworkScanner : INetworkScanner {
 
   protected static IReadOnlyCollection<string> DefaultCommandPaths => LazyDefaultCommandPaths.Value;
 
+#pragma warning disable CA1859
   private static IReadOnlyCollection<string> GetDefaultCommandCommandPaths()
+#pragma warning restore CA1859
   {
     var paths = new HashSet<string>(
       comparer: RuntimeInformation.IsOSPlatform(OSPlatform.Windows)

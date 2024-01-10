@@ -61,8 +61,8 @@ public partial class MacAddressResolver : MacAddressResolverBase {
   /// <seealso cref="MacAddressResolverBase.RefreshInvalidatedAddressesAsync(CancellationToken)"/>
   public bool CanPerformNetworkScan => networkScanner is not null;
 
-  private static Exception CreateCanNotPerformNetworkScanException()
-    => new InvalidOperationException($"The instance can not perform network scan. To perform a network scan, specify {nameof(INetworkScanner)} in the constructor.");
+  private static InvalidOperationException CreateCanNotPerformNetworkScanException()
+    => new($"The instance can not perform network scan. To perform a network scan, specify {nameof(INetworkScanner)} in the constructor.");
 
   private Stopwatch? timeStampForFullScan;
   private TimeSpan networkScanInterval = Timeout.InfiniteTimeSpan;
