@@ -18,9 +18,9 @@ using static Vanara.PInvoke.Ws2_32;
 namespace Smdn.Net.AddressTables;
 
 public sealed class IpHlpApiAddressTable : AddressTable {
-  public static bool IsSupported => lazyIsSupported.Value;
+  public static bool IsSupported => LazyIsSupported.Value;
 
-  private static readonly Lazy<bool> lazyIsSupported = new(
+  private static readonly Lazy<bool> LazyIsSupported = new(
     valueFactory: static () => {
       try {
         var ret = GetIpNetTable2(ADDRESS_FAMILY.AF_UNSPEC, out var table);

@@ -29,9 +29,9 @@ public sealed class IpHlpApiNetworkScanner : NetworkScanner {
   private static readonly Win32Error ERROR_INVALID_PARAMETER = new(0x80070057u);
   private static readonly Win32Error ERROR_NOT_SUPPORTED = new(0x80070032u);
 
-  public static bool IsSupported => lazyIsSupported.Value;
+  public static bool IsSupported => LazyIsSupported.Value;
 
-  private static readonly Lazy<bool> lazyIsSupported = new(
+  private static readonly Lazy<bool> LazyIsSupported = new(
     valueFactory: static () => {
       try {
         MIB_IPNET_ROW2 row = default;

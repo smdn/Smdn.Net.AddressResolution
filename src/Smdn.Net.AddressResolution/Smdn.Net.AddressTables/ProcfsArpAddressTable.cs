@@ -97,7 +97,7 @@ public sealed class ProcfsArpAddressTable : AddressTable {
   }
 
 #if !SYSTEM_STRING_SPLIT_CHAR
-  private static readonly char[] arpTableEntryDelimiter = new[] { ' ' };
+  private static readonly char[] ArpTableEntryDelimiter = new[] { ' ' };
 #endif
 
   // [/proc/net/arp]
@@ -132,7 +132,7 @@ public sealed class ProcfsArpAddressTable : AddressTable {
 #elif SYSTEM_STRING_SPLIT_CHAR
       arpTableEntryLine.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 #else
-      arpTableEntryLine.Split(arpTableEntryDelimiter, StringSplitOptions.RemoveEmptyEntries);
+      arpTableEntryLine.Split(ArpTableEntryDelimiter, StringSplitOptions.RemoveEmptyEntries);
 #endif
 
     if (columns.Length < 6)

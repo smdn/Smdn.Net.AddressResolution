@@ -18,9 +18,9 @@ public sealed class NmapCommandNetworkScanner : CommandNetworkScanner {
   //   -oG <file>: Output scan in Grepable format
   private const string NmapCommandBaseOptions = "-sn -n -T4 -oG - ";
 
-  public static bool IsSupported => lazyNmapCommand.Value.IsAvailable;
+  public static bool IsSupported => LazyNmapCommand.Value.IsAvailable;
 
-  private static readonly Lazy<Command> lazyNmapCommand = new(
+  private static readonly Lazy<Command> LazyNmapCommand = new(
     valueFactory: static () => FindCommand(
       command: "nmap",
       paths: DefaultCommandPaths
@@ -71,7 +71,7 @@ public sealed class NmapCommandNetworkScanner : CommandNetworkScanner {
     out string arguments
   )
   {
-    executable = lazyNmapCommand.Value.GetExecutablePathOrThrow();
+    executable = LazyNmapCommand.Value.GetExecutablePathOrThrow();
 
     // perform full scan
     arguments = nmapCommandFullScanOptions;
@@ -85,7 +85,7 @@ public sealed class NmapCommandNetworkScanner : CommandNetworkScanner {
     out string arguments
   )
   {
-    executable = lazyNmapCommand.Value.GetExecutablePathOrThrow();
+    executable = LazyNmapCommand.Value.GetExecutablePathOrThrow();
 
     var nmapCommandOptionTargetSpecification = string.Join(" ", addressesToScan);
 

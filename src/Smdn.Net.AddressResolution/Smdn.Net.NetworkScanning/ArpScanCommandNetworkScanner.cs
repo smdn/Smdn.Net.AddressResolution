@@ -23,7 +23,7 @@ public sealed class ArpScanCommandNetworkScanner : CommandNetworkScanner {
   private const string ArpScanCommandBaseOptions = "--numeric --quiet ";
 
   public static bool IsSupported =>
-    lazyArpScanCommand.Value.IsAvailable &&
+    LazyArpScanCommand.Value.IsAvailable &&
 #pragma warning disable IDE0047, SA1003, SA1119
     (
 #if SYSTEM_ENVORINMENT_ISPRIVILEGEDPROCESS
@@ -31,7 +31,7 @@ public sealed class ArpScanCommandNetworkScanner : CommandNetworkScanner {
 #endif
 #if SYSTEM_IO_FILE_GETUNIXFILEMODE
       !RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
-      HasSgidOrSuid(File.GetUnixFileMode(lazyArpScanCommand.Value.GetExecutablePathOrThrow()))
+      HasSgidOrSuid(File.GetUnixFileMode(LazyArpScanCommand.Value.GetExecutablePathOrThrow()))
 #else
       false // TODO: use Mono.Posix
 #endif
@@ -43,7 +43,7 @@ public sealed class ArpScanCommandNetworkScanner : CommandNetworkScanner {
     => fileMode.HasFlag(UnixFileMode.SetGroup) || fileMode.HasFlag(UnixFileMode.SetUser);
 #endif
 
-  private static readonly Lazy<Command> lazyArpScanCommand = new(
+  private static readonly Lazy<Command> LazyArpScanCommand = new(
     valueFactory: static () => FindCommand(
       command: "arp-scan",
       paths: DefaultCommandPaths
@@ -89,7 +89,7 @@ public sealed class ArpScanCommandNetworkScanner : CommandNetworkScanner {
     out string arguments
   )
   {
-    executable = lazyArpScanCommand.Value.GetExecutablePathOrThrow();
+    executable = LazyArpScanCommand.Value.GetExecutablePathOrThrow();
 
     // perform full scan
     arguments = arpScanCommandFullScanOptions;
@@ -103,7 +103,7 @@ public sealed class ArpScanCommandNetworkScanner : CommandNetworkScanner {
     out string arguments
   )
   {
-    executable = lazyArpScanCommand.Value.GetExecutablePathOrThrow();
+    executable = LazyArpScanCommand.Value.GetExecutablePathOrThrow();
 
     var arpScanCommandTargetSpecification = string.Join(" ", addressesToScan);
 

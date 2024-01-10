@@ -48,12 +48,12 @@ public sealed class PingNetworkScanner : NetworkScanner {
     CancellationToken cancellationToken = default
   )
   {
-    const int timeoutMilliseconds = 100;
+    const int TimeoutMilliseconds = 100;
 
     try {
       var reply = await ping!.SendPingAsync(
         address: address,
-        timeout: timeoutMilliseconds,
+        timeout: TimeoutMilliseconds,
         buffer: Array.Empty<byte>(),
         options: pingOptions
       ).ConfigureAwait(false);

@@ -27,12 +27,12 @@ public abstract class CommandNetworkScanner : INetworkScanner {
       => new() { StartInfo = processStartInfo };
   }
 
-  private static readonly Lazy<IReadOnlyCollection<string>> lazyDefaultCommandPaths = new(
+  private static readonly Lazy<IReadOnlyCollection<string>> LazyDefaultCommandPaths = new(
     valueFactory: GetDefaultCommandCommandPaths,
     isThreadSafe: true
   );
 
-  protected static IReadOnlyCollection<string> DefaultCommandPaths => lazyDefaultCommandPaths.Value;
+  protected static IReadOnlyCollection<string> DefaultCommandPaths => LazyDefaultCommandPaths.Value;
 
   private static IReadOnlyCollection<string> GetDefaultCommandCommandPaths()
   {
@@ -273,13 +273,13 @@ public abstract class CommandNetworkScanner : INetworkScanner {
 #endif
 
       if (logger is not null) {
-        const LogLevel logLevelForStandardOutput = LogLevel.Trace;
-        const LogLevel logLevelForStandardError = LogLevel.Error;
+        const LogLevel LogLevelForStandardOutput = LogLevel.Trace;
+        const LogLevel LogLevelForStandardError = LogLevel.Error;
 
         static IEnumerable<(StreamReader, LogLevel)> EnumerateLogTarget(StreamReader stdout, StreamReader stderr)
         {
-          yield return (stdout, logLevelForStandardOutput);
-          yield return (stderr, logLevelForStandardError);
+          yield return (stdout, LogLevelForStandardOutput);
+          yield return (stderr, LogLevelForStandardError);
         }
 
         foreach (var (stdio, logLevel) in EnumerateLogTarget(commandProcess.StandardOutput, commandProcess.StandardError)) {
