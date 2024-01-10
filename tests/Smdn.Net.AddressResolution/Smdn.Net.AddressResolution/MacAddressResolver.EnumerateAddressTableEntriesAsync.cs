@@ -121,16 +121,16 @@ partial class MacAddressResolverTests {
   [Test]
   public async Task EnumerateAddressTableEntriesAsync_NetworkInterfaceSupportsIPv4Only()
   {
-    const string iface = "wlan0";
+    const string Iface = "wlan0";
 
     var addressTableEntries = new AddressTableEntry[] {
-      new(IPAddress.Parse("192.0.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-00"), true, AddressTableEntryState.None, iface),
-      new(IPAddress.Parse("2001:db8::1"), PhysicalAddress.Parse("00-00-5E-00-53-01"), true, AddressTableEntryState.None, iface),
-      new(IPAddress.Parse("2001:db8::2"), PhysicalAddress.Parse("00-00-5E-00-53-02"), true, AddressTableEntryState.None, iface)
+      new(IPAddress.Parse("192.0.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-00"), true, AddressTableEntryState.None, Iface),
+      new(IPAddress.Parse("2001:db8::1"), PhysicalAddress.Parse("00-00-5E-00-53-01"), true, AddressTableEntryState.None, Iface),
+      new(IPAddress.Parse("2001:db8::2"), PhysicalAddress.Parse("00-00-5E-00-53-02"), true, AddressTableEntryState.None, Iface)
     };
 
     using var resolver = new MacAddressResolver(
-      networkInterface: new PseudoNetworkInterface(iface, supportsIPv4: true, supportsIPv6: false),
+      networkInterface: new PseudoNetworkInterface(Iface, supportsIPv4: true, supportsIPv6: false),
       addressTable: new StaticAddressTable(addressTableEntries),
       networkScanner: NetworkScanner.Null
     );
@@ -144,16 +144,16 @@ partial class MacAddressResolverTests {
   [Test]
   public async Task EnumerateAddressTableEntriesAsync_NetworkInterfaceSupportsIPv6Only()
   {
-    const string iface = "wlan0";
+    const string Iface = "wlan0";
 
     var addressTableEntries = new AddressTableEntry[] {
-      new(IPAddress.Parse("192.0.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-00"), true, AddressTableEntryState.None, iface),
-      new(IPAddress.Parse("2001:db8::1"), PhysicalAddress.Parse("00-00-5E-00-53-01"), true, AddressTableEntryState.None, iface),
-      new(IPAddress.Parse("2001:db8::2"), PhysicalAddress.Parse("00-00-5E-00-53-02"), true, AddressTableEntryState.None, iface)
+      new(IPAddress.Parse("192.0.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-00"), true, AddressTableEntryState.None, Iface),
+      new(IPAddress.Parse("2001:db8::1"), PhysicalAddress.Parse("00-00-5E-00-53-01"), true, AddressTableEntryState.None, Iface),
+      new(IPAddress.Parse("2001:db8::2"), PhysicalAddress.Parse("00-00-5E-00-53-02"), true, AddressTableEntryState.None, Iface)
     };
 
     using var resolver = new MacAddressResolver(
-      networkInterface: new PseudoNetworkInterface(iface, supportsIPv4: false, supportsIPv6: true),
+      networkInterface: new PseudoNetworkInterface(Iface, supportsIPv4: false, supportsIPv6: true),
       addressTable: new StaticAddressTable(addressTableEntries),
       networkScanner: NetworkScanner.Null
     );
@@ -167,16 +167,16 @@ partial class MacAddressResolverTests {
   [Test]
   public async Task EnumerateAddressTableEntriesAsync_NetworkInterfaceSupportsBothIPv4AndIPv6()
   {
-    const string iface = "wlan0";
+    const string Iface = "wlan0";
 
     var addressTableEntries = new AddressTableEntry[] {
-      new(IPAddress.Parse("192.0.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-00"), true, AddressTableEntryState.None, iface),
-      new(IPAddress.Parse("2001:db8::1"), PhysicalAddress.Parse("00-00-5E-00-53-01"), true, AddressTableEntryState.None, iface),
-      new(IPAddress.Parse("2001:db8::2"), PhysicalAddress.Parse("00-00-5E-00-53-02"), true, AddressTableEntryState.None, iface)
+      new(IPAddress.Parse("192.0.2.0"), PhysicalAddress.Parse("00-00-5E-00-53-00"), true, AddressTableEntryState.None, Iface),
+      new(IPAddress.Parse("2001:db8::1"), PhysicalAddress.Parse("00-00-5E-00-53-01"), true, AddressTableEntryState.None, Iface),
+      new(IPAddress.Parse("2001:db8::2"), PhysicalAddress.Parse("00-00-5E-00-53-02"), true, AddressTableEntryState.None, Iface)
     };
 
     using var resolver = new MacAddressResolver(
-      networkInterface: new PseudoNetworkInterface(iface, supportsIPv4: true, supportsIPv6: true),
+      networkInterface: new PseudoNetworkInterface(Iface, supportsIPv4: true, supportsIPv6: true),
       addressTable: new StaticAddressTable(addressTableEntries),
       networkScanner: NetworkScanner.Null
     );

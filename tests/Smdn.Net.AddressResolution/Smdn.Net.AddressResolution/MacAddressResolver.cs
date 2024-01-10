@@ -359,7 +359,7 @@ public partial class MacAddressResolverTests {
     Assert.That(shouldDisposeAddressTable, Is.EqualTo(addressTable.IsDisposed));
     Assert.That(shouldDisposeNetworkScanner, Is.EqualTo(networkScanner.IsDisposed));
 
-    Assert.DoesNotThrow(() => resolver.Dispose(), "dispose again");
+    Assert.DoesNotThrow(resolver.Dispose, "dispose again");
 
     Assert.That(shouldDisposeAddressTable, Is.EqualTo(addressTable.IsDisposed));
     Assert.That(shouldDisposeNetworkScanner, Is.EqualTo(networkScanner.IsDisposed));

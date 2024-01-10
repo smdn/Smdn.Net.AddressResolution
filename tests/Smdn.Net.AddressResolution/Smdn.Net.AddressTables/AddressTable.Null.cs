@@ -13,7 +13,7 @@ public class AddressTableNullObjectTests {
   [Test]
   public void Dispose()
   {
-    Assert.DoesNotThrow(() => AddressTable.Null.Dispose());
+    Assert.DoesNotThrow(AddressTable.Null.Dispose);
 
     Assert.DoesNotThrowAsync(async () => {
       await foreach (var entry in AddressTable.Null.EnumerateEntriesAsync(cancellationToken: default)) {
@@ -21,7 +21,7 @@ public class AddressTableNullObjectTests {
       }
     });
 
-    Assert.DoesNotThrow(() => AddressTable.Null.Dispose(), "dispose again");
+    Assert.DoesNotThrow(AddressTable.Null.Dispose, "dispose again");
   }
 
   [Test]

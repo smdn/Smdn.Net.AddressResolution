@@ -43,8 +43,8 @@ public class MacAddressResolverBaseTests {
   {
     using var resolver = new ConcreteMacAddressResolver();
 
-    Assert.DoesNotThrow(() => resolver.Dispose(), "Dispose #1");
-    Assert.DoesNotThrow(() => resolver.Dispose(), "Dispose #2");
+    Assert.DoesNotThrow(resolver.Dispose, "Dispose #1");
+    Assert.DoesNotThrow(resolver.Dispose, "Dispose #2");
 
 #pragma warning disable CA2012
     Assert.Throws<ObjectDisposedException>(

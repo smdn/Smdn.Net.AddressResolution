@@ -107,7 +107,7 @@ partial class MacAddressResolverTests {
   [Test]
   public async Task RefreshAddressTableAsync_MustPerformInsideOfMutexCriticalSection()
   {
-    const int numberOfParallelism = 20;
+    const int NumberOfParallelism = 20;
 
     var scanner = new PerformDelayNetworkScanner(delayOnNetworkScan: TimeSpan.FromMilliseconds(100));
     var resolver = new MacAddressResolver(
@@ -121,7 +121,7 @@ partial class MacAddressResolverTests {
     using var cts = new CancellationTokenSource(delay: TimeSpan.FromSeconds(10.0));
 
     await Parallel.ForEachAsync(
-      source: Enumerable.Range(0, numberOfParallelism),
+      source: Enumerable.Range(0, NumberOfParallelism),
       parallelOptions: new() {
         MaxDegreeOfParallelism = -1,
         CancellationToken = cts.Token,

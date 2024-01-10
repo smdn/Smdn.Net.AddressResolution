@@ -65,7 +65,7 @@ public class NetworkScannerTests : NetworkScannerTestsBase {
 
     using var scanner = new ConcreteNetworkScanner(CreatePseudoNetworkProfile());
 
-    Assert.DoesNotThrow(() => scanner.Dispose());
+    Assert.DoesNotThrow(scanner.Dispose);
 
     Assert.Throws<ObjectDisposedException>(() => scanner.GetNetworkProfile());
   }

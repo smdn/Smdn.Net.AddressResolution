@@ -313,10 +313,10 @@ public partial class IPNetworkProfileTests {
   [Test]
   public void Create_FromAddressRangeGenerator()
   {
-    const int count = 4;
+    const int Count = 4;
 
     static IEnumerable<IPAddress> GenerateAddressRange()
-      => Enumerable.Range(0, count).Select(static d => new IPAddress(new byte[] { 192, 168, 2, (byte)d }));
+      => Enumerable.Range(0, Count).Select(static d => new IPAddress(new byte[] { 192, 168, 2, (byte)d }));
 
     var profile = IPNetworkProfile.Create(addressRangeGenerator: GenerateAddressRange);
 
@@ -326,7 +326,7 @@ public partial class IPNetworkProfileTests {
 
     Assert.That(addresses, Is.Not.Null, nameof(addresses));
     Assert.That(addresses, Is.Not.Empty, nameof(addresses));
-    Assert.That(addresses!.Count, Is.EqualTo(count), nameof(addresses.Count));
+    Assert.That(addresses!.Count, Is.EqualTo(Count), nameof(addresses.Count));
   }
 
   [Test]

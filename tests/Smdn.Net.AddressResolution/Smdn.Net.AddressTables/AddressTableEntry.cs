@@ -99,53 +99,53 @@ public class AddressTableEntryTests {
         interfaceId: interfaceId
       );
 
-    const bool areEqual = true;
-    const bool areNotEqual = false;
+    const bool AreEqual = true;
+    const bool AreNotEqual = false;
 
     yield return new object[] {
-      areEqual,
+      AreEqual,
       Create("192.0.2.0", "00-00-5E-00-53-00", true, "wlan0", AddressTableEntryState.None),
       Create("192.0.2.0", "00-00-5E-00-53-00", true, "wlan0", AddressTableEntryState.None),
       "are equal"
     };
 
     yield return new object[] {
-      areNotEqual,
+      AreNotEqual,
       Create("192.0.2.0", "00-00-5E-00-53-00", true, "wlan0", AddressTableEntryState.None),
       AddressTableEntry.Empty,
       "are not equal to Empty"
     };
 
     yield return new object[] {
-      areEqual,
+      AreEqual,
       AddressTableEntry.Empty,
       AddressTableEntry.Empty,
       "are equal (both empty)"
     };
 
     yield return new object[] {
-      areEqual,
+      AreEqual,
       Create("192.0.2.0", null, true, "wlan0"),
       Create("192.0.2.0", null, true, "wlan0"),
       "are equal (both of PhysicalAddress are null)"
     };
 
     yield return new object[] {
-      areEqual,
+      AreEqual,
       Create("192.0.2.0", "00-00-5E-00-53-00", false, "wlan0", AddressTableEntryState.None),
       Create("192.0.2.0", "00-00-5E-00-53-00", false, "wlan0", AddressTableEntryState.None),
       "are equal (both of IsPermanent are false)"
     };
 
     yield return new object[] {
-      areEqual,
+      AreEqual,
       Create("192.0.2.0", "00-00-5E-00-53-00", true, null, AddressTableEntryState.None),
       Create("192.0.2.0", "00-00-5E-00-53-00", true, null, AddressTableEntryState.None),
       "are equal (both of InterfaceId are null)"
     };
 
     yield return new object[] {
-      RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? areEqual : areNotEqual,
+      RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? AreEqual : AreNotEqual,
       Create("192.0.2.0", "00-00-5E-00-53-00", true, "WLAN0"),
       Create("192.0.2.0", "00-00-5E-00-53-00", true, "wlan0"),
       "difference of the casing conventions for the network interface " +
@@ -157,49 +157,49 @@ public class AddressTableEntryTests {
     };
 
     yield return new object[] {
-      areNotEqual,
+      AreNotEqual,
       Create("192.0.2.0", "00-00-5E-00-53-00", true, "wlan0"),
       Create("192.0.2.1", "00-00-5E-00-53-00", true, "wlan0"),
       "difference in IPAddress"
     };
 
     yield return new object[] {
-      areNotEqual,
+      AreNotEqual,
       Create("192.0.2.0", "00-00-5E-00-53-00", true, "wlan0"),
       Create("192.0.2.0", "00-00-5E-00-53-01", true, "wlan0"),
       "difference in PhysicalAddress"
     };
 
     yield return new object[] {
-      areNotEqual,
+      AreNotEqual,
       Create("192.0.2.0", "00-00-5E-00-53-00", true, "wlan0"),
       Create("192.0.2.0", null, true, "wlan0"),
       "difference in PhysicalAddress (null)"
     };
 
     yield return new object[] {
-      areNotEqual,
+      AreNotEqual,
       Create("192.0.2.0", "00-00-5E-00-53-00", true, "wlan0"),
       Create("192.0.2.0", "00-00-5E-00-53-00", false, "wlan0"),
       "difference in IsPermanent"
     };
 
     yield return new object[] {
-      exceptState ? areEqual : areNotEqual,
+      exceptState ? AreEqual : AreNotEqual,
       Create("192.0.2.0", "00-00-5E-00-53-00", true, "wlan0", AddressTableEntryState.None),
       Create("192.0.2.0", "00-00-5E-00-53-00", true, "wlan0", AddressTableEntryState.Reachable),
       "difference in State"
     };
 
     yield return new object[] {
-      areNotEqual,
+      AreNotEqual,
       Create("192.0.2.0", "00-00-5E-00-53-00", true, "wlan0"),
       Create("192.0.2.0", "00-00-5E-00-53-00", true, "wlan1"),
       "difference in InterfaceId"
     };
 
     yield return new object[] {
-      areNotEqual,
+      AreNotEqual,
       Create("192.0.2.0", "00-00-5E-00-53-00", true, "wlan0"),
       Create("192.0.2.0", "00-00-5E-00-53-00", true, null),
       "difference in InterfaceId (null)"
@@ -265,11 +265,11 @@ public class AddressTableEntryTests {
 
   private static System.Collections.IEnumerable YieldTestCases_Equals_Object()
   {
-    const bool areEqual = true;
-    const bool areNotEqual = false;
+    const bool AreEqual = true;
+    const bool AreNotEqual = false;
 
     yield return new object[] {
-      areEqual,
+      AreEqual,
       new AddressTableEntry(
         ipAddress: IPAddress.Parse("192.0.2.0"),
         physicalAddress: PhysicalAddress.Parse("00-00-5E-00-53-00"),
@@ -287,7 +287,7 @@ public class AddressTableEntryTests {
     };
 
     yield return new object[] {
-      areNotEqual,
+      AreNotEqual,
       new AddressTableEntry(
         ipAddress: IPAddress.Parse("192.0.2.0"),
         physicalAddress: PhysicalAddress.Parse("00-00-5E-00-53-00"),
@@ -305,7 +305,7 @@ public class AddressTableEntryTests {
     };
 
     yield return new object[] {
-      areNotEqual,
+      AreNotEqual,
       new AddressTableEntry(
         ipAddress: IPAddress.Parse("192.0.2.0"),
         physicalAddress: PhysicalAddress.Parse("00-00-5E-00-53-00"),
@@ -317,7 +317,7 @@ public class AddressTableEntryTests {
     };
 
     yield return new object[] {
-      areNotEqual,
+      AreNotEqual,
       new AddressTableEntry(
         ipAddress: IPAddress.Parse("192.0.2.0"),
         physicalAddress: PhysicalAddress.Parse("00-00-5E-00-53-00"),

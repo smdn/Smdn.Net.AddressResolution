@@ -40,7 +40,7 @@ public class AddressTableTests {
   {
     using var table = new ConcreteAddressTable();
 
-    Assert.DoesNotThrow(() => table.Dispose());
+    Assert.DoesNotThrow(table.Dispose);
 
 #pragma warning disable CA2012
     Assert.Throws<ObjectDisposedException>(() => table.EnumerateEntriesAsync());
@@ -51,7 +51,7 @@ public class AddressTableTests {
     });
 #pragma warning restore CA2012
 
-    Assert.DoesNotThrow(() => table.Dispose(), "dispose again");
+    Assert.DoesNotThrow(table.Dispose, "dispose again");
   }
 
   [Test]

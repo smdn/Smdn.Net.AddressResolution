@@ -159,8 +159,8 @@ public class CommandNetworkScannerTests {
 
   private void RunCommandAsync(bool withAddressesParameter)
   {
-    const string commandExecutablePath = "/bin/command";
-    const string commandArguments = "--args";
+    const string CommandExecutablePath = "/bin/command";
+    const string CommandArguments = "--args";
 
     using var cts = new CancellationTokenSource();
     var addresses = new[] {
@@ -174,11 +174,11 @@ public class CommandNetworkScannerTests {
 
     void AssertProcessStartInfo(ProcessStartInfo psi)
     {
-      Assert.That(psi.FileName, Is.EqualTo(commandExecutablePath), nameof(psi.FileName));
+      Assert.That(psi.FileName, Is.EqualTo(CommandExecutablePath), nameof(psi.FileName));
 
       var expectedArguments = withAddressesParameter
-        ? commandArguments +" " + GenerateAddressesArgument(addresses)
-        : commandArguments;
+        ? CommandArguments +" " + GenerateAddressesArgument(addresses)
+        : CommandArguments;
 
       Assert.That(psi.Arguments, Is.EqualTo(expectedArguments), nameof(psi.Arguments));
 
@@ -198,8 +198,8 @@ public class CommandNetworkScannerTests {
     );
 
     using var networkScanner = new PseudoCommandNetworkScanner(
-      commandExecutablePath: commandExecutablePath,
-      commandArguments: commandArguments,
+      commandExecutablePath: CommandExecutablePath,
+      commandArguments: CommandArguments,
       commandAddressArgumentsGenerator: GenerateAddressesArgument,
       performNetworkScan: true,
       serviceProvider: services.BuildServiceProvider()
@@ -220,13 +220,13 @@ public class CommandNetworkScannerTests {
   [Test]
   public void RunCommandAsync_CommandArgumentsNull()
   {
-    const string commandExecutablePath = "/bin/command";
+    const string CommandExecutablePath = "/bin/command";
 
     using var cts = new CancellationTokenSource();
 
     void AssertProcessStartInfo(ProcessStartInfo psi)
     {
-      Assert.That(psi.FileName, Is.EqualTo(commandExecutablePath), nameof(psi.FileName));
+      Assert.That(psi.FileName, Is.EqualTo(CommandExecutablePath), nameof(psi.FileName));
       Assert.That(psi.Arguments, Is.EqualTo(string.Empty), nameof(psi.Arguments));
 
       // cancel the subsequent process starting
@@ -240,7 +240,7 @@ public class CommandNetworkScannerTests {
     );
 
     using var networkScanner = new PseudoCommandNetworkScanner(
-      commandExecutablePath: commandExecutablePath,
+      commandExecutablePath: CommandExecutablePath,
       commandArguments: null,
       commandAddressArgumentsGenerator: static _ => throw new NotImplementedException(),
       performNetworkScan: true,
@@ -264,8 +264,8 @@ public class CommandNetworkScannerTests {
 
   private void ScanAsync_CommandNotInvoked(bool withAddressesParameter)
   {
-    const string commandExecutablePath = "_non.existent.unavailable.command_";
-    const string commandArguments = "--args";
+    const string CommandExecutablePath = "_non.existent.unavailable.command_";
+    const string CommandArguments = "--args";
 
     var services = new ServiceCollection();
 
@@ -276,8 +276,8 @@ public class CommandNetworkScannerTests {
     );
 
     using var networkScanner = new PseudoCommandNetworkScanner(
-      commandExecutablePath: commandExecutablePath,
-      commandArguments: commandArguments,
+      commandExecutablePath: CommandExecutablePath,
+      commandArguments: CommandArguments,
       commandAddressArgumentsGenerator: static _ => string.Empty,
       performNetworkScan: false,
       serviceProvider: services.BuildServiceProvider()
