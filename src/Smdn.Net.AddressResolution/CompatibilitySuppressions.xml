@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- https://learn.microsoft.com/en-us/dotnet/fundamentals/package-validation/diagnostic-ids -->
+<Suppressions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <!-- 1.0.2 vs 1.1.0 -->
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:Smdn.Net.AddressTables.AddressTableEntryState</Target>
+    <Left>lib/net7.0/Smdn.Net.AddressResolution.dll</Left>
+    <Right>lib/net6.0/Smdn.Net.AddressResolution.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+</Suppressions>
