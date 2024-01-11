@@ -1,7 +1,5 @@
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
-#undef SYSTEM_ENVORINMENT_ISPRIVILEGEDPROCESS // enable this when .NET 8 GA is released
-
 using System;
 using System.Collections.Generic;
 #if SYSTEM_IO_UNIXFILEMODE
@@ -26,12 +24,14 @@ public sealed class ArpScanCommandNetworkScanner : CommandNetworkScanner {
     LazyArpScanCommand.Value.IsAvailable &&
 #pragma warning disable IDE0047, SA1003, SA1119
     (
-#if SYSTEM_ENVORINMENT_ISPRIVILEGEDPROCESS
+#if SYSTEM_ENVIRONMENT_ISPRIVILEGEDPROCESS
       Environment.IsPrivilegedProcess ||
 #endif
 #if SYSTEM_IO_FILE_GETUNIXFILEMODE
-      !RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
-      HasSgidOrSuid(File.GetUnixFileMode(LazyArpScanCommand.Value.GetExecutablePathOrThrow()))
+      (
+        !RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
+        HasSgidOrSuid(File.GetUnixFileMode(LazyArpScanCommand.Value.GetExecutablePathOrThrow()))
+      )
 #else
       false // TODO: use Mono.Posix
 #endif
