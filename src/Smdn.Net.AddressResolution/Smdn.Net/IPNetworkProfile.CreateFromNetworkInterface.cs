@@ -75,7 +75,10 @@ partial class IPNetworkProfile {
   /// which specified by <paramref name="predicateForNetworkInterface"/>.
   /// </summary>
   /// <param name="predicateForNetworkInterface">A <see cref="Predicate{NetworkInterface}"/> for selecting a specific network interface.</param>
-  /// <exception cref="InvalidOperationException">The appropriate <see cref="System.Net.NetworkInformation.NetworkInterface"/> could not be selected.</exception>
+  /// <exception cref="InvalidOperationException">
+  /// The appropriate <see cref="System.Net.NetworkInformation.NetworkInterface"/> could not be selected.
+  /// Or <paramref name="predicateForNetworkInterface"/> threw an exception. See <see cref="Exception.InnerException"/> for the actual exception thrown.
+  /// </exception>
   public static IPNetworkProfile Create(Predicate<NetworkInterface> predicateForNetworkInterface)
   {
     if (predicateForNetworkInterface is null)
@@ -89,8 +92,16 @@ partial class IPNetworkProfile {
       if (iface.OperationalStatus != OperationalStatus.Up)
         continue; // except inoperational interfaces
 
-      if (predicateForNetworkInterface(iface))
-        return Create(iface);
+      try {
+        if (predicateForNetworkInterface(iface))
+          return Create(iface);
+      }
+      catch (Exception ex) {
+        throw new InvalidOperationException(
+          $"{nameof(predicateForNetworkInterface)} threw an exception for network interface '{iface.Name}'.",
+          innerException: ex
+        );
+      }
     }
 
     throw new InvalidOperationException("The appropriate network interface was not selected.");

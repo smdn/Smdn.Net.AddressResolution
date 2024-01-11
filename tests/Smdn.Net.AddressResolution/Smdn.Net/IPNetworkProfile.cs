@@ -390,6 +390,84 @@ public partial class IPNetworkProfileTests {
     );
 
   [Test]
+  public void Create_PredicateOfNetworkInterface()
+  {
+    int numberOfNetworkInterfaces;
+
+    try {
+      numberOfNetworkInterfaces = NetworkInterface.GetAllNetworkInterfaces().Length;
+    }
+    catch {
+      numberOfNetworkInterfaces = 0;
+    }
+
+    if (numberOfNetworkInterfaces == 0) {
+      Assert.Ignore($"can not test ({nameof(numberOfNetworkInterfaces)} == 0)");
+      return;
+    }
+
+    int numberOfEnumeratedNetworkInterfaces = 0;
+
+    try {
+      Assert.That(
+        IPNetworkProfile.Create(predicateForNetworkInterface: _ => {
+          numberOfEnumeratedNetworkInterfaces++;
+          return true;
+        }),
+        Is.Not.Null
+      );
+    }
+    catch (InvalidOperationException) when (numberOfEnumeratedNetworkInterfaces == 0) {
+      // expected exception (no interface enumerated)
+    }
+  }
+
+  [Test]
+  public void Create_PredicateOfNetworkInterface_ArgumentNull()
+    => Assert.That(() => IPNetworkProfile.Create(predicateForNetworkInterface: null!), Throws.TypeOf<ArgumentNullException>());
+
+  [Test]
+  public void Create_PredicateOfNetworkInterface_ExceptionThrownByPredicate()
+  {
+    int numberOfNetworkInterfaces;
+
+    try {
+      numberOfNetworkInterfaces = NetworkInterface.GetAllNetworkInterfaces().Length;
+    }
+    catch {
+      numberOfNetworkInterfaces = 0;
+    }
+
+    if (numberOfNetworkInterfaces == 0) {
+      Assert.Ignore($"can not test ({nameof(numberOfNetworkInterfaces)} == 0)");
+      return;
+    }
+
+    int numberOfEnumeratedNetworkInterfaces = 0;
+    string? enumeratedNetworkInterfaceName = null;
+
+    try {
+      Assert.That(
+        IPNetworkProfile.Create(predicateForNetworkInterface: iface => {
+          numberOfEnumeratedNetworkInterfaces++;
+          enumeratedNetworkInterfaceName = iface.Name;
+          throw new NotSupportedException();
+        }),
+        Is.Not.Null
+      );
+    }
+    catch (InvalidOperationException) when (numberOfEnumeratedNetworkInterfaces == 0) {
+      // expected exception (no interface enumerated)
+    }
+    catch (InvalidOperationException ex) when (0 < numberOfEnumeratedNetworkInterfaces) {
+      Assert.That(ex.Message, Does.Contain(enumeratedNetworkInterfaceName!));
+
+      Assert.That(ex.InnerException, Is.Not.Null);
+      Assert.That(ex.InnerException, Is.TypeOf<NotSupportedException>());
+    }
+  }
+
+  [Test]
   public void Create_FromAddressRangeGenerator()
   {
     const int Count = 4;
