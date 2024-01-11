@@ -1,7 +1,5 @@
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
-#undef SYSTEM_NET_IPNETWORK // enable this when .NET 8 GA is released
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,16 +13,87 @@ namespace Smdn.Net;
 [TestFixture]
 public partial class IPNetworkProfileTests {
 #if SYSTEM_NET_IPNETWORK
-  [Test]
-  public void Create_FromIPNetwork_IPv4()
+  private static System.Collections.IEnumerable YieldTestCases_Create_FromIPNetwork_IPv4()
   {
-    Assert.Fail("test not implemented");
+    yield return new object[] {
+      IPNetwork.Parse("192.168.0.0/24"),
+      new Action<IReadOnlyList<IPAddress>>(static addresses => {
+        Assert.That(addresses.Count, Is.EqualTo(254));
+        Assert.That(addresses, Has.Member(IPAddress.Parse("192.168.0.1")));
+        Assert.That(addresses, Has.Member(IPAddress.Parse("192.168.0.254")));
+        Assert.That(addresses, Has.No.Member(IPAddress.Parse("192.168.0.0")));
+        Assert.That(addresses, Has.No.Member(IPAddress.Parse("192.168.0.255")));
+        Assert.That(addresses, Has.No.Member(IPAddress.Parse("192.168.1.0")));
+        Assert.That(addresses, Has.No.Member(IPAddress.Parse("127.0.0.1")));
+      })
+    };
+
+    yield return new object[] {
+      IPNetwork.Parse("192.168.0.0/30"),
+      new Action<IReadOnlyList<IPAddress>>(static addresses => {
+        Assert.That(addresses.Count, Is.EqualTo(2));
+        Assert.That(addresses, Has.Member(IPAddress.Parse("192.168.0.1")));
+        Assert.That(addresses, Has.Member(IPAddress.Parse("192.168.0.2")));
+        Assert.That(addresses, Has.No.Member(IPAddress.Parse("192.168.0.0")));
+        Assert.That(addresses, Has.No.Member(IPAddress.Parse("192.168.0.3")));
+        Assert.That(addresses, Has.No.Member(IPAddress.Parse("127.0.0.1")));
+      })
+    };
+
+    yield return new object[] {
+      IPNetwork.Parse("192.168.0.0/20"),
+      new Action<IReadOnlyList<IPAddress>>(static addresses => {
+        Assert.That(addresses.Count, Is.EqualTo(4094));
+        Assert.That(addresses, Has.Member(IPAddress.Parse("192.168.0.1")));
+        Assert.That(addresses, Has.Member(IPAddress.Parse("192.168.0.255")));
+        Assert.That(addresses, Has.Member(IPAddress.Parse("192.168.15.0")));
+        Assert.That(addresses, Has.Member(IPAddress.Parse("192.168.15.254")));
+        Assert.That(addresses, Has.No.Member(IPAddress.Parse("192.168.0.0")));
+        Assert.That(addresses, Has.No.Member(IPAddress.Parse("192.168.15.255")));
+        Assert.That(addresses, Has.No.Member(IPAddress.Parse("127.0.0.1")));
+      })
+    };
+
+    yield return new object[] {
+      IPNetwork.Parse("192.168.0.0/32"),
+      new Action<IReadOnlyList<IPAddress>>(static addresses => {
+        Assert.That(addresses.Count, Is.EqualTo(1));
+
+        Assert.That(addresses, Has.Member(IPAddress.Parse("192.168.0.0")));
+      })
+    };
   }
 
-  [Test]
-  public void Create_FromIPNetwork_IPv6()
+  [TestCaseSource(nameof(YieldTestCases_Create_FromIPNetwork_IPv4))]
+  public void Create_FromIPNetwork_IPv4(
+    IPNetwork ipNetwork,
+    Action<IReadOnlyList<IPAddress>> assertAddresses
+  )
   {
-    Assert.Fail("test not implemented");
+    var profile = IPNetworkProfile.Create(ipNetwork);
+
+    Assert.That(profile.NetworkInterface, Is.Null, nameof(profile.NetworkInterface));
+
+    var addresses = profile.GetAddressRange()?.ToList();
+
+    Assert.That(addresses, Is.Not.Null, nameof(addresses));
+
+    assertAddresses(addresses!);
+  }
+
+  private static System.Collections.IEnumerable YieldTestCases_Create_FromIPNetwork_IPv6()
+  {
+    yield return new object?[] { IPNetwork.Parse("2001:db8::/32") };
+    yield return new object?[] { IPNetwork.Parse("2001:db8:3c4d::/48") };
+    yield return new object?[] { IPNetwork.Parse("2001:db8:3c4d:15::/64") };
+  }
+
+  [TestCaseSource(nameof(YieldTestCases_Create_FromIPNetwork_IPv6))]
+  public void Create_FromIPNetwork_IPv6(IPNetwork network)
+  {
+    Assert.Throws<NotImplementedException>(
+      () => IPNetworkProfile.Create(network: network)
+    );
   }
 #endif
 
