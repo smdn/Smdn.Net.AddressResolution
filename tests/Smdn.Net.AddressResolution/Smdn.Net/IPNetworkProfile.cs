@@ -173,13 +173,23 @@ public partial class IPNetworkProfileTests {
     assertAddresses(addresses!);
   }
 
-  [Test]
-  public void Create_FromBaseAddressAndPrefixLength_IPv6()
+  private static System.Collections.IEnumerable YieldTestCases_Create_FromBaseAddressAndPrefixLength_IPv6()
+  {
+    yield return new object?[] { IPAddress.Parse("2001:db8::"), 32 };
+    yield return new object?[] { IPAddress.Parse("2001:db8:3c4d::"), 48 };
+    yield return new object?[] { IPAddress.Parse("2001:db8:3c4d:15::"), 64 };
+  }
+
+  [TestCaseSource(nameof(YieldTestCases_Create_FromBaseAddressAndPrefixLength_IPv6))]
+  public void Create_FromBaseAddressAndPrefixLength_IPv6(
+    IPAddress baseAddress,
+    int prefixLength
+  )
   {
     Assert.Throws<NotImplementedException>(
       () => IPNetworkProfile.Create(
-        baseAddress: IPAddress.IPv6Loopback,
-        prefixLength: 8
+        baseAddress: baseAddress,
+        prefixLength: prefixLength
       )
     );
   }
