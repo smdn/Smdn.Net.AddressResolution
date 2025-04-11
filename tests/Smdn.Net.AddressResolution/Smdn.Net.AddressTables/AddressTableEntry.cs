@@ -333,22 +333,60 @@ public class AddressTableEntryTests {
   public void Equals_Object(bool expected, AddressTableEntry entry, object obj)
     => Assert.That(entry.Equals(obj), Is.EqualTo(expected), $"{entry} {(expected ? "==" : "!=")} {obj}");
 
-  [Test]
-  public void Equals_IPAddress()
+  private static System.Collections.IEnumerable YieldTestCases_Equals_OfIPAddress()
   {
-    var entry = new AddressTableEntry(
+    var nonNullIPAddressEntry = new AddressTableEntry(
       ipAddress: TestIPAddress,
       physicalAddress: null,
       isPermanent: true,
       state: AddressTableEntryState.None,
       interfaceId: null
     );
+    IPAddress? nullIPAddress = null;
 
-    Assert.That(entry.Equals((IPAddress?)null), Is.False, "#1");
-    Assert.That(entry.Equals(IPAddress.Any), Is.False, "#2");
-    Assert.That(entry.Equals(entry.IPAddress), Is.True, "#3");
-    Assert.That(entry.Equals(IPAddress.Parse(entry.IPAddress!.ToString())), Is.True, "#4");
+    yield return new object?[] {
+      nonNullIPAddressEntry,
+      nullIPAddress,
+      false
+    };
+    yield return new object?[] {
+      nonNullIPAddressEntry,
+      IPAddress.Any,
+      false
+    };
+    yield return new object?[] {
+      nonNullIPAddressEntry,
+      nonNullIPAddressEntry.IPAddress,
+      true
+    };
+    yield return new object?[] {
+      nonNullIPAddressEntry,
+      nonNullIPAddressEntry.IPAddress!.MapToIPv6(), // compare with fIPv4-mapped IPv6 address
+      false
+    };
+    yield return new object?[] {
+      nonNullIPAddressEntry,
+      IPAddress.Parse(nonNullIPAddressEntry.IPAddress!.ToString()),
+      true
+    };
+
+    var nullIPAddressEntry = default(AddressTableEntry);
+
+    yield return new object?[] {
+      nullIPAddressEntry,
+      nullIPAddress,
+      true
+    };
+    yield return new object?[] {
+      nullIPAddressEntry,
+      IPAddress.Any,
+      false
+    };
   }
+
+  [TestCaseSource(nameof(YieldTestCases_Equals_OfIPAddress))]
+  public void Equals_OfIPAddress(AddressTableEntry entry, IPAddress? ipAddress, bool expected)
+    => Assert.That(entry.Equals(ipAddress), Is.EqualTo(expected));
 
   [Test]
   public void Equals_PhysicalAddressNull()
