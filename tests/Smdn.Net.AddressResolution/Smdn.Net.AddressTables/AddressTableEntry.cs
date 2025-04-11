@@ -388,6 +388,94 @@ public class AddressTableEntryTests {
   public void Equals_OfIPAddress(AddressTableEntry entry, IPAddress? ipAddress, bool expected)
     => Assert.That(entry.Equals(ipAddress), Is.EqualTo(expected));
 
+  private static System.Collections.IEnumerable YieldTestCases_Equals_OfIPAddress_ShouldConsiderIPv4MappedIPv6Address()
+  {
+    var ipv4AddressEntry = new AddressTableEntry(
+      ipAddress: TestIPAddress,
+      physicalAddress: null,
+      isPermanent: true,
+      state: AddressTableEntryState.None,
+      interfaceId: null
+    );
+    var ipv4MappedIPv6AddressEntry = new AddressTableEntry(
+      ipAddress: TestIPAddress.MapToIPv6(),
+      physicalAddress: null,
+      isPermanent: true,
+      state: AddressTableEntryState.None,
+      interfaceId: null
+    );
+    IPAddress? nullIPAddress = null;
+
+    foreach (var shouldConsiderIPv4MappedIPv6Address in new[] { true, false }) {
+      yield return new object?[] {
+        ipv4AddressEntry,
+        nullIPAddress,
+        shouldConsiderIPv4MappedIPv6Address,
+        false
+      };
+      yield return new object?[] {
+        ipv4AddressEntry,
+        ipv4AddressEntry.IPAddress,
+        shouldConsiderIPv4MappedIPv6Address,
+        true
+      };
+      yield return new object?[] {
+        ipv4AddressEntry,
+        ipv4AddressEntry.IPAddress!.MapToIPv6(), // compare with IPv4-mapped IPv6 address
+        shouldConsiderIPv4MappedIPv6Address,
+        shouldConsiderIPv4MappedIPv6Address
+      };
+    }
+
+    foreach (var shouldConsiderIPv4MappedIPv6Address in new[] { true, false }) {
+      yield return new object?[] {
+        ipv4MappedIPv6AddressEntry,
+        nullIPAddress,
+        shouldConsiderIPv4MappedIPv6Address,
+        false
+      };
+      yield return new object?[] {
+        ipv4MappedIPv6AddressEntry,
+        ipv4MappedIPv6AddressEntry.IPAddress,
+        shouldConsiderIPv4MappedIPv6Address,
+        true
+      };
+      yield return new object?[] {
+        ipv4MappedIPv6AddressEntry,
+        ipv4MappedIPv6AddressEntry.IPAddress!.MapToIPv4(), // compare with IPv4-mapped IPv6 address
+        shouldConsiderIPv4MappedIPv6Address,
+        shouldConsiderIPv4MappedIPv6Address
+      };
+    }
+
+    var nullIPAddressEntry = default(AddressTableEntry);
+
+    foreach (var shouldConsiderIPv4MappedIPv6Address in new[] { true, false }) {
+      yield return new object?[] {
+        nullIPAddressEntry,
+        nullIPAddress,
+        shouldConsiderIPv4MappedIPv6Address,
+        true
+      };
+      yield return new object?[] {
+        nullIPAddressEntry,
+        TestIPAddress,
+        shouldConsiderIPv4MappedIPv6Address,
+        false
+      };
+      yield return new object?[] {
+        nullIPAddressEntry,
+        TestIPAddress.MapToIPv6(),
+        shouldConsiderIPv4MappedIPv6Address,
+        false
+      };
+    }
+  }
+
+  [TestCaseSource(nameof(YieldTestCases_Equals_OfIPAddress_ShouldConsiderIPv4MappedIPv6Address))]
+  public void Equals_OfIPAddress_ShouldConsiderIPv4MappedIPv6Address(AddressTableEntry entry, IPAddress? ipAddress, bool shouldConsiderIPv4MappedIPv6Address, bool expected)
+    => Assert.That(entry.Equals(ipAddress, shouldConsiderIPv4MappedIPv6Address), Is.EqualTo(expected));
+
   [Test]
   public void Equals_PhysicalAddressNull()
   {
