@@ -73,11 +73,31 @@ public readonly struct AddressTableEntry : IEquatable<AddressTableEntry>, IEquat
     => DefaultEqualityComparer.Equals(this, other);
 
   public bool Equals(IPAddress? other)
-  {
-    if (IPAddress is null)
-      return other is null;
+    => Equals(other, shouldConsiderIPv4MappedIPv6Address: false);
 
-    return IPAddress.Equals(other);
+  /// <summary>
+  /// Indicates whether the member <see cref="AddressTableEntry.IPAddress"/> is equal to the IP address passed to the parameter.
+  /// </summary>
+  /// <param name="other">The <see cref="System.Net.IPAddress"/> to be compared with the <see cref="AddressTableEntry.IPAddress"/>.</param>
+  /// <param name="shouldConsiderIPv4MappedIPv6Address">
+  /// Specifies whether or not to be aware that the IP address to be an IPv4-mapped IPv6 address or not when comparing IP addresses.
+  /// </param>
+  /// <returns>
+  /// <see langword="true"/> if the <see cref="AddressTableEntry.IPAddress"/> is equal to the <paramref name="other"/> parameter; otherwise, <see langword="false"/>.
+  /// </returns>
+  public bool Equals(IPAddress? other, bool shouldConsiderIPv4MappedIPv6Address)
+  {
+    if (other is null)
+      return IPAddress is null;
+
+    if (shouldConsiderIPv4MappedIPv6Address) {
+      if (other.IsIPv4MappedToIPv6 && other.MapToIPv4().Equals(IPAddress))
+        return true;
+      if (IPAddress is not null && IPAddress.IsIPv4MappedToIPv6 && other.Equals(IPAddress.MapToIPv4()))
+        return true;
+    }
+
+    return other.Equals(IPAddress);
   }
 
   public bool Equals(PhysicalAddress? other)

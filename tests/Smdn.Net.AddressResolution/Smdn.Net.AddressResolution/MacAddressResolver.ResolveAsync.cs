@@ -628,4 +628,33 @@ partial class MacAddressResolverTests {
       Is.EqualTo(expectedEntry.IPAddress)
     );
   }
+
+  [Test]
+  public async Task ResolveIPAddressToMacAddressAsync_ShouldResolveIPv4MappedIPv6Address(
+    [Values("127.0.0.1", "192.0.2.0")] string ipv4AddressString,
+    [Values] bool shouldResolveIPv4MappedIPv6Address
+  )
+  {
+    using var resolver = CreateNullNetworkScannerMacAddressResolver(
+      new StaticAddressTable([
+        new(IPAddress.Parse(ipv4AddressString), PhysicalAddress.Parse("00-00-5E-00-53-00"), false, AddressTableEntryState.Reachable, "wlan0"),
+      ])
+    );
+
+    resolver.ShouldResolveIPv4MappedIPv6Address = shouldResolveIPv4MappedIPv6Address;
+
+    Assert.That(
+      await resolver.ResolveIPAddressToMacAddressAsync(IPAddress.Parse(ipv4AddressString)),
+      Is.Not.Null
+    );
+
+    var ipv4MappedIPv6AddressString = $"::ffff:{ipv4AddressString}";
+
+    Assert.That(
+      await resolver.ResolveIPAddressToMacAddressAsync(IPAddress.Parse(ipv4MappedIPv6AddressString)),
+      shouldResolveIPv4MappedIPv6Address
+        ? Is.Not.Null
+        : Is.Null
+    );
+  }
 }

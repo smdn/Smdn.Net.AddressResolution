@@ -33,7 +33,7 @@ partial class MacAddressResolver {
         if (!FilterAddressTableEntryForAddressResolution(entry))
           return false;
 
-        if (!entry.Equals(ipAddress))
+        if (!entry.Equals(ipAddress, shouldConsiderIPv4MappedIPv6Address: ShouldResolveIPv4MappedIPv6Address))
           return false;
 
         // ignore the entry that is marked as invalidated
