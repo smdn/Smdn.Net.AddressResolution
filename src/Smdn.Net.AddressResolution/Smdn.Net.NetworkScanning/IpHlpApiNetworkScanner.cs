@@ -6,6 +6,9 @@ using System.Net.Sockets;
 #if SYSTEM_RUNTIME_EXCEPTIONSERVICES_EXCEPTIONDISPATCHINFO_SETCURRENTSTACKTRACE
 using System.Runtime.ExceptionServices;
 #endif
+#if SYSTEM_RUNTIME_VERSIONING_SUPPORTEDOSPLATFORMATTRIBUTE
+using System.Runtime.Versioning;
+#endif
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -19,6 +22,9 @@ using static Vanara.PInvoke.Ws2_32;
 
 namespace Smdn.Net.NetworkScanning;
 
+#if SYSTEM_RUNTIME_VERSIONING_SUPPORTEDOSPLATFORMATTRIBUTE
+[SupportedOSPlatform("windows")]
+#endif
 public sealed class IpHlpApiNetworkScanner : NetworkScanner {
   // ref:
   //   https://github.com/MicrosoftDocs/win32/blob/docs/desktop-src/wpd_sdk/error-constants.md
@@ -125,7 +131,7 @@ public sealed class IpHlpApiNetworkScanner : NetworkScanner {
 
     Logger?.LogWarning("ResolveIpNetEntry2({Address}) {Result}", address, ret.ToString());
 
-    var ex = ret.GetException();
+    var ex = ret.GetException() ?? new InvalidOperationException($"ResolveIpNetEntry2({address}) failed: {ret}");
 
 #if SYSTEM_RUNTIME_EXCEPTIONSERVICES_EXCEPTIONDISPATCHINFO_SETCURRENTSTACKTRACE
     ex = ExceptionDispatchInfo.SetCurrentStackTrace(ex);

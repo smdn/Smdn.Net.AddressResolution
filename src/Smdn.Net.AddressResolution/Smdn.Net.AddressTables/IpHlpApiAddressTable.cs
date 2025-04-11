@@ -6,6 +6,9 @@ using System.Runtime.CompilerServices;
 #if SYSTEM_RUNTIME_EXCEPTIONSERVICES_EXCEPTIONDISPATCHINFO_SETCURRENTSTACKTRACE
 using System.Runtime.ExceptionServices;
 #endif
+#if SYSTEM_RUNTIME_VERSIONING_SUPPORTEDOSPLATFORMATTRIBUTE
+using System.Runtime.Versioning;
+#endif
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -17,6 +20,9 @@ using static Vanara.PInvoke.Ws2_32;
 
 namespace Smdn.Net.AddressTables;
 
+#if SYSTEM_RUNTIME_VERSIONING_SUPPORTEDOSPLATFORMATTRIBUTE
+[SupportedOSPlatform("windows")]
+#endif
 public sealed class IpHlpApiAddressTable : AddressTable {
   public static bool IsSupported => LazyIsSupported.Value;
 
@@ -50,6 +56,9 @@ public sealed class IpHlpApiAddressTable : AddressTable {
   {
     using var table = await GetIpNetTable2Async().ConfigureAwait(false);
 
+    if (table.Table is null)
+      yield break;
+
     foreach (var ipnetRow2 in table.Table) {
       cancellationToken.ThrowIfCancellationRequested();
 
@@ -82,7 +91,7 @@ public sealed class IpHlpApiAddressTable : AddressTable {
 
         table.Dispose();
 
-        var ex = ret.GetException();
+        var ex = ret.GetException() ?? new InvalidOperationException($"GetIpNetTable2 failed: {ret}");
 
 #if SYSTEM_RUNTIME_EXCEPTIONSERVICES_EXCEPTIONDISPATCHINFO_SETCURRENTSTACKTRACE
         ex = ExceptionDispatchInfo.SetCurrentStackTrace(ex);

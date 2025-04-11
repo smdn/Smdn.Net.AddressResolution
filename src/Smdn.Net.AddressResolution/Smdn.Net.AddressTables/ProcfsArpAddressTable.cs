@@ -2,9 +2,6 @@
 // SPDX-License-Identifier: MIT
 using System;
 using System.Collections.Generic;
-#if NULL_STATE_STATIC_ANALYSIS_ATTRIBUTES
-using System.Diagnostics.CodeAnalysis;
-#endif
 using System.Globalization;
 using System.IO;
 using System.Net;
@@ -14,6 +11,13 @@ using System.Threading;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+
+#if NULL_STATE_STATIC_ANALYSIS_ATTRIBUTES
+// `Vanara.Core` imports code analysis attributes such as `NotNullWhenAttributes`.
+// Since there is a name conflict between `Vanara.Core` and `netstandard`, assign a different
+// alias to `Vanara.Core` in csproj and refer to the netstandard name by the global alias here.
+using NotNullWhenAttribute = global::System.Diagnostics.CodeAnalysis.NotNullWhenAttribute;
+#endif
 
 namespace Smdn.Net.AddressTables;
 

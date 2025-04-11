@@ -40,7 +40,17 @@ This library also provides a functionality for referencing the system's address 
     <PackageReference Include="Microsoft.Bcl.HashCode" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.0" />
-    <PackageReference Include="Vanara.PInvoke.IpHlpApi" Version="3.4.13" />
+    <PackageReference Include="Vanara.Core" Version="4.1.1">
+      <!--
+        `Vanara.Core` imports code analysis attributes such as `NotNullWhenAttributes` for backward compatibility.
+        Therefore, depending on the configuration of <TargetFramework>s, this may conflict with
+        type names imported from the assembly `netstandard`.
+        So, define separate namespaces with the Aliases property, and allow names imported from each
+        assembly to be referenced separately by using `extern aliases`.
+      -->
+      <Aliases>VanaraCore</Aliases>
+    </PackageReference>
+    <PackageReference Include="Vanara.PInvoke.IpHlpApi" Version="4.1.1" />
   </ItemGroup>
 
   <ItemGroup>
