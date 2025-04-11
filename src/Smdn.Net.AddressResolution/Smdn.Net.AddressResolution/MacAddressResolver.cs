@@ -162,6 +162,14 @@ public partial class MacAddressResolver : MacAddressResolverBase {
   private SemaphoreSlim partialScanSemaphore;
 
   /// <summary>
+  /// Gets or sets a value indicating whether the address resolution to be aware or not to be aware that
+  /// the IP address is an IPv4-mapped IPv6 address when resolving IP address to MAC address.
+  /// </summary>
+  /// <seealso cref="MacAddressResolverBase.ResolveIPAddressToMacAddressAsync(IPAddress, CancellationToken)" />
+  /// <seealso cref="AddressTableEntry.Equals(IPAddress?, bool)" />
+  public bool ShouldResolveIPv4MappedIPv6Address { get; set; }
+
+  /// <summary>
   /// Initializes a new instance of the <see cref="MacAddressResolver"/> class.
   /// </summary>
   public MacAddressResolver()
