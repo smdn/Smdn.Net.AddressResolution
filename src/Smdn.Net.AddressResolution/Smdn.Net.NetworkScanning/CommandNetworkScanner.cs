@@ -271,7 +271,7 @@ public abstract class CommandNetworkScanner : INetworkScanner {
 #if SYSTEM_DIAGNOSTICS_PROCESS_WAITFOREXITASYNC
       await commandProcess.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
 #else
-      commandProcess.WaitForExit(); // TODO: cacellation
+      commandProcess.WaitForExit(); // TODO: cancellation
 #endif
 
       if (logger is not null) {

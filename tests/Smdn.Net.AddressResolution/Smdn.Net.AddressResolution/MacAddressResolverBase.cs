@@ -129,7 +129,7 @@ public class MacAddressResolverBaseTests {
   }
 
   [Test]
-  public void IAddressResolver_Of_IPAddress_PhysicallAddress_ResolveAsync()
+  public void IAddressResolver_Of_IPAddress_PhysicalAddress_ResolveAsync()
   {
     using var resolver = new ConcreteMacAddressResolver();
     var res = (IAddressResolver<IPAddress, PhysicalAddress>)resolver;
@@ -148,7 +148,7 @@ public class MacAddressResolverBaseTests {
   }
 
   [Test]
-  public void IAddressResolver_Of_IPAddress_PhysicallAddress_Invalidate()
+  public void IAddressResolver_Of_IPAddress_PhysicalAddress_Invalidate()
   {
     using var resolver = new ConcreteMacAddressResolver();
     var res = (IAddressResolver<IPAddress, PhysicalAddress>)resolver;
@@ -198,7 +198,7 @@ public class MacAddressResolverBaseTests {
   }
 
   [Test]
-  public void IAddressResolver_Of_PhysicallAddress_IPAddress_ResolveAsync()
+  public void IAddressResolver_Of_PhysicalAddress_IPAddress_ResolveAsync()
   {
     using var resolver = new ConcreteMacAddressResolver();
     var res = (IAddressResolver<PhysicalAddress, IPAddress>)resolver;
@@ -217,7 +217,7 @@ public class MacAddressResolverBaseTests {
   }
 
   [Test]
-  public void IAddressResolver_Of_PhysicallAddress_IPAddress_Invalidate()
+  public void IAddressResolver_Of_PhysicalAddress_IPAddress_Invalidate()
   {
     using var resolver = new ConcreteMacAddressResolver();
     var res = (IAddressResolver<PhysicalAddress, IPAddress>)resolver;

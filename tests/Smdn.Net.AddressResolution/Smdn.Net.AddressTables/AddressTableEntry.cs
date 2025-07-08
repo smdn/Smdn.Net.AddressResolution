@@ -23,7 +23,7 @@ public class AddressTableEntryTests {
     Assert.That(entry.IPAddress, Is.Null, nameof(entry.IPAddress));
     Assert.That(entry.PhysicalAddress, Is.Null, nameof(entry.PhysicalAddress));
     Assert.That(entry.IsPermanent, Is.False, nameof(entry.IsPermanent));
-    Assert.That(entry.State, Is.EqualTo(default(AddressTableEntryState)), nameof(entry.State));
+    Assert.That(entry.State, Is.Default, nameof(entry.State));
     Assert.That(entry.InterfaceId, Is.Null, nameof(entry.InterfaceId));
 
     Assert.That(entry.Equals(AddressTableEntry.Empty), Is.True, "equals to AddressTableEntry.Empty");

@@ -73,7 +73,7 @@ public partial class MacAddressResolver : MacAddressResolverBase {
   /// </summary>
   /// <remarks>
   /// <para>
-  /// If the period represented by this property has elapsed since the lastest network scan,
+  /// If the period represented by this property has elapsed since the latest network scan,
   /// the instance performs network scan automatically when the <see cref="MacAddressResolverBase.ResolveIPAddressToMacAddressAsync(IPAddress, CancellationToken)" /> or
   /// <see cref="MacAddressResolverBase.ResolveMacAddressToIPAddressAsync(PhysicalAddress, CancellationToken)" /> is called.
   /// </para>
@@ -102,7 +102,7 @@ public partial class MacAddressResolver : MacAddressResolverBase {
   /// </summary>
   /// <remarks>
   /// <para>
-  /// If the period represented by this property has not elapsed since the lastest network scan,
+  /// If the period represented by this property has not elapsed since the latest network scan,
   /// the instance will not performs network scan.
   /// </para>
   /// <para>
@@ -209,7 +209,7 @@ public partial class MacAddressResolver : MacAddressResolverBase {
 
 #pragma warning disable IDE0060
   private static (IAddressTable Implementation, bool ShouldDispose) GetOrCreateAddressTableImplementation(
-    IPNetworkProfile? networkProfile, // intended to the posibility to implement address tables that need to specify networks in the future
+    IPNetworkProfile? networkProfile, // intended to the possibility to implement address tables that need to specify networks in the future
     IServiceProvider? serviceProvider
   )
 #pragma warning restore IDE0060

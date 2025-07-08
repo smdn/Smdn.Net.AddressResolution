@@ -1,5 +1,6 @@
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
+// cSpell:ignore SGID,SUID,localnet,hostnames
 using System;
 using System.Collections.Generic;
 #if SYSTEM_IO_UNIXFILEMODE

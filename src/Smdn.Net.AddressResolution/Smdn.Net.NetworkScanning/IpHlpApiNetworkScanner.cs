@@ -1,5 +1,6 @@
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
+// cSpell:ignore UNSPEC,HRESULT,SOCKADDR
 using System;
 using System.Net;
 using System.Net.Sockets;
@@ -117,7 +118,7 @@ public sealed class IpHlpApiNetworkScanner : NetworkScanner {
         ifIdx: default
       ),
       _ => throw new ArgumentException(
-        message: $"invalid address familiy ({address.AddressFamily})",
+        message: $"invalid address family ({address.AddressFamily})",
         paramName: nameof(address)
       ),
     };

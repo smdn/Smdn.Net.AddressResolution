@@ -37,7 +37,7 @@ partial class MacAddressResolverTests {
 
     resolver.Invalidate(TestMacAddress);
 
-    Assert.That(resolver.HasInvalidated, Is.True, $"{nameof(resolver.HasInvalidated)} brefore refresh");
+    Assert.That(resolver.HasInvalidated, Is.True, $"{nameof(resolver.HasInvalidated)} before refresh");
 
     Assert.DoesNotThrowAsync(async () => await resolver.RefreshInvalidatedAddressesAsync());
 
@@ -60,7 +60,7 @@ partial class MacAddressResolverTests {
 
     resolver.Invalidate(TestIPAddress);
 
-    Assert.That(resolver.HasInvalidated, Is.True, $"{nameof(resolver.HasInvalidated)} brefore refresh");
+    Assert.That(resolver.HasInvalidated, Is.True, $"{nameof(resolver.HasInvalidated)} before refresh");
 
     Assert.DoesNotThrowAsync(async () => await resolver.RefreshInvalidatedAddressesAsync());
 
@@ -84,7 +84,7 @@ partial class MacAddressResolverTests {
       networkScanner: scanner
     );
 
-    Assert.That(resolver.HasInvalidated, Is.False, $"{nameof(resolver.HasInvalidated)} brefore refresh");
+    Assert.That(resolver.HasInvalidated, Is.False, $"{nameof(resolver.HasInvalidated)} before refresh");
 
     Assert.DoesNotThrowAsync(async () => await resolver.RefreshInvalidatedAddressesAsync());
 

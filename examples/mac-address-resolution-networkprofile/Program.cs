@@ -17,7 +17,7 @@ var defaultNetworkProfile = IPNetworkProfile.Create();
 // You can select a specific NetworkInterface by its physical address, ID or name.
 // If any NetworkInterface cannot be selected, an InvalidOperationException is thrown.
 
-// Select by network device's physical address (platform independed)
+// Select by network device's physical address (platform independent)
 IPNetworkProfile.CreateFromNetworkInterface(physicalAddress: PhysicalAddress.Parse("00:00:5E:00:53:00"));
 // Select by network device GUID (for Windows OS)
 IPNetworkProfile.CreateFromNetworkInterface(id: Guid.Parse("00000000-0000-0000-0000-000000000000"));

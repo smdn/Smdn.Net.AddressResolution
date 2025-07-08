@@ -23,7 +23,7 @@ public abstract class MacAddressResolverBase :
   protected static PhysicalAddress AllZeroMacAddress => PhysicalAddressExtensions.AllZeroMacAddress;
 
   /// <summary>
-  /// Gets an empty implementation of <see cref="MacAddressResolverBase"/> that returns all addresses as unresolvable (<see langworkd="null"/>).
+  /// Gets an empty implementation of <see cref="MacAddressResolverBase"/> that returns all addresses as unresolvable (<see langword="null"/>).
   /// </summary>
   public static MacAddressResolverBase Null { get; } = new NullMacAddressResolver();
 

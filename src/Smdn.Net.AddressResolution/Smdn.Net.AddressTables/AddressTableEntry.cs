@@ -36,7 +36,7 @@ public readonly struct AddressTableEntry : IEquatable<AddressTableEntry>, IEquat
   public AddressTableEntryState State { get; }
 
   /// <summary>
-  /// Gets the netowrk interface ID corresponding to this entry.
+  /// Gets the network interface ID corresponding to this entry.
   /// </summary>
   /// <remarks>
   /// On Windows OS, this property represents the string of GUID in 'B' format representing the specific network interface, such as <c>{00000000-0000-0000-0000-000000000000}</c>.
