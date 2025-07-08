@@ -1,5 +1,7 @@
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
+#pragma warning disable CA1815 // TODO: implement equality comparison
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -16,7 +18,9 @@ using Microsoft.Extensions.Logging;
 namespace Smdn.Net.NetworkScanning;
 
 public abstract class CommandNetworkScanner : INetworkScanner {
+#pragma warning disable CA1034
   public interface IProcessFactory {
+#pragma warning restore CA1034
     Process CreateProcess(ProcessStartInfo processStartInfo);
   }
 
@@ -75,7 +79,9 @@ public abstract class CommandNetworkScanner : INetworkScanner {
       this.executablePath = executablePath;
     }
 
+#pragma warning disable CA1024
     public string GetExecutablePathOrThrow()
+#pragma warning restore CA1024
       => executablePath is null
         ? throw new NotSupportedException(
             $"'{Name}' is not available. Make sure that the PATH environment variable is set properly."
