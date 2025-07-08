@@ -1,0 +1,12 @@
+<!--
+SPDX-FileCopyrightText: 2025 smdn <smdn@smdn.jp>
+SPDX-License-Identifier: MIT
+-->
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Smdn.Net.AddressResolution/Smdn.Net.AddressResolution.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Smdn.Net.AddressResolution/Smdn.Net.AddressResolution.Tests.csproj" />
+  </Folder>
+</Solution>
