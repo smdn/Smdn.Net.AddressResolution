@@ -17,6 +17,7 @@
     "MSBuild",
     "smdn",
     "SYSLIB",
+    "trimmable",
   ],
   "ignoreWords": [
     "iface",
