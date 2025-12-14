@@ -2,24 +2,38 @@
 //   Name: Smdn.Net.AddressResolution
 //   AssemblyVersion: 1.3.0.0
 //   InformationalVersion: 1.3.0+a0c81b27b1d8712b13d3e464d115fb0c983f00ed
-//   TargetFramework: .NETStandard,Version=v2.1
+//   TargetFramework: .NETCoreApp,Version=v10.0
 //   Configuration: Release
+//   Metadata: IsTrimmable=True
 //   Metadata: RepositoryUrl=https://github.com/smdn/Smdn.Net.AddressResolution
 //   Metadata: RepositoryBranch=main
 //   Metadata: RepositoryCommit=a0c81b27b1d8712b13d3e464d115fb0c983f00ed
 //   Referenced assemblies:
 //     Microsoft.Extensions.DependencyInjection.Abstractions, Version=6.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60
 //     Microsoft.Extensions.Logging.Abstractions, Version=6.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60
+//     System.Collections, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+//     System.Collections.Concurrent, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+//     System.ComponentModel, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+//     System.ComponentModel.Primitives, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+//     System.Diagnostics.Process, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+//     System.Linq, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+//     System.Memory, Version=10.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51
+//     System.Net.NetworkInformation, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+//     System.Net.Ping, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+//     System.Net.Primitives, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+//     System.Runtime, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+//     System.Runtime.InteropServices, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+//     System.Threading, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
 //     Vanara.Core, Version=4.1.1.0, Culture=neutral, PublicKeyToken=c37e4080322237fa
 //     Vanara.PInvoke.IpHlpApi, Version=4.1.1.0, Culture=neutral, PublicKeyToken=c37e4080322237fa
 //     Vanara.PInvoke.Shared, Version=4.1.1.0, Culture=neutral, PublicKeyToken=c37e4080322237fa
 //     Vanara.PInvoke.Ws2_32, Version=4.1.1.0, Culture=neutral, PublicKeyToken=c37e4080322237fa
-//     netstandard, Version=2.1.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51
 #nullable enable annotations
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Runtime.CompilerServices;
@@ -37,6 +51,7 @@ namespace Smdn.Net {
     public static IPNetworkProfile Create(Func<IEnumerable<IPAddress>?> addressRangeGenerator, NetworkInterface? networkInterface = null) {}
     public static IPNetworkProfile Create(IPAddress baseAddress, IPAddress subnetMask, NetworkInterface? networkInterface = null) {}
     public static IPNetworkProfile Create(IPAddress baseAddress, int prefixLength, NetworkInterface? networkInterface = null) {}
+    public static IPNetworkProfile Create(IPNetwork network, NetworkInterface? networkInterface = null) {}
     public static IPNetworkProfile Create(NetworkInterface networkInterface) {}
     public static IPNetworkProfile Create(Predicate<NetworkInterface> predicateForNetworkInterface) {}
     public static IPNetworkProfile CreateFromNetworkInterface(Guid id) {}
@@ -151,6 +166,7 @@ namespace Smdn.Net.AddressTables {
     protected void ThrowIfDisposed() {}
   }
 
+  [SupportedOSPlatform("windows")]
   public sealed class IpHlpApiAddressTable : AddressTable {
     public static bool IsSupported { get; }
 
@@ -183,7 +199,8 @@ namespace Smdn.Net.AddressTables {
 
     public IPAddress? IPAddress { get; }
     public string? InterfaceId { get; }
-    public bool IsEmpty { get; }
+    [MemberNotNullWhen(false, "IPAddress")]
+    public bool IsEmpty { [MemberNotNullWhen(false, "IPAddress")] get; }
     public bool IsPermanent { get; }
     public PhysicalAddress? PhysicalAddress { get; }
     public AddressTableEntryState State { get; }
@@ -242,6 +259,7 @@ namespace Smdn.Net.NetworkScanning {
     protected void ThrowIfDisposed() {}
   }
 
+  [SupportedOSPlatform("windows")]
   public sealed class IpHlpApiNetworkScanner : NetworkScanner {
     public static bool IsSupported { get; }
 
