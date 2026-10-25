@@ -20,11 +20,11 @@ partial class AddressTable {
       // do nothing
     }
 
-#pragma warning disable CS1998
+#pragma warning disable IDE0391, CS1998
     public async IAsyncEnumerable<AddressTableEntry> EnumerateEntriesAsync(
       [EnumeratorCancellation] CancellationToken cancellationToken
     )
-#pragma warning restore CS1998
+#pragma warning restore IDE0931, CS1998
     {
       cancellationToken.ThrowIfCancellationRequested();
 
