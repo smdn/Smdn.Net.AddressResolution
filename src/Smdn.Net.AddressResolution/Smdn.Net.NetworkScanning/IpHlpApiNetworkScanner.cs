@@ -47,7 +47,7 @@ public sealed class IpHlpApiNetworkScanner : NetworkScanner {
         row.Address.Ipv6 = default;
         row.Address.si_family = ADDRESS_FAMILY.AF_UNSPEC;
 
-        var ret = ResolveIpNetEntry2(ref row, SourceAddress: IntPtr.Zero);
+        var ret = ResolveIpNetEntry2(ref row, SourceAddress: default);
 
         if (ret.Equals(ERROR_INVALID_PARAMETER))
           return true; // expected HRESULT and can be considered supported
@@ -123,7 +123,7 @@ public sealed class IpHlpApiNetworkScanner : NetworkScanner {
       ),
     };
 
-    var ret = ResolveIpNetEntry2(ref row, SourceAddress: IntPtr.Zero);
+    var ret = ResolveIpNetEntry2(ref row, SourceAddress: default);
 
     if (ret.Succeeded)
       return new((true, row));
