@@ -34,9 +34,7 @@ public static class PhysicalAddressExtensions {
             .Take(lengthOfAddressBytes)
             .Select(static b => b.ToString("X2", provider: null))
         )
-      :
-#pragma warning disable SA1114
-        string.Join(
+      : string.Join(
 #if SYSTEM_STRING_JOIN_CHAR
           delimiter,
 #else
@@ -46,6 +44,5 @@ public static class PhysicalAddressExtensions {
             .Take(lengthOfAddressBytes)
             .Select(static b => b.ToString("X2", provider: null))
         );
-#pragma warning restore SA1114
 #pragma warning restore SA1143
 }
