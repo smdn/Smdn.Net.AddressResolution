@@ -29,16 +29,19 @@ public class IpHlpApiAddressTableTests {
     using var table = new IpHlpApiAddressTable();
     var enumerated = false;
 
-    Assert.DoesNotThrowAsync(async () => {
-      await foreach (var entry in table.EnumerateEntriesAsync()) {
-        enumerated = true;
+    Assert.That(
+      async () => {
+        await foreach (var entry in table.EnumerateEntriesAsync()) {
+          enumerated = true;
 
-        Assert.That(entry.IPAddress, Is.Not.EqualTo(IPAddress.Any), nameof(entry.IPAddress));
+          Assert.That(entry.IPAddress, Is.Not.EqualTo(IPAddress.Any), nameof(entry.IPAddress));
 
-        if (!entry.IsPermanent)
-          Assert.That(entry.State, Is.Not.EqualTo(AddressTableEntryState.None), nameof(entry.State));
-      }
-    });
+          if (!entry.IsPermanent)
+            Assert.That(entry.State, Is.Not.EqualTo(AddressTableEntryState.None), nameof(entry.State));
+        }
+      },
+      Throws.Nothing
+    );
 
     Assert.That(enumerated, Is.True, nameof(enumerated));
   }

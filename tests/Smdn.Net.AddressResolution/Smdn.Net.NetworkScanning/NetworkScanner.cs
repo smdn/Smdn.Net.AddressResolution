@@ -80,6 +80,9 @@ public class NetworkScannerTests : NetworkScannerTestsBase {
       )
     );
 
-    Assert.ThrowsAsync<InvalidOperationException>(async () => await scanner.ScanAsync());
+    Assert.That(
+      async () => await scanner.ScanAsync(),
+      Throws.InvalidOperationException
+    );
   }
 }

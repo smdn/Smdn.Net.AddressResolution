@@ -206,16 +206,15 @@ public class CommandNetworkScannerTests {
       serviceProvider: services.BuildServiceProvider()
     );
 
-    var ex = Assert.CatchAsync(
+    Assert.That(
       async () => {
         if (withAddressesParameter)
           await networkScanner.ScanAsync(addresses: addresses, cts.Token);
         else
           await networkScanner.ScanAsync(cts.Token);
-      }
+      },
+      Throws.InstanceOf<OperationCanceledException>()
     );
-
-    Assert.That(ex, Is.InstanceOf<OperationCanceledException>().Or.InstanceOf<TaskCanceledException>());
   }
 
   [Test]
@@ -248,11 +247,10 @@ public class CommandNetworkScannerTests {
       serviceProvider: services.BuildServiceProvider()
     );
 
-    var ex = Assert.CatchAsync(
-      async () => await networkScanner.ScanAsync(cts.Token)
+    Assert.That(
+      async () => await networkScanner.ScanAsync(cts.Token),
+      Throws.InstanceOf<OperationCanceledException>()
     );
-
-    Assert.That(ex, Is.InstanceOf<OperationCanceledException>().Or.InstanceOf<TaskCanceledException>());
   }
 
   [Test]
@@ -291,13 +289,15 @@ public class CommandNetworkScannerTests {
         IPAddress.Parse("192.0.2.3")
       };
 
-      Assert.DoesNotThrowAsync(
-        async () => await networkScanner.ScanAsync(addresses: addresses)
+      Assert.That(
+        async () => await networkScanner.ScanAsync(addresses: addresses),
+        Throws.Nothing
       );
     }
     else {
-      Assert.DoesNotThrowAsync(
-        async () => await networkScanner.ScanAsync()
+      Assert.That(
+        async () => await networkScanner.ScanAsync(),
+        Throws.Nothing
       );
     }
   }

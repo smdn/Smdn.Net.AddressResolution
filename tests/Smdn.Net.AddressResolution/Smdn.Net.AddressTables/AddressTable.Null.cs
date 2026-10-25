@@ -15,11 +15,14 @@ public class AddressTableNullObjectTests {
   {
     Assert.DoesNotThrow(AddressTable.Null.Dispose);
 
-    Assert.DoesNotThrowAsync(async () => {
-      await foreach (var entry in AddressTable.Null.EnumerateEntriesAsync(cancellationToken: default)) {
-        Assert.Fail("unexpected enumeration");
-      }
-    });
+    Assert.That(
+      async () => {
+        await foreach (var entry in AddressTable.Null.EnumerateEntriesAsync(cancellationToken: default)) {
+          Assert.Fail("unexpected enumeration");
+        }
+      },
+      Throws.Nothing
+    );
 
     Assert.DoesNotThrow(AddressTable.Null.Dispose, "dispose again");
   }
@@ -31,12 +34,13 @@ public class AddressTableNullObjectTests {
 
     cts.Cancel();
 
-    var ex = Assert.CatchAsync(async () => {
-      await foreach (var entry in AddressTable.Null.EnumerateEntriesAsync(cts.Token)) {
-        Assert.Fail("unexpected enumeration");
-      }
-    });
-
-    Assert.That(ex, Is.InstanceOf<OperationCanceledException>().Or.InstanceOf<TaskCanceledException>());
+    Assert.That(
+      async () => {
+        await foreach (var entry in AddressTable.Null.EnumerateEntriesAsync(cts.Token)) {
+          Assert.Fail("unexpected enumeration");
+        }
+      },
+      Throws.InstanceOf<OperationCanceledException>()
+    );
   }
 }

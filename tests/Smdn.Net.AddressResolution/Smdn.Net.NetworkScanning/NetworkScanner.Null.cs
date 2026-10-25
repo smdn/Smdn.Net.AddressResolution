@@ -15,8 +15,14 @@ public class NetworkScannerNullObjectTests : NetworkScannerTestsBase {
   {
     Assert.DoesNotThrow(NetworkScanner.Null.Dispose);
 
-    Assert.DoesNotThrowAsync(async () => await NetworkScanner.Null.ScanAsync(cancellationToken: default));
-    Assert.DoesNotThrowAsync(async () => await NetworkScanner.Null.ScanAsync(new[] { IPAddress.Any }, cancellationToken: default));
+    Assert.That(
+      async () => await NetworkScanner.Null.ScanAsync(cancellationToken: default),
+      Throws.Nothing
+    );
+    Assert.That(
+      async () => await NetworkScanner.Null.ScanAsync([IPAddress.Any], cancellationToken: default),
+      Throws.Nothing
+    );
 
     Assert.DoesNotThrow(NetworkScanner.Null.Dispose, "dispose again");
   }

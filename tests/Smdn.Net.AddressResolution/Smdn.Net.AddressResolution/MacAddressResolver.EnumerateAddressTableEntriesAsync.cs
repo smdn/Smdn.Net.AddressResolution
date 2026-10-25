@@ -36,19 +36,21 @@ partial class MacAddressResolverTests {
       () => resolver.EnumerateAddressTableEntriesAsync(predicate: static _ => true)
     );
 
-    Assert.ThrowsAsync<ObjectDisposedException>(
+    Assert.That(
       async () => {
         await foreach (var entry in resolver.EnumerateAddressTableEntriesAsync()) {
           Assert.Fail("must not be enumerated");
         }
-      }
+      },
+      Throws.TypeOf<ObjectDisposedException>()
     );
-    Assert.ThrowsAsync<ObjectDisposedException>(
+    Assert.That(
       async () => {
         await foreach (var entry in resolver.EnumerateAddressTableEntriesAsync(predicate: static _ => true)) {
           Assert.Fail("must not be enumerated");
         }
-      }
+      },
+      Throws.TypeOf<ObjectDisposedException>()
     );
   }
 
@@ -233,15 +235,15 @@ partial class MacAddressResolverTests {
     };
     int count = 0;
 
-    var ex = Assert.CatchAsync(
+    Assert.That(
       async () => {
         await foreach (var entry in resolver.EnumerateAddressTableEntriesAsync(predicate, cts.Token)) {
           count++;
         }
-      }
+      },
+      Throws.InstanceOf<OperationCanceledException>()
     );
 
-    Assert.That(ex, Is.InstanceOf<OperationCanceledException>().Or.InstanceOf<TaskCanceledException>());
     Assert.That(count, Is.EqualTo(1), nameof(count));
   }
 
@@ -331,12 +333,13 @@ partial class MacAddressResolverTests {
 
     Assert.Throws<ArgumentNullException>(() => resolver.EnumerateAddressTableEntriesAsync(predicate: null!));
 
-    Assert.ThrowsAsync<ArgumentNullException>(
+    Assert.That(
       async () => {
         await foreach (var entry in resolver.EnumerateAddressTableEntriesAsync(predicate: null!)) {
           Assert.Fail("must not be enumerated");
         }
-      }
+      },
+      Throws.TypeOf<ArgumentNullException>()
     );
   }
 }

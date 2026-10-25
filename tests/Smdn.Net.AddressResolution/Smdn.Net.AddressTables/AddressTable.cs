@@ -40,18 +40,22 @@ public class AddressTableTests {
   {
     using var table = new ConcreteAddressTable();
 
-    Assert.DoesNotThrow(table.Dispose);
+    Assert.That(table.Dispose, Throws.Nothing);
 
-#pragma warning disable CA2012
-    Assert.Throws<ObjectDisposedException>(() => table.EnumerateEntriesAsync());
-    Assert.ThrowsAsync<ObjectDisposedException>(async () => {
-      await foreach (var entry in table.EnumerateEntriesAsync()) {
-        Assert.Fail("unexpected enumeration");
-      }
-    });
-#pragma warning restore CA2012
+    Assert.That(
+      () => table.EnumerateEntriesAsync(),
+      Throws.TypeOf<ObjectDisposedException>()
+    );
+    Assert.That(
+      async () => {
+        await foreach (var entry in table.EnumerateEntriesAsync()) {
+          Assert.Fail("unexpected enumeration");
+        }
+      },
+      Throws.TypeOf<ObjectDisposedException>()
+    );
 
-    Assert.DoesNotThrow(table.Dispose, "dispose again");
+    Assert.That(table.Dispose, Throws.Nothing, "dispose again");
   }
 
   [Test]
@@ -62,12 +66,13 @@ public class AddressTableTests {
 
     cts.Cancel();
 
-    var ex = Assert.CatchAsync(async () => {
-      await foreach (var entry in table.EnumerateEntriesAsync(cts.Token)) {
-        Assert.Fail("unexpected enumeration");
-      }
-    });
-
-    Assert.That(ex, Is.InstanceOf<OperationCanceledException>().Or.InstanceOf<TaskCanceledException>());
+    Assert.That(
+      async () => {
+        await foreach (var entry in table.EnumerateEntriesAsync(cts.Token)) {
+          Assert.Fail("unexpected enumeration");
+        }
+      },
+      Throws.InstanceOf<OperationCanceledException>()
+    );
   }
 }

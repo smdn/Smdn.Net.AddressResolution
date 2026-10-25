@@ -55,7 +55,10 @@ partial class MacAddressResolverTests {
 
     Assert.That(resolver.CanPerformNetworkScan, Is.False, nameof(resolver.CanPerformNetworkScan));
 
-    Assert.DoesNotThrowAsync(async () => await resolver.ResolveIPAddressToMacAddressAsync(TestIPAddress));
+    Assert.That(
+      async () => await resolver.ResolveIPAddressToMacAddressAsync(TestIPAddress),
+      Throws.Nothing
+    );
 
     Assert.That(addressTableEnumerated, Is.True, nameof(addressTableEnumerated));
   }
@@ -75,7 +78,10 @@ partial class MacAddressResolverTests {
 
     Assert.That(resolver.CanPerformNetworkScan, Is.False, nameof(resolver.CanPerformNetworkScan));
 
-    Assert.DoesNotThrowAsync(async () => await resolver.ResolveMacAddressToIPAddressAsync(TestMacAddress));
+    Assert.That(
+      async () => await resolver.ResolveMacAddressToIPAddressAsync(TestMacAddress),
+      Throws.Nothing
+    );
 
     Assert.That(addressTableEnumerated, Is.True, nameof(addressTableEnumerated));
   }
@@ -231,11 +237,10 @@ partial class MacAddressResolverTests {
       NetworkScanInterval = TimeSpan.FromTicks(1),
     };
 
-    var ex = Assert.CatchAsync(
-      async () => await resolver.ResolveIPAddressToMacAddressAsync(TestIPAddress, cts.Token)
+    Assert.That(
+      async () => await resolver.ResolveIPAddressToMacAddressAsync(TestIPAddress, cts.Token),
+      Throws.InstanceOf<OperationCanceledException>()
     );
-
-    Assert.That(ex, Is.InstanceOf<OperationCanceledException>().Or.InstanceOf<TaskCanceledException>());
   }
 
   [Test]
@@ -250,11 +255,10 @@ partial class MacAddressResolverTests {
       NetworkScanInterval = TimeSpan.FromTicks(1),
     };
 
-    var ex = Assert.CatchAsync(
-      async () => await resolver.ResolveMacAddressToIPAddressAsync(TestMacAddress, cts.Token)
+    Assert.That(
+      async () => await resolver.ResolveMacAddressToIPAddressAsync(TestMacAddress, cts.Token),
+      Throws.InstanceOf<OperationCanceledException>()
     );
-
-    Assert.That(ex, Is.InstanceOf<OperationCanceledException>().Or.InstanceOf<TaskCanceledException>());
   }
 
   private static MacAddressResolver CreateNullNetworkScannerMacAddressResolver(

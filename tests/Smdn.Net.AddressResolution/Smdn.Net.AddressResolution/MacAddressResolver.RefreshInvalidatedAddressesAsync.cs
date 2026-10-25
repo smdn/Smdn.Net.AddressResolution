@@ -22,7 +22,10 @@ partial class MacAddressResolverTests {
     );
 
     Assert.That(resolver.CanPerformNetworkScan, Is.False, nameof(resolver.CanPerformNetworkScan));
-    Assert.ThrowsAsync<InvalidOperationException>(async () => await resolver.RefreshInvalidatedAddressesAsync());
+    Assert.That(
+      async () => await resolver.RefreshInvalidatedAddressesAsync(),
+      Throws.InvalidOperationException
+    );
   }
 
   [Test]
@@ -39,7 +42,10 @@ partial class MacAddressResolverTests {
 
     Assert.That(resolver.HasInvalidated, Is.True, $"{nameof(resolver.HasInvalidated)} before refresh");
 
-    Assert.DoesNotThrowAsync(async () => await resolver.RefreshInvalidatedAddressesAsync());
+    Assert.That(
+      async () => await resolver.RefreshInvalidatedAddressesAsync(),
+      Throws.Nothing
+    );
 
     Assert.That(resolver.HasInvalidated, Is.False, $"{nameof(resolver.HasInvalidated)} after refresh");
 
@@ -62,7 +68,10 @@ partial class MacAddressResolverTests {
 
     Assert.That(resolver.HasInvalidated, Is.True, $"{nameof(resolver.HasInvalidated)} before refresh");
 
-    Assert.DoesNotThrowAsync(async () => await resolver.RefreshInvalidatedAddressesAsync());
+    Assert.That(
+      async () => await resolver.RefreshInvalidatedAddressesAsync(),
+      Throws.Nothing
+    );
 
     Assert.That(resolver.HasInvalidated, Is.False, $"{nameof(resolver.HasInvalidated)} after refresh");
 
@@ -86,7 +95,10 @@ partial class MacAddressResolverTests {
 
     Assert.That(resolver.HasInvalidated, Is.False, $"{nameof(resolver.HasInvalidated)} before refresh");
 
-    Assert.DoesNotThrowAsync(async () => await resolver.RefreshInvalidatedAddressesAsync());
+    Assert.That(
+      async () => await resolver.RefreshInvalidatedAddressesAsync(),
+      Throws.Nothing
+    );
 
     Assert.That(resolver.HasInvalidated, Is.False, $"{nameof(resolver.HasInvalidated)} after refresh");
 

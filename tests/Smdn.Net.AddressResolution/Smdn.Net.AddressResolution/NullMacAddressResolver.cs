@@ -28,8 +28,9 @@ public partial class NullMacAddressResolverTests {
       nameof(resolver.HasInvalidated)
     );
 
-    Assert.DoesNotThrowAsync(
+    Assert.That(
       async () => await resolver.ResolveIPAddressToMacAddressAsync(TestIPAddress),
+      Throws.Nothing,
       nameof(resolver.ResolveIPAddressToMacAddressAsync)
     );
     Assert.DoesNotThrow(
@@ -37,8 +38,9 @@ public partial class NullMacAddressResolverTests {
       nameof(resolver.Invalidate)
     );
 
-    Assert.DoesNotThrowAsync(
+    Assert.That(
       async () => await resolver.ResolveMacAddressToIPAddressAsync(TestMacAddress),
+      Throws.Nothing,
       nameof(resolver.ResolveMacAddressToIPAddressAsync)
     );
     Assert.DoesNotThrow(
@@ -46,12 +48,14 @@ public partial class NullMacAddressResolverTests {
       nameof(resolver.Invalidate)
     );
 
-    Assert.DoesNotThrowAsync(
+    Assert.That(
       async () => await resolver.RefreshAddressTableAsync(),
+      Throws.Nothing,
       nameof(resolver.RefreshAddressTableAsync)
     );
-    Assert.DoesNotThrowAsync(
+    Assert.That(
       async () => await resolver.RefreshInvalidatedAddressesAsync(),
+      Throws.Nothing,
       nameof(resolver.RefreshInvalidatedAddressesAsync)
     );
   }
@@ -100,8 +104,9 @@ public partial class NullMacAddressResolverTests {
   {
     using var resolver = MacAddressResolver.Null;
 
-    Assert.DoesNotThrowAsync(
-      async () => await resolver.RefreshAddressTableAsync()
+    Assert.That(
+      async () => await resolver.RefreshAddressTableAsync(),
+      Throws.Nothing
     );
   }
 
@@ -110,8 +115,9 @@ public partial class NullMacAddressResolverTests {
   {
     using var resolver = MacAddressResolver.Null;
 
-    Assert.DoesNotThrowAsync(
-      async () => await resolver.RefreshInvalidatedAddressesAsync()
+    Assert.That(
+      async () => await resolver.RefreshInvalidatedAddressesAsync(),
+      Throws.Nothing
     );
   }
 }

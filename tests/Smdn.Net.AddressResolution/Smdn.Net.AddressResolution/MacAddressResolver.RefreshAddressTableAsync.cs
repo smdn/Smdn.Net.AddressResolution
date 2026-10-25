@@ -22,7 +22,10 @@ partial class MacAddressResolverTests {
     );
 
     Assert.That(resolver.CanPerformNetworkScan, Is.False, nameof(resolver.CanPerformNetworkScan));
-    Assert.ThrowsAsync<InvalidOperationException>(async () => await resolver.RefreshAddressTableAsync());
+    Assert.That(
+      async () => await resolver.RefreshAddressTableAsync(),
+      Throws.InvalidOperationException
+    );
   }
 
   [Test]
@@ -40,7 +43,10 @@ partial class MacAddressResolverTests {
 
     Assert.That(resolver.HasInvalidated, Is.True, $"{nameof(resolver.HasInvalidated)} before refresh");
 
-    Assert.DoesNotThrowAsync(async () => await resolver.RefreshAddressTableAsync());
+    Assert.That(
+      async () => await resolver.RefreshAddressTableAsync(),
+      Throws.Nothing
+    );
 
     Assert.That(resolver.HasInvalidated, Is.False, $"{nameof(resolver.HasInvalidated)} after refresh");
 
@@ -61,7 +67,10 @@ partial class MacAddressResolverTests {
 
     Assert.That(resolver.HasInvalidated, Is.False, $"{nameof(resolver.HasInvalidated)} before refresh");
 
-    Assert.DoesNotThrowAsync(async () => await resolver.RefreshAddressTableAsync());
+    Assert.That(
+      async () => await resolver.RefreshAddressTableAsync(),
+      Throws.Nothing
+    );
 
     Assert.That(resolver.HasInvalidated, Is.False, $"{nameof(resolver.HasInvalidated)} after refresh");
 
@@ -93,13 +102,21 @@ partial class MacAddressResolverTests {
       NetworkScanMinInterval = TimeSpan.Zero
     };
 
-    Assert.DoesNotThrowAsync(async () => await resolver.RefreshAddressTableAsync(), $"{nameof(resolver.RefreshAddressTableAsync)} #1");
+    Assert.That(
+      async () => await resolver.RefreshAddressTableAsync(),
+      Throws.Nothing,
+      $"{nameof(resolver.RefreshAddressTableAsync)} #1"
+    );
 
     Assert.That(scanner.FullScanRequested, Is.True, $"{nameof(scanner.FullScanRequested)} #1");
 
     scanner.Reset();
 
-    Assert.DoesNotThrowAsync(async () => await resolver.RefreshAddressTableAsync(), $"{nameof(resolver.RefreshAddressTableAsync)} #2");
+    Assert.That(
+      async () => await resolver.RefreshAddressTableAsync(),
+      Throws.Nothing,
+      $"{nameof(resolver.RefreshAddressTableAsync)} #2"
+    );
 
     Assert.That(scanner.FullScanRequested, Is.True, $"{nameof(scanner.FullScanRequested)} #2");
   }

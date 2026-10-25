@@ -17,15 +17,29 @@ public abstract class NetworkScannerTestsBase {
   {
     using var scanner = CreateNetworkScanner();
 
-    Assert.DoesNotThrow(scanner.Dispose, scanner.GetType().FullName!);
+    Assert.That(scanner.Dispose, Throws.Nothing, scanner.GetType().FullName!);
 
-#pragma warning disable CA2012
-    Assert.Throws<ObjectDisposedException>(() => scanner.ScanAsync(cancellationToken: default), scanner.GetType().FullName!);
-    Assert.ThrowsAsync<ObjectDisposedException>(async () => await scanner.ScanAsync(cancellationToken: default), scanner.GetType().FullName!);
+    Assert.That(
+      () => scanner.ScanAsync(cancellationToken: default),
+      Throws.TypeOf<ObjectDisposedException>(),
+      scanner.GetType().FullName!
+    );
+    Assert.That(
+      async () => await scanner.ScanAsync(cancellationToken: default),
+      Throws.TypeOf<ObjectDisposedException>(),
+      scanner.GetType().FullName!
+    );
 
-    Assert.Throws<ObjectDisposedException>(() => scanner.ScanAsync(new[] { IPAddress.Any }, cancellationToken: default), scanner.GetType().FullName!);
-    Assert.ThrowsAsync<ObjectDisposedException>(async () => await scanner.ScanAsync(new[] { IPAddress.Any }, cancellationToken: default), scanner.GetType().FullName!);
-#pragma warning restore CA2012
+    Assert.That(
+      () => scanner.ScanAsync([IPAddress.Any], cancellationToken: default),
+      Throws.TypeOf<ObjectDisposedException>(),
+      scanner.GetType().FullName!
+    );
+    Assert.That(
+      async () => await scanner.ScanAsync([IPAddress.Any], cancellationToken: default),
+      Throws.TypeOf<ObjectDisposedException>(),
+      scanner.GetType().FullName!
+    );
 
     Assert.DoesNotThrow(scanner.Dispose, $"{scanner.GetType().FullName} dispose again");
   }
@@ -38,15 +52,10 @@ public abstract class NetworkScannerTestsBase {
 
     cts.Cancel();
 
-    var ex = Assert.CatchAsync(
-      async () => await scanner.ScanAsync(cts.Token),
-      scanner.GetType().FullName!
-    );
-
     Assert.That(
-      ex,
-      Is.InstanceOf<OperationCanceledException>().Or.InstanceOf<TaskCanceledException>(),
-      scanner.GetType().FullName
+      async () => await scanner.ScanAsync(cts.Token),
+      Throws.InstanceOf<OperationCanceledException>(),
+      scanner.GetType().FullName!
     );
   }
 
@@ -55,8 +64,9 @@ public abstract class NetworkScannerTestsBase {
   {
     using var scanner = CreateNetworkScanner();
 
-    Assert.ThrowsAsync<ArgumentNullException>(
+    Assert.That(
       async () => await scanner.ScanAsync(addresses: null!, cancellationToken: default),
+      Throws.TypeOf<ArgumentNullException>(),
       scanner.GetType().FullName!
     );
   }
@@ -69,15 +79,10 @@ public abstract class NetworkScannerTestsBase {
 
     cts.Cancel();
 
-    var ex = Assert.CatchAsync(
-      async () => await scanner.ScanAsync(new[] { IPAddress.Any }, cts.Token),
-      scanner.GetType().FullName!
-    );
-
     Assert.That(
-      ex,
-      Is.InstanceOf<OperationCanceledException>().Or.InstanceOf<TaskCanceledException>(),
-      scanner.GetType().FullName
+      async () => await scanner.ScanAsync([IPAddress.Any], cts.Token),
+      Throws.InstanceOf<OperationCanceledException>(),
+      scanner.GetType().FullName!
     );
   }
 }

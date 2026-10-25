@@ -51,8 +51,9 @@ public class MacAddressResolverBaseTests {
       () => resolver.ResolveIPAddressToMacAddressAsync(TestIPAddress),
       nameof(resolver.ResolveIPAddressToMacAddressAsync)
     );
-    Assert.ThrowsAsync<ObjectDisposedException>(
+    Assert.That(
       async () => await resolver.ResolveIPAddressToMacAddressAsync(TestIPAddress),
+      Throws.TypeOf<ObjectDisposedException>(),
       nameof(resolver.ResolveIPAddressToMacAddressAsync)
     );
 
@@ -65,8 +66,9 @@ public class MacAddressResolverBaseTests {
       () => resolver.ResolveMacAddressToIPAddressAsync(TestMacAddress),
       nameof(resolver.ResolveMacAddressToIPAddressAsync)
     );
-    Assert.ThrowsAsync<ObjectDisposedException>(
+    Assert.That(
       async () => await resolver.ResolveMacAddressToIPAddressAsync(TestMacAddress),
+      Throws.TypeOf<ObjectDisposedException>(),
       nameof(resolver.ResolveMacAddressToIPAddressAsync)
     );
 
@@ -75,21 +77,25 @@ public class MacAddressResolverBaseTests {
       nameof(resolver.Invalidate)
     );
 
-    Assert.Throws<ObjectDisposedException>(
+    Assert.That(
       () => resolver.RefreshAddressTableAsync(),
+      Throws.TypeOf<ObjectDisposedException>(),
       nameof(resolver.RefreshAddressTableAsync)
     );
-    Assert.ThrowsAsync<ObjectDisposedException>(
+    Assert.That(
       async () => await resolver.RefreshAddressTableAsync(),
+      Throws.TypeOf<ObjectDisposedException>(),
       nameof(resolver.RefreshAddressTableAsync)
     );
 
-    Assert.Throws<ObjectDisposedException>(
+    Assert.That(
       () => resolver.RefreshInvalidatedAddressesAsync(),
+      Throws.TypeOf<ObjectDisposedException>(),
       nameof(resolver.RefreshInvalidatedAddressesAsync)
     );
-    Assert.ThrowsAsync<ObjectDisposedException>(
+    Assert.That(
       async () => await resolver.RefreshInvalidatedAddressesAsync(),
+      Throws.TypeOf<ObjectDisposedException>(),
       nameof(resolver.RefreshInvalidatedAddressesAsync)
     );
 #pragma warning restore CA2012
@@ -100,8 +106,9 @@ public class MacAddressResolverBaseTests {
   {
     using var resolver = new ConcreteMacAddressResolver();
 
-    Assert.ThrowsAsync<NotImplementedException>(
-      async () => await resolver.ResolveIPAddressToMacAddressAsync(ipAddress: TestIPAddress)
+    Assert.That(
+      async () => await resolver.ResolveIPAddressToMacAddressAsync(ipAddress: TestIPAddress),
+      Throws.TypeOf<NotImplementedException>()
     );
   }
 
@@ -110,8 +117,9 @@ public class MacAddressResolverBaseTests {
   {
     using var resolver = new ConcreteMacAddressResolver();
 
-    Assert.ThrowsAsync<ArgumentNullException>(
-      async () => await resolver.ResolveIPAddressToMacAddressAsync(ipAddress: null!)
+    Assert.That(
+      async () => await resolver.ResolveIPAddressToMacAddressAsync(ipAddress: null!),
+      Throws.TypeOf<ArgumentNullException>()
     );
   }
 
@@ -123,8 +131,9 @@ public class MacAddressResolverBaseTests {
 
     cts.Cancel();
 
-    Assert.ThrowsAsync<TaskCanceledException>(
-      async () => await resolver.ResolveIPAddressToMacAddressAsync(ipAddress: TestIPAddress, cancellationToken: cts.Token)
+    Assert.That(
+      async () => await resolver.ResolveIPAddressToMacAddressAsync(ipAddress: TestIPAddress, cancellationToken: cts.Token),
+      Throws.InstanceOf<OperationCanceledException>()
     );
   }
 
@@ -134,8 +143,9 @@ public class MacAddressResolverBaseTests {
     using var resolver = new ConcreteMacAddressResolver();
     var res = (IAddressResolver<IPAddress, PhysicalAddress>)resolver;
 
-    Assert.ThrowsAsync<NotImplementedException>(
-      async () => await res.ResolveAsync(address: TestIPAddress, cancellationToken: default)
+    Assert.That(
+      async () => await res.ResolveAsync(address: TestIPAddress, cancellationToken: default),
+      Throws.TypeOf<NotImplementedException>()
     );
   }
 
@@ -161,8 +171,9 @@ public class MacAddressResolverBaseTests {
   {
     using var resolver = new ConcreteMacAddressResolver();
 
-    Assert.ThrowsAsync<NotImplementedException>(
-      async () => await resolver.ResolveMacAddressToIPAddressAsync(macAddress: TestMacAddress)
+    Assert.That(
+      async () => await resolver.ResolveMacAddressToIPAddressAsync(macAddress: TestMacAddress),
+      Throws.TypeOf<NotImplementedException>()
     );
   }
 
@@ -171,8 +182,9 @@ public class MacAddressResolverBaseTests {
   {
     using var resolver = new ConcreteMacAddressResolver();
 
-    Assert.ThrowsAsync<ArgumentNullException>(
-      async () => await resolver.ResolveMacAddressToIPAddressAsync(macAddress: null!)
+    Assert.That(
+      async () => await resolver.ResolveMacAddressToIPAddressAsync(macAddress: null!),
+      Throws.TypeOf<ArgumentNullException>()
     );
   }
 
@@ -192,8 +204,9 @@ public class MacAddressResolverBaseTests {
 
     cts.Cancel();
 
-    Assert.ThrowsAsync<TaskCanceledException>(
-      async () => await resolver.ResolveMacAddressToIPAddressAsync(macAddress: TestMacAddress, cancellationToken: cts.Token)
+    Assert.That(
+      async () => await resolver.ResolveMacAddressToIPAddressAsync(macAddress: TestMacAddress, cancellationToken: cts.Token),
+      Throws.InstanceOf<OperationCanceledException>()
     );
   }
 
@@ -203,8 +216,9 @@ public class MacAddressResolverBaseTests {
     using var resolver = new ConcreteMacAddressResolver();
     var res = (IAddressResolver<PhysicalAddress, IPAddress>)resolver;
 
-    Assert.ThrowsAsync<NotImplementedException>(
-      async () => await res.ResolveAsync(address: TestMacAddress, cancellationToken: default)
+    Assert.That(
+      async () => await res.ResolveAsync(address: TestMacAddress, cancellationToken: default),
+      Throws.TypeOf<NotImplementedException>()
     );
   }
 
@@ -230,8 +244,9 @@ public class MacAddressResolverBaseTests {
   {
     using var resolver = new ConcreteMacAddressResolver();
 
-    Assert.DoesNotThrowAsync(
-      async () => await resolver.RefreshAddressTableAsync()
+    Assert.That(
+      async () => await resolver.RefreshAddressTableAsync(),
+      Throws.Nothing
     );
   }
 
@@ -243,8 +258,9 @@ public class MacAddressResolverBaseTests {
 
     cts.Cancel();
 
-    Assert.ThrowsAsync<TaskCanceledException>(
-      async () => await resolver.RefreshAddressTableAsync(cancellationToken: cts.Token)
+    Assert.That(
+      async () => await resolver.RefreshAddressTableAsync(cancellationToken: cts.Token),
+      Throws.InstanceOf<OperationCanceledException>()
     );
   }
 
@@ -253,8 +269,9 @@ public class MacAddressResolverBaseTests {
   {
     using var resolver = new ConcreteMacAddressResolver();
 
-    Assert.DoesNotThrowAsync(
-      async () => await resolver.RefreshInvalidatedAddressesAsync()
+    Assert.That(
+      async () => await resolver.RefreshInvalidatedAddressesAsync(),
+      Throws.Nothing
     );
   }
 
@@ -266,8 +283,9 @@ public class MacAddressResolverBaseTests {
 
     cts.Cancel();
 
-    Assert.ThrowsAsync<TaskCanceledException>(
-      async () => await resolver.RefreshInvalidatedAddressesAsync(cancellationToken: cts.Token)
+    Assert.That(
+      async () => await resolver.RefreshInvalidatedAddressesAsync(cancellationToken: cts.Token),
+      Throws.InstanceOf<OperationCanceledException>()
     );
   }
 }
