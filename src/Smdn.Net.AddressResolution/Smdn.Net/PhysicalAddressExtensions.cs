@@ -27,6 +27,7 @@ public static class PhysicalAddressExtensions {
     int lengthOfAddressBytes,
     char delimiter = ':'
   )
+#pragma warning disable SA1143
     => delimiter == '\0'
       ? string.Concat(
           addressBytes
@@ -46,4 +47,5 @@ public static class PhysicalAddressExtensions {
             .Select(static b => b.ToString("X2", provider: null))
         );
 #pragma warning restore SA1114
+#pragma warning restore SA1143
 }
