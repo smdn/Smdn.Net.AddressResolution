@@ -9,10 +9,7 @@ using System.Net.Sockets;
 
 namespace Smdn.Net;
 
-#pragma warning disable IDE0040
 partial class IPNetworkProfile {
-#pragma warning restore IDE0040
-
 #if SYSTEM_NET_IPNETWORK
   public static IPNetworkProfile Create(
     IPNetwork network,

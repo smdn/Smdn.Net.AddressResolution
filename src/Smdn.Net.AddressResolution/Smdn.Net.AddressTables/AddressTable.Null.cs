@@ -7,9 +7,7 @@ using System.Threading;
 
 namespace Smdn.Net.AddressTables;
 
-#pragma warning disable IDE0040
 partial class AddressTable {
-#pragma warning restore IDE0040
   public static IAddressTable Null { get; } = new NullAddressTable();
 
   private sealed class NullAddressTable : IAddressTable {

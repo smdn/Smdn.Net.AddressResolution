@@ -13,9 +13,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Smdn.Net.AddressResolution;
 
-#pragma warning disable IDE0040
 partial class MacAddressResolver {
-#pragma warning restore IDE0040
   protected override void InvalidateCore(IPAddress ipAddress)
     => invalidatedIPAddressSet.Add(ipAddress);
 

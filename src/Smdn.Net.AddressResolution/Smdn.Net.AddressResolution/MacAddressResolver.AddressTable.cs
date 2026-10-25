@@ -14,10 +14,7 @@ using Smdn.Net.AddressTables;
 
 namespace Smdn.Net.AddressResolution;
 
-#pragma warning disable IDE0040
 partial class MacAddressResolver {
-#pragma warning restore IDE0040
-
   /// <summary>
   /// Enumerates the relevant address table entries from the <see cref="IAddressTable"/> associated with the current instance.
   /// </summary>

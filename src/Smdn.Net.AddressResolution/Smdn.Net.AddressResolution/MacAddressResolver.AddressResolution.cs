@@ -12,9 +12,7 @@ using Smdn.Net.AddressTables;
 
 namespace Smdn.Net.AddressResolution;
 
-#pragma warning disable IDE0040
 partial class MacAddressResolver {
-#pragma warning restore IDE0040
   protected override async ValueTask<PhysicalAddress?> ResolveIPAddressToMacAddressAsyncCore(
     IPAddress ipAddress,
     CancellationToken cancellationToken

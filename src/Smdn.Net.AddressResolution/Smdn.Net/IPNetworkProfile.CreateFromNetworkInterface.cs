@@ -7,10 +7,7 @@ using System.Net.Sockets;
 
 namespace Smdn.Net;
 
-#pragma warning disable IDE0040
 partial class IPNetworkProfile {
-#pragma warning restore IDE0040
-
   /// <summary>
   /// Creates an <see cref="IPNetworkProfile"/> using the first <see cref="System.Net.NetworkInformation.NetworkInterface"/> found.
   /// </summary>

@@ -5,9 +5,7 @@ using System;
 
 namespace Smdn.Net.NetworkScanning;
 
-#pragma warning disable IDE0040
 partial class NetworkScanner {
-#pragma warning restore IDE0040
   public static INetworkScanner Create(
     IPNetworkProfile? networkProfile,
     IServiceProvider? serviceProvider = null

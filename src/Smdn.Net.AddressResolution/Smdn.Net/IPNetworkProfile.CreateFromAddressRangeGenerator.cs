@@ -7,9 +7,7 @@ using System.Net.NetworkInformation;
 
 namespace Smdn.Net;
 
-#pragma warning disable IDE0040
 partial class IPNetworkProfile {
-#pragma warning restore IDE0040
   public static IPNetworkProfile Create(
     Func<IEnumerable<IPAddress>?> addressRangeGenerator,
     NetworkInterface? networkInterface = null

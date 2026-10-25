@@ -5,9 +5,7 @@ using System.Runtime.InteropServices;
 
 namespace Smdn.Net.AddressTables;
 
-#pragma warning disable IDE0040
 partial class AddressTable {
-#pragma warning restore IDE0040
   public static IAddressTable Create(
     IServiceProvider? serviceProvider = null
   )
