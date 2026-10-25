@@ -30,10 +30,6 @@ This library also provides a functionality for referencing the system's address 
     <GenerateNupkgReadmeFileDependsOnTargets>$(GenerateNupkgReadmeFileDependsOnTargets);GenerateReadmeFileContent</GenerateNupkgReadmeFileDependsOnTargets>
   </PropertyGroup>
 
-  <PropertyGroup Label="StyleCop code analysis">
-    <StyleCopAnalyzersConfigurationFile>stylecop.json</StyleCopAnalyzersConfigurationFile>
-  </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="Microsoft.Bcl.HashCode" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
