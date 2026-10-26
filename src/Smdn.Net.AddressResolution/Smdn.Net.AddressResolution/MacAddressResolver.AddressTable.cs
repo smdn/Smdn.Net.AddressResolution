@@ -29,7 +29,7 @@ partial class MacAddressResolver {
     CancellationToken cancellationToken = default
   )
     => EnumerateAddressTableEntriesAsync(
-      predicate: entry => networkInterface is null || FilterAddressTableEntryForNetworkInterface(entry),
+      predicate: entry => networkInterface is null || FilterAddressTableEntryForNetworkInterface(networkInterface, entry),
       cancellationToken: cancellationToken
     );
 
@@ -72,7 +72,10 @@ partial class MacAddressResolver {
     }
   }
 
-  private bool FilterAddressTableEntryForNetworkInterface(AddressTableEntry entry)
+  private static bool FilterAddressTableEntryForNetworkInterface(
+    NetworkInterface networkInterface,
+    AddressTableEntry entry
+  )
   {
 #if DEBUG
     if (networkInterface is null)
@@ -84,7 +87,7 @@ partial class MacAddressResolver {
     // exclude entries that are irrelevant to the network interface
     if (
       entry.InterfaceId is not null &&
-      !entry.InterfaceIdEquals(networkInterface!.Id)
+      !entry.InterfaceIdEquals(networkInterface.Id)
     ) {
       return false;
     }
@@ -95,14 +98,14 @@ partial class MacAddressResolver {
     // exclude addresses of address families not supported by the network interface
     if (
       entry.IPAddress.AddressFamily == AddressFamily.InterNetwork &&
-      !networkInterface!.Supports(NetworkInterfaceComponent.IPv4)
+      !networkInterface.Supports(NetworkInterfaceComponent.IPv4)
     ) {
       return false;
     }
 
     if (
       entry.IPAddress.AddressFamily == AddressFamily.InterNetworkV6 &&
-      !networkInterface!.Supports(NetworkInterfaceComponent.IPv6)
+      !networkInterface.Supports(NetworkInterfaceComponent.IPv6)
     ) {
       return false;
     }
@@ -122,7 +125,7 @@ partial class MacAddressResolver {
     }
 
     // exclude entries that are irrelevant to or not supported by the network interface
-    if (networkInterface is not null && !FilterAddressTableEntryForNetworkInterface(entry)) {
+    if (networkInterface is { } iface && !FilterAddressTableEntryForNetworkInterface(iface, entry)) {
       include = false;
       goto RESULT_DETERMINED;
     }
