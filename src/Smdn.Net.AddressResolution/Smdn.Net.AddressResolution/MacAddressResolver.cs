@@ -65,8 +65,6 @@ public partial class MacAddressResolver : MacAddressResolverBase {
     => new($"The instance can not perform network scan. To perform a network scan, specify {nameof(INetworkScanner)} in the constructor.");
 
   private Stopwatch? timeStampForFullScan;
-  private TimeSpan networkScanInterval = Timeout.InfiniteTimeSpan;
-  private TimeSpan networkScanMinInterval = TimeSpan.FromSeconds(20.0);
 
   /// <summary>
   /// Gets or sets the <see cref="TimeSpan"/> which represents the interval to perform a network scan.
@@ -86,16 +84,16 @@ public partial class MacAddressResolver : MacAddressResolverBase {
   /// <seealso cref="MacAddressResolverBase.ResolveIPAddressToMacAddressAsync(IPAddress, CancellationToken)" />
   /// <seealso cref="MacAddressResolverBase.ResolveMacAddressToIPAddressAsync(PhysicalAddress, CancellationToken)" />
   public TimeSpan NetworkScanInterval {
-    get => networkScanInterval;
+    get;
     set {
       if (value <= TimeSpan.Zero) {
         if (value != Timeout.InfiniteTimeSpan)
           throw new ArgumentOutOfRangeException(message: $"The value must be non-zero positive {nameof(TimeSpan)} or {nameof(Timeout)}.{nameof(Timeout.InfiniteTimeSpan)}.", paramName: nameof(NetworkScanInterval));
       }
 
-      networkScanInterval = value;
+      field = value;
     }
-  }
+  } = Timeout.InfiniteTimeSpan;
 
   /// <summary>
   /// Gets or sets the <see cref="TimeSpan"/> which represents the minimum interval to perform a network scan.
@@ -121,32 +119,32 @@ public partial class MacAddressResolver : MacAddressResolverBase {
   /// <seealso cref="MacAddressResolverBase.ResolveIPAddressToMacAddressAsync(IPAddress, CancellationToken)" />
   /// <seealso cref="MacAddressResolverBase.ResolveMacAddressToIPAddressAsync(PhysicalAddress, CancellationToken)" />
   public TimeSpan NetworkScanMinInterval {
-    get => networkScanMinInterval;
+    get;
     set {
       if (value < TimeSpan.Zero) {
         if (value != Timeout.InfiniteTimeSpan)
           throw new ArgumentOutOfRangeException(message: $"The value must be non-zero positive {nameof(TimeSpan)} or {nameof(Timeout)}.{nameof(Timeout.InfiniteTimeSpan)}.", paramName: nameof(NetworkScanMinInterval));
       }
 
-      networkScanMinInterval = value;
+      field = value;
     }
-  }
+  } = TimeSpan.FromSeconds(20.0);
 
   private bool HasFullScanMinIntervalElapsed =>
-    networkScanMinInterval == TimeSpan.Zero ||
+    NetworkScanMinInterval == TimeSpan.Zero ||
     (
-      networkScanMinInterval != Timeout.InfiniteTimeSpan &&
+      NetworkScanMinInterval != Timeout.InfiniteTimeSpan &&
       (
         timeStampForFullScan is null || // not performed yet
-        networkScanMinInterval <= timeStampForFullScan.Elapsed // interval elapsed
+        NetworkScanMinInterval <= timeStampForFullScan.Elapsed // interval elapsed
       )
     );
 
   private bool ShouldPerformFullScanBeforeResolution =>
-    networkScanInterval != Timeout.InfiniteTimeSpan &&
+    NetworkScanInterval != Timeout.InfiniteTimeSpan &&
     (
       timeStampForFullScan is null || // not performed yet
-      networkScanInterval <= timeStampForFullScan.Elapsed // interval elapsed
+      NetworkScanInterval <= timeStampForFullScan.Elapsed // interval elapsed
     );
 
   private readonly ConcurrentSet<IPAddress> invalidatedIPAddressSet = new();
