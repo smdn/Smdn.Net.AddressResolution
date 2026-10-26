@@ -118,7 +118,7 @@ public sealed class IpHlpApiAddressTable : AddressTable {
   {
     entry = default;
 
-    if (ipnetRow2.Address.si_family is not ADDRESS_FAMILY.AF_INET or ADDRESS_FAMILY.AF_INET6)
+    if (ipnetRow2.Address.si_family is not (ADDRESS_FAMILY.AF_INET or ADDRESS_FAMILY.AF_INET6))
       return false;
 
     string? interfaceId = null;
