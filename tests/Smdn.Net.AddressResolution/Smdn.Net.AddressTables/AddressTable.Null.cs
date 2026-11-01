@@ -13,7 +13,7 @@ public class AddressTableNullObjectTests {
   [Test]
   public void Dispose()
   {
-    Assert.DoesNotThrow(AddressTable.Null.Dispose);
+    Assert.That(AddressTable.Null.Dispose, Throws.Nothing);
 
     Assert.That(
       async () => {
@@ -24,7 +24,7 @@ public class AddressTableNullObjectTests {
       Throws.Nothing
     );
 
-    Assert.DoesNotThrow(AddressTable.Null.Dispose, "dispose again");
+    Assert.That(AddressTable.Null.Dispose, Throws.Nothing, "dispose again");
   }
 
   [Test]

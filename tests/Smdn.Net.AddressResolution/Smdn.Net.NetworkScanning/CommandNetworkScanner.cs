@@ -100,14 +100,13 @@ public class CommandNetworkScannerTests {
 
   [Test]
   public void FindCommand_CommandNotAvailable()
-  {
-    Assert.Throws<NotSupportedException>(() => {
-      ConcreteCommandNetworkScanner.FindCommand(
+    => Assert.That(
+      () => ConcreteCommandNetworkScanner.FindCommand(
         "_non.existent.unavailable.command_",
         expectAsAvailable: false
-      );
-    });
-  }
+      ),
+      Throws.TypeOf<NotSupportedException>()
+    );
 
   private class PseudoCommandNetworkScanner : CommandNetworkScanner {
     private readonly string commandExecutablePath;

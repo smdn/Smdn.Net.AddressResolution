@@ -21,12 +21,12 @@ public class IpHlpApiNetworkScannerTests : NetworkScannerTestsBase {
   [Test]
   public void IsSupported()
 #pragma warning disable CA1416
-    => Assert.DoesNotThrow(() => Assert.That(IpHlpApiNetworkScanner.IsSupported, Is.True.Or.False));
+    => Assert.That(() => IpHlpApiNetworkScanner.IsSupported, Throws.Nothing);
 #pragma warning restore CA1416
 
   [Test]
   public void Ctor()
 #pragma warning disable CA1416
-    => Assert.Throws<ArgumentNullException>(() => new IpHlpApiNetworkScanner(networkProfile: null!));
+    => Assert.That(() => new IpHlpApiNetworkScanner(networkProfile: null!), Throws.ArgumentNullException);
 #pragma warning restore CA1416
 }

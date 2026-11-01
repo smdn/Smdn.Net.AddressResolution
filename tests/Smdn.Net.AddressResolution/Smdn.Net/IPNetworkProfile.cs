@@ -91,8 +91,9 @@ public partial class IPNetworkProfileTests {
   [TestCaseSource(nameof(YieldTestCases_Create_FromIPNetwork_IPv6))]
   public void Create_FromIPNetwork_IPv6(IPNetwork network)
   {
-    Assert.Throws<NotImplementedException>(
-      () => IPNetworkProfile.Create(network: network)
+    Assert.That(
+      () => IPNetworkProfile.Create(network: network),
+      Throws.TypeOf<NotImplementedException>()
     );
   }
 #endif
@@ -185,14 +186,13 @@ public partial class IPNetworkProfileTests {
     IPAddress baseAddress,
     int prefixLength
   )
-  {
-    Assert.Throws<NotImplementedException>(
+    => Assert.That(
       () => IPNetworkProfile.Create(
         baseAddress: baseAddress,
         prefixLength: prefixLength
-      )
+      ),
+      Throws.TypeOf<NotImplementedException>()
     );
-  }
 
   private static System.Collections.IEnumerable YieldTestCases_Create_FromBaseAddressAndPrefixLength_ArgumentException()
   {
@@ -207,15 +207,13 @@ public partial class IPNetworkProfileTests {
     int prefixLength,
     Type typeOfExpectedException
   )
-  {
-    Assert.Throws(
-      typeOfExpectedException,
+    => Assert.That(
       () => IPNetworkProfile.Create(
         baseAddress: baseAddress!,
         prefixLength: prefixLength
-      )
+      ),
+      Throws.TypeOf(typeOfExpectedException)
     );
-  }
 
   private static System.Collections.IEnumerable YieldTestCases_Create_FromBaseAddressAndSubnetMask_IPv4()
   {
@@ -295,14 +293,13 @@ public partial class IPNetworkProfileTests {
 
   [Test]
   public void Create_FromBaseAddressAndSubnetMask_IPv6()
-  {
-    Assert.Throws<NotImplementedException>(
+    => Assert.That(
       () => IPNetworkProfile.Create(
         baseAddress: IPAddress.IPv6Loopback,
         subnetMask: IPAddress.IPv6Any
-      )
+      ),
+      Throws.TypeOf<NotImplementedException>()
     );
-  }
 
   private static System.Collections.IEnumerable YieldTestCases_Create_FromBaseAddressAndSubnetMask_ArgumentException()
   {
@@ -316,15 +313,13 @@ public partial class IPNetworkProfileTests {
     IPAddress? subnetMask,
     Type typeOfExpectedException
   )
-  {
-    Assert.Throws(
-      typeOfExpectedException,
+    => Assert.That(
       () => IPNetworkProfile.Create(
         baseAddress: baseAddress!,
         subnetMask: subnetMask!
-      )
+      ),
+      Throws.TypeOf(typeOfExpectedException)
     );
-  }
 
   [Test]
   public void Create_FromNetworkInterface()
@@ -349,44 +344,51 @@ public partial class IPNetworkProfileTests {
 
   [Test]
   public void CreateFromNetworkInterface_String_ArgumentNull()
-    => Assert.Throws<ArgumentNullException>(
-      () => IPNetworkProfile.CreateFromNetworkInterface(id: (string)null!)
+    => Assert.That(
+      () => IPNetworkProfile.CreateFromNetworkInterface(id: (string)null!),
+      Throws.ArgumentNullException
     );
 
   [Test]
   public void CreateFromNetworkInterface_String()
-    => Assert.Throws<InvalidOperationException>(
-      () => IPNetworkProfile.CreateFromNetworkInterface(id: "<!non-existent-network-interface-id!>")
+    => Assert.That(
+      () => IPNetworkProfile.CreateFromNetworkInterface(id: "<!non-existent-network-interface-id!>"),
+      Throws.InvalidOperationException
     );
 
   [Test]
   public void CreateFromNetworkInterface_Guid()
-    => Assert.Throws<InvalidOperationException>(
-      () => IPNetworkProfile.CreateFromNetworkInterface(id: Guid.Empty)
+    => Assert.That(
+      () => IPNetworkProfile.CreateFromNetworkInterface(id: Guid.Empty),
+      Throws.InvalidOperationException
     );
 
   [Test]
   public void CreateFromNetworkInterface_PhysicalAddress_ArgumentNull()
-    => Assert.Throws<ArgumentNullException>(
-      () => IPNetworkProfile.CreateFromNetworkInterface(physicalAddress: null!)
+    => Assert.That(
+      () => IPNetworkProfile.CreateFromNetworkInterface(physicalAddress: null!),
+      Throws.ArgumentNullException
     );
 
   [Test]
   public void CreateFromNetworkInterface_PhysicalAddress()
-    => Assert.Throws<InvalidOperationException>(
-      () => IPNetworkProfile.CreateFromNetworkInterface(physicalAddress: PhysicalAddress.Parse("00:00:5E:00:53:00"))
+    => Assert.That(
+      () => IPNetworkProfile.CreateFromNetworkInterface(physicalAddress: PhysicalAddress.Parse("00:00:5E:00:53:00")),
+      Throws.InvalidOperationException
     );
 
   [Test]
   public void CreateFromNetworkInterfaceName_ArgumentNull()
-    => Assert.Throws<ArgumentNullException>(
-      () => IPNetworkProfile.CreateFromNetworkInterfaceName(name: null!)
+    => Assert.That(
+      () => IPNetworkProfile.CreateFromNetworkInterfaceName(name: null!),
+      Throws.ArgumentNullException
     );
 
   [Test]
   public void CreateFromNetworkInterfaceName()
-    => Assert.Throws<InvalidOperationException>(
-      () => IPNetworkProfile.CreateFromNetworkInterfaceName(name: "<!non-existent-network-interface-name!>")
+    => Assert.That(
+      () => IPNetworkProfile.CreateFromNetworkInterfaceName(name: "<!non-existent-network-interface-name!>"),
+      Throws.InvalidOperationException
     );
 
   [Test]
@@ -424,7 +426,7 @@ public partial class IPNetworkProfileTests {
 
   [Test]
   public void Create_PredicateOfNetworkInterface_ArgumentNull()
-    => Assert.That(() => IPNetworkProfile.Create(predicateForNetworkInterface: null!), Throws.TypeOf<ArgumentNullException>());
+    => Assert.That(() => IPNetworkProfile.Create(predicateForNetworkInterface: null!), Throws.ArgumentNullException);
 
   [Test]
   public void Create_PredicateOfNetworkInterface_ExceptionThrownByPredicate()
@@ -502,5 +504,5 @@ public partial class IPNetworkProfileTests {
 
   [Test]
   public void Create_FromAddressRangeGenerator_ArgumentNull()
-    => Assert.Throws<ArgumentNullException>(static () => IPNetworkProfile.Create(addressRangeGenerator: null!));
+    => Assert.That(static () => IPNetworkProfile.Create(addressRangeGenerator: null!), Throws.ArgumentNullException);
 }

@@ -56,7 +56,7 @@ public class NetworkScannerTests : NetworkScannerTestsBase {
 
   [Test]
   public void Ctor_IPNetworkProfileNull()
-    => Assert.Throws<ArgumentNullException>(() => new ConcreteNetworkScanner(networkProfile: null!));
+    => Assert.That(() => new ConcreteNetworkScanner(networkProfile: null!), Throws.ArgumentNullException);
 
   [Test]
   public override void Dispose()
@@ -65,9 +65,9 @@ public class NetworkScannerTests : NetworkScannerTestsBase {
 
     using var scanner = new ConcreteNetworkScanner(CreatePseudoNetworkProfile());
 
-    Assert.DoesNotThrow(scanner.Dispose);
+    Assert.That(scanner.Dispose, Throws.Nothing);
 
-    Assert.Throws<ObjectDisposedException>(() => scanner.GetNetworkProfile());
+    Assert.That(() => scanner.GetNetworkProfile(), Throws.TypeOf<ObjectDisposedException>());
   }
 
   [Test]

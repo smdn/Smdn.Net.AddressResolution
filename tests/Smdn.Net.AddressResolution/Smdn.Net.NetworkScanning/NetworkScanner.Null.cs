@@ -13,7 +13,7 @@ public class NetworkScannerNullObjectTests : NetworkScannerTestsBase {
   [Test]
   public override void Dispose()
   {
-    Assert.DoesNotThrow(NetworkScanner.Null.Dispose);
+    Assert.That(NetworkScanner.Null.Dispose, Throws.Nothing);
 
     Assert.That(
       async () => await NetworkScanner.Null.ScanAsync(cancellationToken: default),
@@ -24,6 +24,6 @@ public class NetworkScannerNullObjectTests : NetworkScannerTestsBase {
       Throws.Nothing
     );
 
-    Assert.DoesNotThrow(NetworkScanner.Null.Dispose, "dispose again");
+    Assert.That(NetworkScanner.Null.Dispose, Throws.Nothing, "dispose again");
   }
 }

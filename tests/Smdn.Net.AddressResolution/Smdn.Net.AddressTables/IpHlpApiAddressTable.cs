@@ -12,7 +12,7 @@ public class IpHlpApiAddressTableTests {
   [Test]
   public void IsSupported()
 #pragma warning disable CA1416
-    => Assert.DoesNotThrow(() => Assert.That(IpHlpApiAddressTable.IsSupported, Is.True.Or.False));
+    => Assert.That(() => _ = IpHlpApiAddressTable.IsSupported, Throws.Nothing);
 #pragma warning restore CA1416
 
   [Test]

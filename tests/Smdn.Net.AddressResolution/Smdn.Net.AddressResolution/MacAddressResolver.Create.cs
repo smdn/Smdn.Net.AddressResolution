@@ -12,27 +12,33 @@ partial class MacAddressResolverTests {
   public void Create()
   {
     if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
-      Assert.DoesNotThrow(() => {
-        try {
-          new MacAddressResolver();
-        }
-        catch (PlatformNotSupportedException) {
-          // expected
-        }
-      });
+      Assert.That(
+        () => {
+          try {
+            new MacAddressResolver();
+          }
+          catch (PlatformNotSupportedException) {
+            // expected
+          }
+        },
+        Throws.Nothing
+      );
     }
     else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
-      Assert.DoesNotThrow(() => {
-        try {
-          new MacAddressResolver();
-        }
-        catch (PlatformNotSupportedException) {
-          // expected
-        }
-      });
+      Assert.That(
+        () => {
+          try {
+            new MacAddressResolver();
+          }
+          catch (PlatformNotSupportedException) {
+            // expected
+          }
+        },
+        Throws.Nothing
+      );
     }
     else {
-      Assert.Throws<PlatformNotSupportedException>(() => new MacAddressResolver());
+      Assert.That(() => new MacAddressResolver(), Throws.TypeOf<PlatformNotSupportedException>());
     }
   }
 }

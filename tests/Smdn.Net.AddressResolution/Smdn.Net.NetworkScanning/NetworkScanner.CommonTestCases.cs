@@ -41,7 +41,7 @@ public abstract class NetworkScannerTestsBase {
       scanner.GetType().FullName!
     );
 
-    Assert.DoesNotThrow(scanner.Dispose, $"{scanner.GetType().FullName} dispose again");
+    Assert.That(scanner.Dispose, Throws.Nothing, $"{scanner.GetType().FullName} dispose again");
   }
 
   [Test]
@@ -66,7 +66,7 @@ public abstract class NetworkScannerTestsBase {
 
     Assert.That(
       async () => await scanner.ScanAsync(addresses: null!, cancellationToken: default),
-      Throws.TypeOf<ArgumentNullException>(),
+      Throws.ArgumentNullException,
       scanner.GetType().FullName!
     );
   }

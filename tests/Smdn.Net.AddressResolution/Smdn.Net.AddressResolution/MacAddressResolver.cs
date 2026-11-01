@@ -73,21 +73,23 @@ public partial class MacAddressResolverTests {
   [Test]
   public void Ctor_AddressTable_ArgumentNull()
   {
-    Assert.Throws<ArgumentNullException>(
+    Assert.That(
       () => new MacAddressResolver(
         addressTable: null,
         networkScanner: new PseudoNetworkScanner(),
         serviceProvider: null
       ),
+      Throws.ArgumentNullException,
       "#1"
     );
 
-    Assert.Throws<InvalidOperationException>(
+    Assert.That(
       () => new MacAddressResolver(
         addressTable: null,
         networkScanner: new PseudoNetworkScanner(),
         serviceProvider: new ServiceCollection().BuildServiceProvider()
       ),
+      Throws.InvalidOperationException,
       "#2"
     );
   }
@@ -95,7 +97,7 @@ public partial class MacAddressResolverTests {
   [Test]
   public void Ctor_NetworkScanner_ArgumentNull()
   {
-    Assert.DoesNotThrow(
+    Assert.That(
       () => {
         using var resolver = new MacAddressResolver(
           addressTable: new PseudoAddressTable(),
@@ -105,10 +107,11 @@ public partial class MacAddressResolverTests {
 
         Assert.That(resolver.CanPerformNetworkScan, Is.False, nameof(resolver.CanPerformNetworkScan));
       },
+      Throws.Nothing,
       "#1"
     );
 
-    Assert.DoesNotThrow(
+    Assert.That(
       () => {
         using var resolver = new MacAddressResolver(
           addressTable: new PseudoAddressTable(),
@@ -118,6 +121,7 @@ public partial class MacAddressResolverTests {
 
         Assert.That(resolver.CanPerformNetworkScan, Is.False, nameof(resolver.CanPerformNetworkScan));
       },
+      Throws.Nothing,
       "#2"
     );
   }
@@ -126,12 +130,13 @@ public partial class MacAddressResolverTests {
   [TestCase(-1)]
   [TestCase(int.MinValue)]
   public void Ctor_MaxParallelCountForRefreshInvalidatedAddresses_ArgumentOutOfRange(int maxParallelCount)
-    => Assert.Throws<ArgumentOutOfRangeException>(
+    => Assert.That(
       () => new MacAddressResolver(
         addressTable: new PseudoAddressTable(),
         networkScanner: new PseudoNetworkScanner(),
         maxParallelCountForRefreshInvalidatedAddresses: maxParallelCount
-      )
+      ),
+      Throws.TypeOf<ArgumentOutOfRangeException>()
     );
 
   private static System.Collections.IEnumerable YieldTestCases_CanPerformNetworkScan()
@@ -214,13 +219,16 @@ public partial class MacAddressResolverTests {
     );
 
     if (typeOfExpectedException is null) {
-      Assert.DoesNotThrow(() => resolver.NetworkScanInterval = networkScanInterval);
+      Assert.That(() => resolver.NetworkScanInterval = networkScanInterval, Throws.Nothing);
       Assert.That(resolver.NetworkScanInterval, Is.EqualTo(networkScanInterval), nameof(resolver.NetworkScanInterval));
     }
     else {
       var initialNetworkScanInterval = resolver.NetworkScanInterval;
 
-      Assert.Throws(typeOfExpectedException, () => resolver.NetworkScanInterval = networkScanInterval);
+      Assert.That(
+        () => resolver.NetworkScanInterval = networkScanInterval,
+        Throws.TypeOf(typeOfExpectedException)
+      );
       Assert.That(resolver.NetworkScanInterval, Is.EqualTo(initialNetworkScanInterval), nameof(resolver.NetworkScanInterval));
     }
   }
@@ -250,13 +258,16 @@ public partial class MacAddressResolverTests {
     );
 
     if (typeOfExpectedException is null) {
-      Assert.DoesNotThrow(() => resolver.NetworkScanMinInterval = networkScanMinInterval);
+      Assert.That(() => resolver.NetworkScanMinInterval = networkScanMinInterval, Throws.Nothing);
       Assert.That(resolver.NetworkScanMinInterval, Is.EqualTo(networkScanMinInterval), nameof(resolver.NetworkScanMinInterval));
     }
     else {
       var initialNetworkScanMinInterval = resolver.NetworkScanMinInterval;
 
-      Assert.Throws(typeOfExpectedException, () => resolver.NetworkScanMinInterval = networkScanMinInterval);
+      Assert.That(
+        () => resolver.NetworkScanMinInterval = networkScanMinInterval,
+        Throws.TypeOf(typeOfExpectedException)
+      );
       Assert.That(resolver.NetworkScanMinInterval, Is.EqualTo(initialNetworkScanMinInterval), nameof(resolver.NetworkScanMinInterval));
     }
   }
@@ -359,7 +370,7 @@ public partial class MacAddressResolverTests {
     Assert.That(shouldDisposeAddressTable, Is.EqualTo(addressTable.IsDisposed));
     Assert.That(shouldDisposeNetworkScanner, Is.EqualTo(networkScanner.IsDisposed));
 
-    Assert.DoesNotThrow(resolver.Dispose, "dispose again");
+    Assert.That(resolver.Dispose, Throws.Nothing, "dispose again");
 
     Assert.That(shouldDisposeAddressTable, Is.EqualTo(addressTable.IsDisposed));
     Assert.That(shouldDisposeNetworkScanner, Is.EqualTo(networkScanner.IsDisposed));

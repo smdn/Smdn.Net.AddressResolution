@@ -18,13 +18,14 @@ public partial class NullMacAddressResolverTests {
   {
     using var resolver = MacAddressResolver.Null;
 
-    Assert.DoesNotThrow(resolver.Dispose, "Dispose #1");
-    Assert.DoesNotThrow(resolver.Dispose, "Dispose #2");
+    Assert.That(resolver.Dispose, Throws.Nothing, "Dispose #1");
+    Assert.That(resolver.Dispose, Throws.Nothing, "Dispose #2");
 
     // object must not be disposed
 
-    Assert.DoesNotThrow(
-      () => Assert.That(resolver.HasInvalidated, Is.False),
+    Assert.That(
+      () => _ = resolver.HasInvalidated,
+      Throws.Nothing,
       nameof(resolver.HasInvalidated)
     );
 
@@ -33,8 +34,9 @@ public partial class NullMacAddressResolverTests {
       Throws.Nothing,
       nameof(resolver.ResolveIPAddressToMacAddressAsync)
     );
-    Assert.DoesNotThrow(
+    Assert.That(
       () => resolver.Invalidate(TestIPAddress),
+      Throws.Nothing,
       nameof(resolver.Invalidate)
     );
 
@@ -43,8 +45,9 @@ public partial class NullMacAddressResolverTests {
       Throws.Nothing,
       nameof(resolver.ResolveMacAddressToIPAddressAsync)
     );
-    Assert.DoesNotThrow(
+    Assert.That(
       () => resolver.Invalidate(TestMacAddress),
+      Throws.Nothing,
       nameof(resolver.Invalidate)
     );
 
@@ -88,7 +91,7 @@ public partial class NullMacAddressResolverTests {
   {
     using var resolver = MacAddressResolver.Null;
 
-    Assert.DoesNotThrow(() => resolver.Invalidate(TestIPAddress));
+    Assert.That(() => resolver.Invalidate(TestIPAddress), Throws.Nothing);
   }
 
   [Test]
@@ -96,7 +99,7 @@ public partial class NullMacAddressResolverTests {
   {
     using var resolver = MacAddressResolver.Null;
 
-    Assert.DoesNotThrow(() => resolver.Invalidate(TestMacAddress));
+    Assert.That(() => resolver.Invalidate(TestMacAddress), Throws.Nothing);
   }
 
   [Test]

@@ -43,12 +43,13 @@ public class MacAddressResolverBaseTests {
   {
     using var resolver = new ConcreteMacAddressResolver();
 
-    Assert.DoesNotThrow(resolver.Dispose, "Dispose #1");
-    Assert.DoesNotThrow(resolver.Dispose, "Dispose #2");
+    Assert.That(resolver.Dispose, Throws.Nothing, "Dispose #1");
+    Assert.That(resolver.Dispose, Throws.Nothing, "Dispose #2");
 
 #pragma warning disable CA2012
-    Assert.Throws<ObjectDisposedException>(
+    Assert.That(
       () => resolver.ResolveIPAddressToMacAddressAsync(TestIPAddress),
+      Throws.TypeOf<ObjectDisposedException>(),
       nameof(resolver.ResolveIPAddressToMacAddressAsync)
     );
     Assert.That(
@@ -57,13 +58,15 @@ public class MacAddressResolverBaseTests {
       nameof(resolver.ResolveIPAddressToMacAddressAsync)
     );
 
-    Assert.Throws<ObjectDisposedException>(
+    Assert.That(
       () => resolver.Invalidate(TestIPAddress),
+      Throws.TypeOf<ObjectDisposedException>(),
       nameof(resolver.Invalidate)
     );
 
-    Assert.Throws<ObjectDisposedException>(
+    Assert.That(
       () => resolver.ResolveMacAddressToIPAddressAsync(TestMacAddress),
+      Throws.TypeOf<ObjectDisposedException>(),
       nameof(resolver.ResolveMacAddressToIPAddressAsync)
     );
     Assert.That(
@@ -72,8 +75,9 @@ public class MacAddressResolverBaseTests {
       nameof(resolver.ResolveMacAddressToIPAddressAsync)
     );
 
-    Assert.Throws<ObjectDisposedException>(
+    Assert.That(
       () => resolver.Invalidate(TestMacAddress),
+      Throws.TypeOf<ObjectDisposedException>(),
       nameof(resolver.Invalidate)
     );
 
@@ -119,7 +123,7 @@ public class MacAddressResolverBaseTests {
 
     Assert.That(
       async () => await resolver.ResolveIPAddressToMacAddressAsync(ipAddress: null!),
-      Throws.TypeOf<ArgumentNullException>()
+      Throws.ArgumentNullException
     );
   }
 
@@ -154,7 +158,7 @@ public class MacAddressResolverBaseTests {
   {
     using var resolver = new ConcreteMacAddressResolver();
 
-    Assert.Throws<ArgumentNullException>(() => resolver.Invalidate(ipAddress: null!));
+    Assert.That(() => resolver.Invalidate(ipAddress: null!), Throws.ArgumentNullException);
   }
 
   [Test]
@@ -163,7 +167,7 @@ public class MacAddressResolverBaseTests {
     using var resolver = new ConcreteMacAddressResolver();
     var res = (IAddressResolver<IPAddress, PhysicalAddress>)resolver;
 
-    Assert.Throws<NotImplementedException>(() => res.Invalidate(address: TestIPAddress));
+    Assert.That(() => res.Invalidate(address: TestIPAddress), Throws.TypeOf<NotImplementedException>());
   }
 
   [Test]
@@ -184,7 +188,7 @@ public class MacAddressResolverBaseTests {
 
     Assert.That(
       async () => await resolver.ResolveMacAddressToIPAddressAsync(macAddress: null!),
-      Throws.TypeOf<ArgumentNullException>()
+      Throws.ArgumentNullException
     );
   }
 
@@ -227,7 +231,7 @@ public class MacAddressResolverBaseTests {
   {
     using var resolver = new ConcreteMacAddressResolver();
 
-    Assert.Throws<ArgumentNullException>(() => resolver.Invalidate(macAddress: null!));
+    Assert.That(() => resolver.Invalidate(macAddress: null!), Throws.ArgumentNullException);
   }
 
   [Test]
@@ -236,7 +240,7 @@ public class MacAddressResolverBaseTests {
     using var resolver = new ConcreteMacAddressResolver();
     var res = (IAddressResolver<PhysicalAddress, IPAddress>)resolver;
 
-    Assert.Throws<NotImplementedException>(() => res.Invalidate(address: TestMacAddress));
+    Assert.That(() => res.Invalidate(address: TestMacAddress), Throws.TypeOf<NotImplementedException>());
   }
 
   [Test]

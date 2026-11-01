@@ -30,8 +30,8 @@ public class AddressTableEntryTests {
     Assert.That(entry.Equals((IPAddress?)null), Is.True, "equals to (IPAddress)null");
     Assert.That(entry.Equals((PhysicalAddress?)null), Is.True, "equals to (PhysicalAddress)null");
 
-    Assert.DoesNotThrow(() => entry.ToString());
-    Assert.DoesNotThrow(() => entry.GetHashCode());
+    Assert.That(() => entry.ToString(), Throws.Nothing);
+    Assert.That(() => entry.GetHashCode(), Throws.Nothing);
   }
 
   [Test]
@@ -55,24 +55,26 @@ public class AddressTableEntryTests {
   [Test]
   public void Ctor()
   {
-    Assert.DoesNotThrow(
+    Assert.That(
       () => new AddressTableEntry(
         ipAddress: TestIPAddress,
         physicalAddress: null,
         isPermanent: true,
         state: AddressTableEntryState.None,
         interfaceId: null
-      )
+      ),
+      Throws.Nothing
     );
 
-    Assert.Throws<ArgumentNullException>(
+    Assert.That(
       () => new AddressTableEntry(
         ipAddress: null!,
         physicalAddress: null,
         isPermanent: true,
         state: AddressTableEntryState.None,
         interfaceId: null
-      )
+      ),
+      Throws.ArgumentNullException
     );
   }
 
@@ -543,7 +545,7 @@ public class AddressTableEntryTests {
   [TestCaseSource(nameof(YieldTestCases_ToString))]
   public void ToString(AddressTableEntry entry)
   {
-    Assert.DoesNotThrow(() => entry.ToString());
+    Assert.That(() => entry.ToString(), Throws.Nothing);
 
     var str = entry.ToString();
 

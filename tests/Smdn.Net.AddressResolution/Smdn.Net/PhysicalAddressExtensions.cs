@@ -22,7 +22,7 @@ public partial class PhysicalAddressExtensionsTests {
   {
     PhysicalAddress? nullMacAddress = null!;
 
-    Assert.Throws<ArgumentNullException>(() => nullMacAddress!.ToMacAddressString(delimiter: delimiter));
+    Assert.That(() => nullMacAddress!.ToMacAddressString(delimiter: delimiter), Throws.ArgumentNullException);
   }
 
   [TestCase(':', "00:00:5E:00:53:00")]

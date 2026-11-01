@@ -22,5 +22,5 @@ public class PingNetworkScannerTests : NetworkScannerTestsBase {
 
   [Test]
   public void Ctor()
-    => Assert.Throws<ArgumentNullException>(() => new PingNetworkScanner(networkProfile: null!));
+    => Assert.That(() => new PingNetworkScanner(networkProfile: null!), Throws.ArgumentNullException);
 }

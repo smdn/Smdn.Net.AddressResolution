@@ -29,11 +29,13 @@ partial class MacAddressResolverTests {
 
     resolver.Dispose();
 
-    Assert.Throws<ObjectDisposedException>(
-      () => resolver.EnumerateAddressTableEntriesAsync()
+    Assert.That(
+      () => resolver.EnumerateAddressTableEntriesAsync(),
+      Throws.TypeOf<ObjectDisposedException>()
     );
-    Assert.Throws<ObjectDisposedException>(
-      () => resolver.EnumerateAddressTableEntriesAsync(predicate: static _ => true)
+    Assert.That(
+      () => resolver.EnumerateAddressTableEntriesAsync(predicate: static _ => true),
+      Throws.TypeOf<ObjectDisposedException>()
     );
 
     Assert.That(
@@ -331,7 +333,7 @@ partial class MacAddressResolverTests {
       networkScanner: NetworkScanner.Null
     );
 
-    Assert.Throws<ArgumentNullException>(() => resolver.EnumerateAddressTableEntriesAsync(predicate: null!));
+    Assert.That(() => resolver.EnumerateAddressTableEntriesAsync(predicate: null!), Throws.ArgumentNullException);
 
     Assert.That(
       async () => {
@@ -339,7 +341,7 @@ partial class MacAddressResolverTests {
           Assert.Fail("must not be enumerated");
         }
       },
-      Throws.TypeOf<ArgumentNullException>()
+      Throws.ArgumentNullException
     );
   }
 }
