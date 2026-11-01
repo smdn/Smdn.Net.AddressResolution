@@ -67,7 +67,7 @@ public class NetworkScannerTests : NetworkScannerTestsBase {
 
     Assert.That(scanner.Dispose, Throws.Nothing);
 
-    Assert.That(() => scanner.GetNetworkProfile(), Throws.TypeOf<ObjectDisposedException>());
+    Assert.That(scanner.GetNetworkProfile, Throws.TypeOf<ObjectDisposedException>());
   }
 
   [Test]

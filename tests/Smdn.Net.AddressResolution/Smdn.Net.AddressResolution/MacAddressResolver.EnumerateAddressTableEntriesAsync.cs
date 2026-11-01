@@ -227,19 +227,21 @@ partial class MacAddressResolverTests {
       networkScanner: NetworkScanner.Null
     );
     using var cts = new CancellationTokenSource();
-    Predicate<AddressTableEntry> predicate = e => {
+    int count = 0;
+
+    bool Predicate(AddressTableEntry e)
+    {
       Assert.That(cts.IsCancellationRequested, Is.False);
 
       if (e.InterfaceId == "wlan0")
         cts.Cancel();
 
       return true;
-    };
-    int count = 0;
+    }
 
     Assert.That(
       async () => {
-        await foreach (var entry in resolver.EnumerateAddressTableEntriesAsync(predicate, cts.Token)) {
+        await foreach (var entry in resolver.EnumerateAddressTableEntriesAsync(predicate: Predicate, cts.Token)) {
           count++;
         }
       },

@@ -1,6 +1,5 @@
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
-using System;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
@@ -30,8 +29,8 @@ public class AddressTableEntryTests {
     Assert.That(entry.Equals((IPAddress?)null), Is.True, "equals to (IPAddress)null");
     Assert.That(entry.Equals((PhysicalAddress?)null), Is.True, "equals to (PhysicalAddress)null");
 
-    Assert.That(() => entry.ToString(), Throws.Nothing);
-    Assert.That(() => entry.GetHashCode(), Throws.Nothing);
+    Assert.That(entry.ToString, Throws.Nothing);
+    Assert.That(entry.GetHashCode, Throws.Nothing);
   }
 
   [Test]
@@ -545,7 +544,7 @@ public class AddressTableEntryTests {
   [TestCaseSource(nameof(YieldTestCases_ToString))]
   public void ToString(AddressTableEntry entry)
   {
-    Assert.That(() => entry.ToString(), Throws.Nothing);
+    Assert.That(entry.ToString, Throws.Nothing);
 
     var str = entry.ToString();
 

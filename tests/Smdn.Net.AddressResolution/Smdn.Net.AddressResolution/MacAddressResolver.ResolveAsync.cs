@@ -231,7 +231,7 @@ partial class MacAddressResolverTests {
     using var cts = new CancellationTokenSource();
     using var resolver = new MacAddressResolver(
       addressTable: AddressTable.Null,
-      networkScanner: new InterceptingNetworkScanner(() => cts.Cancel())
+      networkScanner: new InterceptingNetworkScanner(cts.Cancel)
     ) {
       NetworkScanMinInterval = TimeSpan.Zero,
       NetworkScanInterval = TimeSpan.FromTicks(1),
@@ -249,7 +249,7 @@ partial class MacAddressResolverTests {
     using var cts = new CancellationTokenSource();
     using var resolver = new MacAddressResolver(
       addressTable: AddressTable.Null,
-      networkScanner: new InterceptingNetworkScanner(() => cts.Cancel())
+      networkScanner: new InterceptingNetworkScanner(cts.Cancel)
     ) {
       NetworkScanMinInterval = TimeSpan.Zero,
       NetworkScanInterval = TimeSpan.FromTicks(1),
