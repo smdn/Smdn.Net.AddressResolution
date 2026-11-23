@@ -13,6 +13,8 @@ SPDX-License-Identifier: MIT
     <NoWarn>CA1848;$(NoWarn)</NoWarn> <!-- use the LoggerMessage delegates instead -->
     <NoWarn>CA1873;$(NoWarn)</NoWarn> <!-- CA1873 Avoid potentially expensive logging -->
     <NoWarn>CS1591;$(NoWarn)</NoWarn> <!-- CS1591: Missing XML comment for publicly visible type or member 'Type_or_Member' -->
+    <!-- Suppress assembly AOT compatibility warning in the CI/CD environment (packaging and testing) -->
+    <NoWarn Condition="'$(ContinuousIntegrationBuild)' == 'true'">$(NoWarn);IL3058</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Label="assembly attributes">
