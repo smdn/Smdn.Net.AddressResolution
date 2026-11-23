@@ -1,33 +1,33 @@
-// Smdn.Net.AddressResolution.dll (Smdn.Net.AddressResolution-1.3.1)
+// Smdn.Net.AddressResolution.dll (Smdn.Net.AddressResolution-1.4.0)
 //   Name: Smdn.Net.AddressResolution
-//   AssemblyVersion: 1.3.1.0
-//   InformationalVersion: 1.3.1+91f775681d6f3fb27a32c1a31412a07fe5a96e5c
-//   TargetFramework: .NETCoreApp,Version=v8.0
+//   AssemblyVersion: 1.4.0.0
+//   InformationalVersion: 1.4.0+18b2e1e728b42988572c77fa251febe1b3462796
+//   TargetFramework: .NETCoreApp,Version=v10.0
 //   Configuration: Release
 //   Metadata: IsTrimmable=True
+//   Metadata: IsAotCompatible=True
 //   Metadata: RepositoryUrl=https://github.com/smdn/Smdn.Net.AddressResolution
 //   Metadata: RepositoryBranch=main
-//   Metadata: RepositoryCommit=91f775681d6f3fb27a32c1a31412a07fe5a96e5c
+//   Metadata: RepositoryCommit=18b2e1e728b42988572c77fa251febe1b3462796
 //   Referenced assemblies:
-//     Microsoft.Extensions.DependencyInjection.Abstractions, Version=6.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60
-//     Microsoft.Extensions.Logging.Abstractions, Version=6.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60
-//     System.Collections, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
-//     System.Collections.Concurrent, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
-//     System.ComponentModel, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
-//     System.ComponentModel.Primitives, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
-//     System.Diagnostics.Process, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
-//     System.Linq, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
-//     System.Memory, Version=8.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51
-//     System.Net.NetworkInformation, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
-//     System.Net.Ping, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
-//     System.Net.Primitives, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
-//     System.Runtime, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
-//     System.Runtime.InteropServices, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
-//     System.Threading, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
-//     Vanara.Core, Version=4.1.1.0, Culture=neutral, PublicKeyToken=c37e4080322237fa
-//     Vanara.PInvoke.IpHlpApi, Version=4.1.1.0, Culture=neutral, PublicKeyToken=c37e4080322237fa
-//     Vanara.PInvoke.Shared, Version=4.1.1.0, Culture=neutral, PublicKeyToken=c37e4080322237fa
-//     Vanara.PInvoke.Ws2_32, Version=4.1.1.0, Culture=neutral, PublicKeyToken=c37e4080322237fa
+//     Microsoft.Extensions.DependencyInjection.Abstractions, Version=10.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60
+//     Microsoft.Extensions.Logging.Abstractions, Version=10.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60
+//     System.Collections, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+//     System.Collections.Concurrent, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+//     System.ComponentModel, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+//     System.ComponentModel.Primitives, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+//     System.Diagnostics.Process, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+//     System.Linq, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+//     System.Memory, Version=10.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51
+//     System.Net.NetworkInformation, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+//     System.Net.Ping, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+//     System.Net.Primitives, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+//     System.Runtime, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+//     System.Runtime.InteropServices, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+//     System.Threading, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+//     Vanara.Core, Version=5.0.1.0, Culture=neutral, PublicKeyToken=c37e4080322237fa
+//     Vanara.PInvoke.IpHlpApi, Version=5.0.1.0, Culture=neutral, PublicKeyToken=c37e4080322237fa
+//     Vanara.PInvoke.Ws2_32, Version=5.0.1.0, Culture=neutral, PublicKeyToken=c37e4080322237fa
 #nullable enable annotations
 
 using System;
@@ -166,7 +166,6 @@ namespace Smdn.Net.AddressTables {
     protected void ThrowIfDisposed() {}
   }
 
-  [SupportedOSPlatform("windows")]
   public sealed class IpHlpApiAddressTable : AddressTable {
     public static bool IsSupported { get; }
 
@@ -259,7 +258,6 @@ namespace Smdn.Net.NetworkScanning {
     protected void ThrowIfDisposed() {}
   }
 
-  [SupportedOSPlatform("windows")]
   public sealed class IpHlpApiNetworkScanner : NetworkScanner {
     public static bool IsSupported { get; }
 
@@ -304,5 +302,5 @@ namespace Smdn.Net.NetworkScanning {
     protected override async ValueTask ScanAsyncCore(IPAddress address, CancellationToken cancellationToken = default) {}
   }
 }
-// API list generated by Smdn.Reflection.ReverseGenerating.ListApi.MSBuild.Tasks v1.8.2.0.
+// API list generated by Smdn.Reflection.ReverseGenerating.ListApi.MSBuild.Tasks v1.9.0.0.
 // Smdn.Reflection.ReverseGenerating.ListApi.Core v1.6.2.0 (https://github.com/smdn/Smdn.Reflection.ReverseGenerating)
