@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: 2023 smdn <smdn@smdn.jp>
 // SPDX-License-Identifier: MIT
 using System;
-using System.Runtime.InteropServices;
 
 namespace Smdn.Net.AddressTables;
 
@@ -10,7 +9,7 @@ partial class AddressTable {
     IServiceProvider? serviceProvider = null
   )
   {
-    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && IpHlpApiAddressTable.IsSupported)
+    if (IpHlpApiAddressTable.IsSupported)
       return new IpHlpApiAddressTable(serviceProvider);
 
     if (ProcfsArpAddressTable.IsSupported)
