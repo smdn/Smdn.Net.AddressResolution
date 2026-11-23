@@ -73,6 +73,9 @@ This library also provides a functionality for referencing the system's address 
       <PackageReadmeFileContent><![CDATA[# $(AssemblyName)-$(InformationalVersion)
 $(Description)
 
+Note: Although this package is marked with `IsAotCompatible=true`, some of the dependency libraries are not yet AOT-compatible.
+As a result, warnings such as `IL3058` may be reported during AOT-enabled compilation.
+
 ## Usage
 ```cs
 $([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)..\..\examples\mac-address-resolution-basic\Program.cs'))
