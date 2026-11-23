@@ -9,6 +9,7 @@ SPDX-License-Identifier: MIT
     <VersionPrefix>1.4.0</VersionPrefix>
     <VersionSuffix></VersionSuffix>
     <PackageValidationBaselineVersion>1.0.0</PackageValidationBaselineVersion>
+    <Features Condition="'$(TargetFramework)' == 'net11.0'">$(Features);runtime-async=on</Features>
     <NoWarn>CA1848;$(NoWarn)</NoWarn> <!-- use the LoggerMessage delegates instead -->
     <NoWarn>CA1873;$(NoWarn)</NoWarn> <!-- CA1873 Avoid potentially expensive logging -->
     <NoWarn>CS1591;$(NoWarn)</NoWarn> <!-- CS1591: Missing XML comment for publicly visible type or member 'Type_or_Member' -->
