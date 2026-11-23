@@ -1,0 +1,21 @@
+﻿<!--
+SPDX-FileCopyrightText: 2026 smdn <smdn@smdn.jp>
+SPDX-License-Identifier: MIT
+-->
+<Solution>
+  <Folder Name="/Smdn.Net.AddressResolution/logging/">
+    <Project Path="Smdn.Net.AddressResolution/logging/Program.csproj" />
+  </Folder>
+  <Folder Name="/Smdn.Net.AddressResolution/mac-address-resolution-basic/">
+    <Project Path="Smdn.Net.AddressResolution/mac-address-resolution-basic/Program.csproj" />
+  </Folder>
+  <Folder Name="/Smdn.Net.AddressResolution/mac-address-resolution-networkprofile/">
+    <Project Path="Smdn.Net.AddressResolution/mac-address-resolution-networkprofile/Program.csproj" />
+  </Folder>
+  <Folder Name="/Smdn.Net.AddressResolution/network-address-range/">
+    <Project Path="Smdn.Net.AddressResolution/network-address-range/Program.csproj" />
+  </Folder>
+  <Folder Name="/Smdn.Net.AddressResolution/network-scanning/">
+    <Project Path="Smdn.Net.AddressResolution/network-scanning/Program.csproj" />
+  </Folder>
+</Solution>
