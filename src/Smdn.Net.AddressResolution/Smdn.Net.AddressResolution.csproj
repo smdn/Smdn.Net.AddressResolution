@@ -81,7 +81,7 @@ As a result, warnings such as `IL3058` may be reported during AOT-enabled compil
 
 ## Usage
 ```cs
-$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)..\..\examples\mac-address-resolution-basic\Program.cs'))
+$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)..\..\examples\$(PackageId)\mac-address-resolution-basic\Program.cs'))
 ```
 
 ## Contributing
