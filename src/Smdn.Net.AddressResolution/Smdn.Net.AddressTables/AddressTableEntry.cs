@@ -140,7 +140,6 @@ public readonly struct AddressTableEntry : IEquatable<AddressTableEntry>, IEquat
       static int GetHashCodeForInterfaceId(AddressTableEntry obj)
         => obj.InterfaceId is null ? 0 : NetworkInterfaceIdComparer.Comparer.GetHashCode(obj.InterfaceId);
 
-#if SYSTEM_HASHCODE
       return HashCode.Combine(
         obj.IPAddress,
         obj.PhysicalAddress,
@@ -148,20 +147,6 @@ public readonly struct AddressTableEntry : IEquatable<AddressTableEntry>, IEquat
         compareExceptState ? 0 : obj.State,
         GetHashCodeForInterfaceId(obj)
       );
-#else
-      var hash = 17;
-
-      unchecked {
-        hash = (hash * 31) + IPAddress?.GetHashCode() ?? 0;
-        hash = (hash * 31) + PhysicalAddress?.GetHashCode() ?? 0;
-        hash = (hash * 31) + IsPermanent.GetHashCode();
-        if (!compareExceptState)
-          hash = (hash * 31) + State.GetHashCode();
-        hash = (hash * 31) + GetHashCodeForInterfaceId();
-      }
-
-      return hash;
-#endif
     }
   }
 }
