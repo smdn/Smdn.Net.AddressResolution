@@ -12,7 +12,7 @@ public class NmapCommandNetworkScannerTests : NetworkScannerTestsBase {
   protected override INetworkScanner CreateNetworkScanner() =>
     new NmapCommandNetworkScanner(
       IPNetworkProfile.Create(
-        addressRangeGenerator: static () => new[] { IPAddress.Any }
+        addressRangeGenerator: static () => [IPAddress.Any]
       )
     );
 

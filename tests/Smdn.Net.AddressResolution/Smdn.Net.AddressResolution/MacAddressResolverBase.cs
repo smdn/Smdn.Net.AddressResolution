@@ -46,7 +46,6 @@ public class MacAddressResolverBaseTests {
     Assert.That(resolver.Dispose, Throws.Nothing, "Dispose #1");
     Assert.That(resolver.Dispose, Throws.Nothing, "Dispose #2");
 
-#pragma warning disable CA2012
     Assert.That(
       () => resolver.ResolveIPAddressToMacAddressAsync(TestIPAddress),
       Throws.TypeOf<ObjectDisposedException>(),
@@ -102,7 +101,6 @@ public class MacAddressResolverBaseTests {
       Throws.TypeOf<ObjectDisposedException>(),
       nameof(resolver.RefreshInvalidatedAddressesAsync)
     );
-#pragma warning restore CA2012
   }
 
   [Test]

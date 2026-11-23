@@ -11,7 +11,7 @@ public class PingNetworkScannerTests : NetworkScannerTestsBase {
   protected override INetworkScanner CreateNetworkScanner() =>
     new PingNetworkScanner(
       IPNetworkProfile.Create(
-        addressRangeGenerator: static () => new[] { IPAddress.Any }
+        addressRangeGenerator: static () => [IPAddress.Any]
       )
     );
 

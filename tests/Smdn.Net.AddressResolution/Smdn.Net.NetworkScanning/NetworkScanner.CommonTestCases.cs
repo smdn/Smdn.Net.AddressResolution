@@ -16,28 +16,28 @@ public abstract class NetworkScannerTestsBase {
   {
     using var scanner = CreateNetworkScanner();
 
-    Assert.That(scanner.Dispose, Throws.Nothing, scanner.GetType().FullName!);
+    Assert.That(scanner.Dispose, Throws.Nothing, scanner.GetType().FullName);
 
     Assert.That(
       () => scanner.ScanAsync(cancellationToken: default),
       Throws.TypeOf<ObjectDisposedException>(),
-      scanner.GetType().FullName!
+      scanner.GetType().FullName
     );
     Assert.That(
       async () => await scanner.ScanAsync(cancellationToken: default),
       Throws.TypeOf<ObjectDisposedException>(),
-      scanner.GetType().FullName!
+      scanner.GetType().FullName
     );
 
     Assert.That(
       () => scanner.ScanAsync([IPAddress.Any], cancellationToken: default),
       Throws.TypeOf<ObjectDisposedException>(),
-      scanner.GetType().FullName!
+      scanner.GetType().FullName
     );
     Assert.That(
       async () => await scanner.ScanAsync([IPAddress.Any], cancellationToken: default),
       Throws.TypeOf<ObjectDisposedException>(),
-      scanner.GetType().FullName!
+      scanner.GetType().FullName
     );
 
     Assert.That(scanner.Dispose, Throws.Nothing, $"{scanner.GetType().FullName} dispose again");
@@ -54,7 +54,7 @@ public abstract class NetworkScannerTestsBase {
     Assert.That(
       async () => await scanner.ScanAsync(cts.Token),
       Throws.InstanceOf<OperationCanceledException>(),
-      scanner.GetType().FullName!
+      scanner.GetType().FullName
     );
   }
 
@@ -81,7 +81,7 @@ public abstract class NetworkScannerTestsBase {
     Assert.That(
       async () => await scanner.ScanAsync([IPAddress.Any], cts.Token),
       Throws.InstanceOf<OperationCanceledException>(),
-      scanner.GetType().FullName!
+      scanner.GetType().FullName
     );
   }
 }
